@@ -1,0 +1,36 @@
+<?php
+
+/**
+ * @file
+ * term_gmap install/uninstall routines.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function term_gmap_schema() {
+  $schema['term_gmap_term'] = array(
+    'fields' => array(
+      'tid'    => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0),
+      'map_type' => array(
+        'type' => 'varchar',
+        'length' => 150),
+    ),
+    'primary key' => array('tid'),
+  );
+  return $schema;
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function term_gmap_uninstall() {
+  // Remove variables.
+  variable_del('term_gmap_width');
+  variable_del('term_gmap_height');
+  variable_del('term_gmap_large');
+}

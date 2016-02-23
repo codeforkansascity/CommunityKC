@@ -1,0 +1,247 @@
+<?php
+/**
+ * @file
+ * Install, update and uninstall functions for the Patch manager module.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function patch_manager_install() {
+  // Install our fields.
+  $fields = patch_manager_field_info();
+  foreach ($fields as $field) {
+    field_create_field($field);
+  }
+  // Create instances for each defined field.
+  $instances = patch_manager_instance_info();
+  foreach ($instances as $instance) {
+    field_create_instance($instance);
+  }
+}
+
+/**
+ * Implements hook_uninstall().
+ * 
+ * @todo Review the conversion of the statement to the D7 database API syntax.
+ */
+function patch_manager_uninstall() {
+  // Delete instances for each defined field.
+  $instances = field_info_instances('node', 'patch');
+  foreach ($instances as $instance) {
+    field_delete_instance($instance);
+  }
+  // Uninstall our fields.
+  $fields = patch_manager_field_info();
+  foreach ($fields as $field) {
+    field_delete_field($field['field_name']);
+  }
+  // Remove any actions we created.
+  // TODO Please review the conversion of this statement to the D7 database API
+  // syntax, add LIMIT 10.
+  /* db_query('DELETE FROM {actions} WHERE aid LIKE "patch_manager_%" LIMIT 10') */
+  db_delete('actions')
+  ->condition('aid', "patch_manager_%", 'LIKE')
+  //->range(0,10)
+  ->execute();
+}
+
+/**
+ * Implements hook_field_info().
+ */
+function patch_manager_field_info() {
+  // We are going to return an array of fields.
+  $fields = array();
+
+  // field_patch field
+  $fields[] = array(
+    'translatable' => '0',
+    'entity_types' => array(),
+    'settings' => array(
+      'display_field' => 1,
+      'display_default' => 0,
+      'uri_scheme' => 'public',
+    ),
+    'field_name' => 'field_patch',
+    'type' => 'file',
+    'module' => 'file',
+    'active' => '1',
+    'locked' => '0',
+    'cardinality' => '1',
+    'bundles' => array(
+      'node' => array(
+      0 => 'patch',
+      ),
+    ),
+  );
+
+  // field_module field
+  $fields[] = array(
+    'translatable' => '0',
+    'entity_types' => array(),
+    'settings' => array(
+      'max_length' => '30',
+    ),
+    'field_name' => 'field_module',
+    'type' => 'text',
+    'module' => 'text',
+    'active' => '1',
+    'locked' => '0',
+    'cardinality' => '1',
+    'bundles' => array(
+      'node' => array(
+        0 => 'patch',
+      ),
+    ),
+  );
+
+  // field_drupal_issue field
+  $fields[] = array(
+    'translatable' => '0',
+    'settings' => array(
+      'max_length' => '10',
+    ),
+    'field_name' => 'field_drupal_issue',
+    'type' => 'text',
+    'active' => '1',
+    'locked' => '0',
+    'cardinality' => '1',
+    'bundles' => array(
+      'node' => array(
+        0 => 'patch',
+      ),
+    ),
+  );
+
+  // Translatables
+  // Included for use with string extractors like potx.
+  t('Drupal.org issue number');
+  t('Module');
+  t('Patch file');
+
+  return $fields;
+}
+
+function patch_manager_instance_info() {
+  // We are going to return an array of field instances.
+  $instances = array();
+
+  // field_patch instance
+  $instances[] = array(
+    'label' => 'Patch file',
+    'widget' => array(
+      'weight' => '-4',
+      'type' => 'file_generic',
+      'module' => 'file',
+      'active' => 1,
+      'settings' => array(
+        'progress_indicator' => 'throbber',
+      ),
+    ),
+    'settings' => array(
+      'file_directory' => 'patches',
+      'file_extensions' => 'txt diff patch',
+      'max_filesize' => '',
+      'description_field' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'type' => 'file_default',
+        'settings' => array(),
+        'module' => 'file',
+        'weight' => 0,
+      ),
+      'teaser' => array(
+        'type' => 'hidden',
+        'label' => 'above',
+        'settings' => array(),
+        'weight' => 0,
+      ),
+    ),
+    'required' => 1,
+    'description' => '',
+    'field_name' => 'field_patch',
+    'entity_type' => 'node',
+    'bundle' => 'patch',
+  );
+
+  // field_module instance
+  $instances[] = array(
+    'label' => 'Module',
+    'widget' => array(
+      'weight' => '-3',
+      'type' => 'text_textfield',
+      'module' => 'text',
+      'active' => 1,
+      'settings' => array(
+        'size' => '60',
+      ),
+    ),
+    'settings' => array(
+      'text_processing' => '0',
+      'user_register_form' => FALSE,
+    ),
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'type' => 'text_default',
+        'settings' => array(),
+        'module' => 'text',
+        'weight' => 1,
+      ),
+      'teaser' => array(
+        'type' => 'hidden',
+        'label' => 'above',
+        'settings' => array(),
+        'weight' => 0,
+      ),
+    ),
+    'required' => 1,
+    'description' => 'Use the system name of module. For example, <b>feeds_tamper</b>.',
+    'default_value' => NULL,
+    'field_name' => 'field_module',
+    'entity_type' => 'node',
+    'bundle' => 'patch',
+  );
+
+  // field_drupal_issue instance
+  $instances[] = array(
+    'label' => 'Drupal.org issue number',
+    'widget' => array(
+      'weight' => '-2',
+      'type' => 'text_textfield',
+      'active' => 1,
+      'settings' => array(
+        'size' => '60',
+      ),
+    ),
+    'settings' => array(
+      'text_processing' => '0',
+      'user_register_form' => FALSE,
+    ),
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'type' => 'text_default',
+        'settings' => array(),
+        'weight' => 2,
+      ),
+      'teaser' => array(
+        'type' => 'hidden',
+        'label' => 'above',
+        'settings' => array(),
+        'weight' => 0,
+      ),
+    ),
+    'required' => 0,
+    'description' => '',
+    'default_value' => NULL,
+    'field_name' => 'field_drupal_issue',
+    'entity_type' => 'node',
+    'bundle' => 'patch',
+  );
+
+  return $instances;
+}

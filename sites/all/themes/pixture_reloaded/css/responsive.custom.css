@@ -1,0 +1,35 @@
+/**
+ * responsive.cascade.css is for styles that will cascade and uses
+ * min-width only media queries.
+ *
+ * All the other responsive stylesheets use a stacking method (by
+ * default that is, you can change the media queries in theme settings),
+ * however this uses a waterfall method so we can leverage the cascade
+ * and inheritance for all browsers that support media queries, regardless
+ * of screen size.
+ *
+ * NOTE: this file will NOT load by default, you need to enable it
+ * in theme settings under "Global Settings".
+ *
+ * Usage: you must set the breakpoints manually.
+ */
+
+/* Really small screens and up
+@media only screen and (min-width:220px) {
+}
+ */
+
+/* Smartphones and up
+@media only screen and (min-width:320px) {
+}
+ */
+
+/* Tablets and up
+@media only screen and (min-width:768px) {
+}
+ */
+
+/* Desktops/laptops and up
+@media only screen and (min-width:1025px) {
+}
+ */

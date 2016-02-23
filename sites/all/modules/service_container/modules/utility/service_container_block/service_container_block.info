@@ -1,0 +1,19 @@
+name = Services Container Block
+description = Services Container Block Plugin discovery integration.
+package = Utility
+core = 7.x
+php = 5.3.10
+hidden=TRUE
+
+; Dependencies
+dependencies[] = service_container_annotation_discovery
+
+registry_autoload[] = PSR-0
+registry_autoload[] = PSR-4
+
+; Information added by Drupal.org packaging script on 2015-08-03
+version = "7.x-1.0-beta5"
+core = "7.x"
+project = "service_container"
+datestamp = "1438608844"
+

@@ -1,0 +1,156 @@
+<?php
+
+/**
+ * @file
+ * Main Webform Default Fields routines
+ */
+
+require_once 'includes/webform_default_fields.data.inc';
+
+define('WEBFORM_DEFAULT_FIELDS_DEFAUT_TYPE', 'webform');
+
+/**
+ * Implements hook_permission().
+ */
+function webform_default_fields_permission() {
+  return array(
+    'webform default fields reset' => array(
+      'title' => t('Reset Webform components to Default'),
+      'description' => t('Grants access to the "Reset" page on all webform content.'),
+    ),
+    'administer webform default fields' => array(
+      'title' => t('Administer Webform Default Fields'),
+      'description' => t('Grants access to the "Webform Default Fields" tab on content types management page. Generally an administrative permission.'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_menu().
+ */
+function webform_default_fields_menu() {
+  $items = array();
+  $path = drupal_get_path('module', 'webform_default_fields');
+  foreach (_webform_default_fields_webform_node_types() as $type) {
+    $type_url_str = $type['url'];
+    $type_name = $type['name'];
+    // Main fields form
+    $items['admin/structure/types/manage/' . $type_url_str . '/webform-fields'] = array(
+      'title' => $type_name . ': Default Webform Fields',
+      'page callback' => 'webform_default_fields_list',
+      'page arguments' => array(4),
+      'access arguments' => array('administer webform default fields'),
+      'type' => MENU_LOCAL_TASK,
+      'weight' => 1,
+      'file' => 'webform_default_fields.admin.inc',
+      'file path' => $path . '/includes/pages',
+    );
+
+    $nid = _webform_default_fields_container_node($type_name);
+    // Redirect master node webforms to content type fields page
+    $items['node/' . $nid . '/webform/components'] = array(
+      'page callback' => 'webform_default_fields_redirect_master',
+      'page arguments' => array(1),
+      'type' => MENU_CALLBACK,
+      'access arguments' => array('administer webform default fields'),
+      'file' => 'webform_default_fields.admin.inc',
+      'file path' => $path . '/includes/pages',
+    );
+    $items['node/' . $nid] = $items['node/' . $nid . '/webform/components'];
+  }
+
+  $items['node/%webform_menu/webform/webform-reset'] = array(
+    'title' => 'Reset',
+    'page callback' => 'webform_default_fields_reset',
+    'page arguments' => array(1),
+    'access arguments' => array('webform default fields reset'),
+    'file' => 'webform_default_fields.reset.inc',
+    'file path' => $path . '/includes',
+    'weight' => 8,
+    'type' => MENU_LOCAL_TASK,
+    'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
+  );
+  return $items;
+}
+
+/**
+ * Implements hook_node_type_update().
+ */
+function webform_default_fields_node_type_update($info) {
+  if (!empty($info->old_type) && $info->old_type != $info->type) {
+    _webform_default_fields_update_container_node($info->type, $info->old_type);
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function webform_default_fields_form_node_type_form_alter(&$form, &$form_state) {
+  if (isset($form['type'])) {
+    form_load_include($form_state, 'inc', 'webform_default_fields', 'includes/webform_default_fields.form');
+    $form['#submit'][] = 'webform_default_fields_form_webform_admin_settings_submit';
+    $form['webform']['webform_default_fields'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Webform default fields'),
+      '#description' => t('Allows Webform default fields create default fields for this content type.'),
+      '#default_value' => variable_get('webform_default_fields_allow_node_' . $form['#node_type']->type, TRUE),
+      '#attributes' => array(
+        'data-enabled-description' => t('Enabled'),
+        'data-disabled-description' => t('Disabled'),
+      ),
+      '#states' => array(
+        'invisible' => array(
+          ':input[name="webform_node"]' => array('checked' => FALSE),
+        ),
+      ),
+    );
+  }
+}
+
+/**
+ * Implements hook_insert().
+ *
+ * If you use hook_webform_node_defaults_alter() and don't want Webform
+ * Default Fields to overwrite the your defaults in $node->webform, you should
+ * add $defaults['webform_default_fields_ignore'] = TRUE in your implementing.
+ */
+function webform_default_fields_node_insert($node) {
+  $ignore = isset($node->webform['webform_default_fields_ignore']);
+  $nid = variable_get('webform_default_fields_nid_' . $node->type, 0);
+  $content_type_allow = variable_get('webform_default_fields_allow_node_' . $node->type, TRUE);
+  if ($nid && $content_type_allow && !$ignore) {
+    if (empty($node->webform['components'])) {
+      module_load_include('inc', 'webform', 'includes/webform.components');
+      webform_ensure_record($node);
+      $master_node = node_load($nid, NULL, TRUE);
+      if (isset($master_node->webform)) {
+        $node->original = clone $node;
+        $node->webform = $master_node->webform;
+        $node->webform['nid'] = $node->nid;
+        foreach ($node->webform['emails'] as &$component) {
+          $component['nid'] = $node->nid;
+        }
+        foreach ($node->webform['components'] as &$component) {
+          $component['nid'] = $node->nid;
+        }
+        if (isset($node->webform['conditionals']) && !empty($node->webform['conditionals'])) {
+          foreach ($node->webform['conditionals'] as &$component) {
+            $component['nid'] = $node->nid;
+          }
+        }
+        webform_node_update($node);
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_node_update().
+ */
+function webform_default_fields_node_delete($node) {
+  if (($nid = variable_get('webform_default_fields_nid_' . $node->type, 0))) {
+    if ($nid == $node->nid) {
+      variable_del('webform_default_fields_nid_' . $node->type);
+    }
+  }
+}

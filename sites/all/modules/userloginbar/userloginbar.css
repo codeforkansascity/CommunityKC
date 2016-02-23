@@ -1,0 +1,94 @@
+/*
+by default, the default form adds some surrounding space, this cancels it
+*/
+.content div.form-item,
+.content div.content {
+  margin: 0; padding: 0;
+}
+
+/*
+this adds some space in top and bottom, so anything inside can look vertically
+centered
+*/
+#user-login-form {
+  width:700px;
+  position: absolute;
+  top: 0;
+  float: left;
+  right: 0
+}
+
+/*
+by default, fields labels tries to reserve a whole line for itself, this
+cancels that and and sends it to the left.
+it also adds some space on the right and left of the label to look easy on
+the eye.
+*/
+#user-login-form label {
+  float: left;
+  margin: 5px 5px 0 10px;
+}
+
+/*
+inputs too, they try to reserve a whole line for itself, this
+cancels that and sends it to the left
+*/
+#user-login-form input {
+  float: left;
+}
+
+/*
+I don't like the required * (asterisks), so I hide them.
+*/
+#user-login-form span.form-required {
+  display: none;
+}
+
+/*
+Add some space at top.
+*/
+#user-login-form div.item-list ul{
+  margin-top: -15px;
+}
+
+/*
+Make right align welcome back message
+*/
+#user-login-form div.item-list ul.welcome-box{
+  margin-top: 0;
+  float: right;
+}
+
+/*
+the form submit button,
+*/
+#user-login-form input.form-submit {
+  margin-top: -7px;
+  margin-left: 10px;
+  border:1px solid #999;
+}
+
+/*
+remember, stylign above was for the whole list, now for each item,
+we all know each item in the list by default exists on a separate line, also
+has that bullet on the left. we cancel all that. and makes all items sit beside
+each other
+*/
+#user-login-form div.item-list ul li {
+  list-style:none;
+  display:inline;
+}
+
+/*
+this is the "Hi user, welcome back message".
+by default <p> tries to exist on a separate line, we cancel that.
+also by default <p> has some surrounding space, we cancel that too, and give it
+only space on the left.
+*/
+#user-login-form p.user-info {
+  float: left;
+  margin: 0;
+  padding: 0;
+  text-align: right;
+  width: 83%;
+}

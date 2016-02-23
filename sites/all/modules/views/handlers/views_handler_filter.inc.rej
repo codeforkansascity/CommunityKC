@@ -1,0 +1,15 @@
+--- handlers/views_handler_filter.inc
++++ handlers/views_handler_filter.inc
+@@ -786,11 +786,7 @@
+       if (isset($form[$value]['#title']) && !empty($form[$value]['#type']) && $form[$value]['#type'] != 'checkbox') {
+         unset($form[$value]['#title']);
+       }
+-
+-      if (isset($form[$value]['#description']) && !empty($form[$value]['#type']) && $form[$value]['#type'] != 'checkbox') {
+-        unset($form[$value]['#description']);
+-      }
+-
++      
+       $this->exposed_translate($form[$value], 'value');
+ 
+       if (!empty($form['#type']) && ($form['#type'] == 'checkboxes' || ($form['#type'] == 'select' && !empty($form['#multiple'])))) {

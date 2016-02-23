@@ -1,0 +1,84 @@
+/* Smartphone portrait */
+#admin-menu-wrapper {display: none;}
+
+#page {
+  box-shadow: 0 0 0 rgba(0, 0, 0, 0) !important;
+}
+
+#header {
+  max-height: 1000px;
+  padding: 0;
+  background-image: none;
+}
+
+#branding,
+#header .region-header {
+  float: none;
+  background: transparent !important;
+  max-height: 1000px;
+  width: 100%;
+  clear: both;
+  margin: 10px 0;
+}
+
+#header  .region-header {
+  margin: 10px 0;
+}
+
+#logo {
+  margin: 5px auto;
+  padding: 0;
+  float: none;
+}
+
+#site-name {
+  font-size: 1.6em;
+  padding: 25px 0 10px 10px;
+}
+
+#site-slogan {
+  font-size: 1em;
+  text-transform: none;
+}
+
+.region-secondary-content .block {
+  margin-bottom: 0;
+  font-size: 1em;
+}
+
+#menu-bar {
+  padding: 0;
+}
+
+#menu-bar .block {
+  clear: both;
+  float: none;
+}
+
+#menu-bar .menu-wrapper ul ul {
+  position: relative;
+  top: 0;
+  width: 100% !important;
+}
+
+#menu-bar .menu-wrapper > ul,
+#menu-bar .menu-wrapper > ul > li {
+  display: block;
+  float: none;
+  margin: 0;
+  border-bottom: 1px solid rgba(255,255,255,0.5);
+}
+
+#menu-bar .menu-wrapper ul ul li {
+  border-bottom: 1px solid #fff;
+  float: none !important;
+}
+
+#menu-bar .menu-wrapper ul ul li.first {
+  border-top: 1px solid #fff;
+}
+
+#menu-bar .sf-menu {
+  height: auto;
+  padding: 0;
+}

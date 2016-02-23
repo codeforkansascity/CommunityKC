@@ -1,0 +1,38 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Installation Webform Default Fields module routines
+ */
+
+/**
+ * Implements hook_enable().
+ */
+function webform_default_fields_enable() {
+  module_load_include('module', 'webform_default_fields');
+  foreach (webform_variable_get('webform_node_types') as $content_type) {
+    if (variable_get('webform_default_fields_nid_' . $content_type, 0)) {
+      $nid = _webform_default_fields_create_container_node($content_type);
+      variable_set('webform_default_fields_nid_' . $content_type, $nid);
+    }  
+  }
+  menu_rebuild();
+}
+
+/**
+ * Implements hook_uninstall().
+ */  //webform_node_types()
+function webform_default_fields_uninstall() {
+  foreach (node_type_get_types() as $content_type) {
+    $nid = variable_get('webform_default_fields_nid_' . $content_type->type, 0);
+    if ($nid) {
+      variable_del('webform_default_fields_nid_' . $content_type->type);
+      node_delete($nid);
+    }
+    $allow_content_type = variable_get('webform_default_fields_allow_node_' . $content_type->type, FALSE);
+    if ($allow_content_type) {
+      variable_del('webform_default_fields_allow_node_' . $content_type->type);
+    }
+  }
+}
