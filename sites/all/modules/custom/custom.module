@@ -1,1 +1,69 @@
 <?php
+
+/** 
+ * implements hook_form_user_profile_form_alter()
+ * Used to add the similar project preferences to the user preferences form.
+ */
+function custom_form_user_profile_form_alter(&$form, &$form_state) {
+	# watchdog('custom', 'user profile form !form', array('!form' => var_export($form,TRUE)), WATCHDOG_DEBUG);
+	$account = new stdClass;
+	$account->uid = $form_state['build_info']['args'][0]->uid;
+	$form['notification'] = array(
+		'#type' => 'fieldset',
+		'#title' => t('Notification settings'),
+		'#weight' => '6',
+		'#collapsible' => TRUE,
+		'similar' => array(
+			#'#type' => 'markup',
+			'#prefix' => '<h2>',
+			'#markup' => t('Notify me about similar projects:'),
+			'#suffix' => '</h2>',
+			'#weight' => 1,
+		),
+		'applies_when' => array(
+			'#prefix' => '<p>',
+			'#markup' => t('You will only be notified if you have entered one or more projects'),
+			'#suffix' => '</p>',
+			'#weight' => 0,
+		),
+		'neighborhood' => array(
+			'#type' => 'checkbox',
+			'#title' => t('In the same neighborhood'),
+			'#default_value' => 0,
+			'#description' => t('Receive emails letting you know when projects are added in the same neighborhood as the projects you have entered.'),			
+			'#weight' => 5,
+		),
+		'project_type' => array(
+			'#type' => 'checkbox',
+			'#title' => t('Of the same type'),
+			'#default_value' => 0,
+			'#description' => t('Receive emails letting you know when projects are added of the same type as the projects you have entered.'),
+			'#weight' => 10,
+		),
+		'match_Type' => array(
+			'#type' => 'checkbox',
+			'#title' => t('Only same neighborhood and type'),
+			'#default_value' => 0,
+			'#description' => t('Receive emails only when a new project matches both neighborhood and type as one or more projects you have entered.'),
+			'#weight' => 15,
+		),
+	);	
+}
+
+/**
+ * implements hook_user_presave()
+ * Saves the user preferences data added to the user profile form
+ */
+function custom_user_presave(&$edit, $account, $category) {
+
+}
+
+/**
+ * Determines if user has authored at least one content node
+ * @param int $uid - user id of user in question
+ * @param string $type - node type, leave NULL for any
+ * @return bool TRUE if user has authored a content node, FALSE if not.
+ */
+function _custom_user_is_author($uid, $type = NULL) {
+
+}
