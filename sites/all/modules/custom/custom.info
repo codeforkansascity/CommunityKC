@@ -1,0 +1,8 @@
+name = Custom
+description = Custom functionality and alterations for CommunityKC.org by CodeForKC.org
+core = 7.x
+version = 7.x-1.0
+package = Custom
+
+dependencies[] = services
+dependencies[] = rest_server

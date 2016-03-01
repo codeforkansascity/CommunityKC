@@ -1,0 +1,9 @@
+<?php
+
+function custom_install() {
+	
+}
+
+function custom_uninstall() {
+	
+}
