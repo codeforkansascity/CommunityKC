@@ -58,5 +58,6 @@ function custom_enable() {
 }
 
 function custom_disable() {	
-	field_delete_field('field_project_notify_prefs');
+	# enable if you want to delete all user prefs info when turning off the module.
+	// field_delete_field('field_project_notify_prefs');
 }

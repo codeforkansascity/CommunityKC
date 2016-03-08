@@ -80,6 +80,11 @@ function custom_user_presave(&$edit, $account, $category) {
 	}
 }
 
+/**
+ * Flattens the field structure into a simple array of values
+ * @param stdClass $account loaded user object
+ * @return array list of string values stored in all field deltas.
+ */
 function custom_user_read_project_notify_field($account) {
 	$prefs = array();
 	if (property_exists($account,'field_project_notify_prefs')) {
