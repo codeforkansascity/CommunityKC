@@ -6,46 +6,57 @@
  */
 function custom_form_user_profile_form_alter(&$form, &$form_state) {
 	# watchdog('custom', 'user profile form !form', array('!form' => var_export($form,TRUE)), WATCHDOG_DEBUG);
-	$account = new stdClass;
-	$account->uid = $form_state['build_info']['args'][0]->uid;
+	# $account = new stdClass;
+	$account = user_load($form_state['build_info']['args'][0]->uid);
+	# $account->uid = $form_state['build_info']['args'][0]->uid;
+	
+	# this is a prettier version of the default widget, which we will hide.
+	# otherwise admin would still see it.
+	unset($form['field_project_notify_prefs']);
+	$prefs = custom_user_read_project_notify_field($account);
 	$form['notification'] = array(
 		'#type' => 'fieldset',
 		'#title' => t('Notification settings'),
 		'#weight' => '6',
 		'#collapsible' => TRUE,
-		'similar' => array(
-			#'#type' => 'markup',
-			'#prefix' => '<h2>',
-			'#markup' => t('Notify me about similar projects:'),
-			'#suffix' => '</h2>',
-			'#weight' => 1,
-		),
+		'#access' => _custom_user_is_author($account, 'project'),
 		'applies_when' => array(
 			'#prefix' => '<p>',
-			'#markup' => t('You will only be notified if you have entered one or more projects'),
+			'#markup' => t('After you have entered one or more projects you can choose to be notified about similar projects'),
 			'#suffix' => '</p>',
 			'#weight' => 0,
 		),
-		'neighborhood' => array(
-			'#type' => 'checkbox',
-			'#title' => t('In the same neighborhood'),
-			'#default_value' => 0,
-			'#description' => t('Receive emails letting you know when projects are added in the same neighborhood as the projects you have entered.'),			
-			'#weight' => 5,
+		'similar' => array(
+			'#prefix' => '<h2>',
+			'#markup' => t('Notify me about new projects that are:'),
+			'#suffix' => '</h2>',
+			'#weight' => 1,
 		),
-		'project_type' => array(
-			'#type' => 'checkbox',
-			'#title' => t('Of the same type'),
-			'#default_value' => 0,
-			'#description' => t('Receive emails letting you know when projects are added of the same type as the projects you have entered.'),
-			'#weight' => 10,
+		'project_notify_prefs' => array( 
+			'neighborhood' => array(
+				'#type' => 'checkbox',
+				'#title' => t('In the same neighborhood as one of my projects'),
+				'#default_value' => in_array('neighborhood', $prefs),
+				'#weight' => 5,
+			),
+			'project_type' => array(
+				'#type' => 'checkbox',
+				'#title' => t('The same type as one of my projects'),
+				'#default_value' => in_array('project_type', $prefs),
+				'#weight' => 10,
+			),
+			'match_both' => array(
+				'#type' => 'checkbox',
+				'#title' => t('Both in the same neighborhood and of the same type as one of my projects'),
+				'#default_value' => in_array('match_both', $prefs),
+				'#weight' => 15,
+			),
 		),
-		'match_Type' => array(
-			'#type' => 'checkbox',
-			'#title' => t('Only same neighborhood and type'),
-			'#default_value' => 0,
-			'#description' => t('Receive emails only when a new project matches both neighborhood and type as one or more projects you have entered.'),
-			'#weight' => 15,
+		'email_notice' => array(
+			'#prefix' => '<p>',
+			'#markup' => t('You will receive notification emails from this website when projects that match your preferences are added.'),
+			'#suffix' => '</p>',
+			'#weight' => 20,
 		),
 	);	
 }
@@ -55,15 +66,56 @@ function custom_form_user_profile_form_alter(&$form, &$form_state) {
  * Saves the user preferences data added to the user profile form
  */
 function custom_user_presave(&$edit, $account, $category) {
+	# reset field
+	$account->field_project_notify_prefs = array(LANGUAGE_NONE => array());
+	# adjust based on form
+	if ($edit['neighborhood']) {
+		$account->field_project_notify_prefs[LANGUAGE_NONE][]['value'] = 'neighborhood';
+	} 
+	if ($edit['project_type']) {
+		$account->field_project_notify_prefs[LANGUAGE_NONE][]['value'] = 'project_type';
+	}
+	if ($edit['match_both']) {
+		$account->field_project_notify_prefs[LANGUAGE_NONE][]['value'] = 'match_both';
+	}
+}
 
+function custom_user_read_project_notify_field($account) {
+	$prefs = array();
+	if (property_exists($account,'field_project_notify_prefs')) {
+		$fld = $account->field_project_notify_prefs[LANGUAGE_NONE];
+		foreach($fld as $val) {
+			$prefs[] = $val['value'];
+		}
+	}
+	return $prefs;
 }
 
 /**
- * Determines if user has authored at least one content node
+ * Determines if user has authored at least one content node or is admin
  * @param int $uid - user id of user in question
  * @param string $type - node type, leave NULL for any
  * @return bool TRUE if user has authored a content node, FALSE if not.
  */
-function _custom_user_is_author($uid, $type = NULL) {
-
+function _custom_user_is_author($account, $type = NULL) {
+	$rid = user_role_load_by_name('admin')->rid;
+	# admin users always treated as authors
+	if (user_has_role($rid, $account)) {
+		return true;
+	}
+	# else check for authorship	
+	$node_count_q = db_select('node', 'n')
+	->fields('n', array('nid')) 
+	->condition('uid', $account->uid, '=');
+	# add condition if the type param is specified.
+	if (!empty($type)) {
+		$node_count_q->condition('type', $type, '=');
+	}
+	# continue defining and executing the query
+	$node_count = $node_count_q
+	->countQuery()
+	->execute()->fetchField();	
+	# count query should return a numeric number of nodes with the user as the author
+	# result is true if they have more than 0 nodes authored
+	return $node_count > 0;
 }

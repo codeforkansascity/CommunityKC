@@ -7,3 +7,56 @@ function custom_install() {
 function custom_uninstall() {
 	
 }
+
+/**
+ * Implements hook_enable()
+ * @see: http://drupal.stackexchange.com/questions/8253/how-to-add-extra-fields-to-user-profile
+ */
+function custom_enable() {
+	# Check if our field is not already created.
+	if (!field_info_field('field_project_notify_prefs')) {
+		$field = array(
+			'field_name' => 'field_project_notify_prefs',
+			'type' => 'list_text',
+			'active' => TRUE,
+			'locked' => TRUE,
+			'settings' => array(
+				'allowed_values' => array(
+					'neighborhood' => 'neighborhood',
+					'project_type' => 'project_type',
+					'match_both' => 'match_both'
+				),
+			),
+			'cardinality' => -1,
+		);
+		field_create_field($field);
+	}
+
+	# Create the instance on the bundle.
+	$instance = array(
+		'field_name' => 'field_project_notify_prefs',
+		'entity_type' => 'user',
+		'label' => 'Project Notify Prefs',
+		'bundle' => 'user',
+		'required' => FALSE,
+		'settings' => array(
+			'user_register_form' => 0
+		),
+		'widget' => array(
+			'type' => 'options_buttons',
+			'module' => 'options',
+			'active' => 1,			
+		),
+		'display' => array(
+			'default' => array(
+				'label' => 'hidden',
+				'type' => 'hidden',
+			),
+		),
+	);
+	field_create_instance($instance);
+}
+
+function custom_disable() {	
+	field_delete_field('field_project_notify_prefs');
+}
