@@ -8,6 +8,59 @@ function custom_uninstall() {
 	
 }
 
+function custom_schema() {
+	$schema = array();
+	$schema['custom_notify_email_queue'] = array(
+		'description' => 'Holds lists of notification emails to be sent. Records removed 30 days after sent triggered',
+		'fields' => array(
+			'queue_id' => array(
+				'description' => 'identity field for queue records.',
+				'type' => 'serial',
+				'size' => 'normal',
+				'unsigned' => TRUE,
+				'not null' => TRUE,
+			),
+			'uid' => array(
+				'description' => 'user uid mail is going to go to',
+				'type' => 'int',
+				'size' => 'normal',
+				'unsigned' => TRUE,
+				'not null' => TRUE,
+			),
+			'mail_type' => array(
+				'description' => 'string name identifying type of email to go out',
+				'type' => 'varchar',
+				'length' => 64,
+				'not null' => FALSE
+			),
+			'tokens' => array(
+				'description' => 'serialized array of tokens variables for the message',
+				'type' => 'blob',
+				'not null' => FALSE,
+			),
+			'created' => array(
+				'description' => 'timestamp when the record was enqueued',
+				'type' => 'int',
+				'size' => 'normal',
+				'unsigned' => TRUE,
+				'not null' => TRUE,
+			),
+			'sent' => array(
+				'description' => 'timestamp when mail was sent',
+				'type' => 'int',
+				'size' => 'normal',
+				'unsigned' => TRUE,
+				'not null' => FALSE,
+			),
+		),
+		'primary key' => array('custom_notify_email_queue'),
+		'indexes' => array(
+			'custom_notify_email_queue_sent' => array('sent'),
+		),
+	);
+	return $schema;
+}
+
 /**
  * Implements hook_enable()
  * @see: http://drupal.stackexchange.com/questions/8253/how-to-add-extra-fields-to-user-profile
