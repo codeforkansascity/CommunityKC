@@ -1,5 +1,16 @@
 <?php
 
+/* Drupal hooks for this module */
+
+function custom_node_presave($node) {
+	switch ($node->type) {
+		case 'project':
+			# run the project node presave
+			_custom_project_node_presave($node);
+			break;			
+	}
+}
+
 /** 
  * implements hook_form_user_profile_form_alter()
  * Used to add the similar project preferences to the user preferences form.
@@ -80,6 +91,8 @@ function custom_user_presave(&$edit, $account, $category) {
 	}
 }
 
+/* User related functions */
+
 /**
  * Flattens the field structure into a simple array of values
  * @param stdClass $account loaded user object
@@ -124,3 +137,23 @@ function _custom_user_is_author($account, $type = NULL) {
 	# result is true if they have more than 0 nodes authored
 	return $node_count > 0;
 }
+
+/* end user related functions */
+
+/* Project node type functions */
+
+function _custom_project_node_presave($node) {
+	if (empty($node->nid)) {
+		# only run if this is a new node
+		$neighborhood_tid = $node->field_neighborhood[LANGUAGE_NONE][0]['tid'];
+		$project_types = array();
+		foreach($node->field_project_type[LANGUAGE_NONE] as $delta=>$fld) {
+			$project_types[] = $fld['tid'];			
+		}
+		// query
+		// users with field_project_notify_prefs
+		// user is not $node->uid
+	}
+}
+
+/* end project node type functions */

@@ -58,7 +58,10 @@ function custom_schema() {
 			'custom_notify_email_queue_sent' => array('sent'),
 		),
 	);
-	return $schema;
+	$schema['custom_flat_user_project_types_and_neighborhoods'] = array(
+		
+	);
+ 	return $schema;
 }
 
 /**
@@ -114,3 +117,15 @@ function custom_disable() {
 	# enable if you want to delete all user prefs info when turning off the module.
 	// field_delete_field('field_project_notify_prefs');
 }
+
+/* module update functions */
+/**
+ * Add the mail queue table if it does not exist
+ */
+function custom_update_7001() {
+	if (!db_table_exists('custom_notify_email_queue')) {
+		$schema = custom_schema();
+		db_create_table('custom_notify_email_queue', $schema['custom_notify_email_queue']);
+	}
+}
+
