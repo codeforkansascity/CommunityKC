@@ -1,15 +1,8 @@
 <?php
 
-function custom_install() {
-	
-}
-
-function custom_uninstall() {
-	
-}
-
 function custom_schema() {
 	$schema = array();
+
 	$schema['custom_notify_email_queue'] = array(
 		'description' => 'Holds lists of notification emails to be sent. Records removed 30 days after sent triggered',
 		'fields' => array(
@@ -58,50 +51,57 @@ function custom_schema() {
 			'custom_notify_email_queue_sent' => array('sent'),
 		),
 	);
+	/*
 	$schema['custom_flat_user_project_types_and_neighborhoods'] = array(
 		
-	);
- 	return $schema;
+	); */
+ 	return array();//  $schema;
 }
 
 /**
  * Implements hook_enable()
  * @see: http://drupal.stackexchange.com/questions/8253/how-to-add-extra-fields-to-user-profile
+ * when creating fields you can use field_read_field() and field_read_instance() of an 
+ * interactively created field in order to see how the settings should look
+ * on a created field.
  */
-function custom_enable() {
+function custom_install() {
 	# Check if our field is not already created.
-	if (!field_info_field('field_project_notify_prefs')) {
+	if (!field_info_field('field_project_notification_prefs')) {
 		$field = array(
-			'field_name' => 'field_project_notify_prefs',
-			'type' => 'list_text',
+			'field_name' => 'field_project_notification_prefs',
+			'type' => 'number_integer',
 			'active' => TRUE,
 			'locked' => TRUE,
-			'settings' => array(
+			'module' => 'number',
+			'settings' => array( 
+			/* - not using on number field but here are names
 				'allowed_values' => array(
 					'neighborhood' => 'neighborhood',
 					'project_type' => 'project_type',
-					'match_both' => 'match_both'
-				),
+					'match_both' => 'match_both' */
 			),
-			'cardinality' => -1,
-		);
-		field_create_field($field);
+			'cardinality' => 1,
+			);
+			field_create_field($field);
 	}
 
 	# Create the instance on the bundle.
 	$instance = array(
-		'field_name' => 'field_project_notify_prefs',
+		'field_name' => 'field_project_notification_prefs',
 		'entity_type' => 'user',
-		'label' => 'Project Notify Prefs',
+		'label' => 'Project Notification Prefs',
 		'bundle' => 'user',
 		'required' => FALSE,
 		'settings' => array(
-			'user_register_form' => 0
+			'user_register_form' => 0,
+			'min' => 0,
+			'max' => 7,			
 		),
 		'widget' => array(
-			'type' => 'options_buttons',
-			'module' => 'options',
-			'active' => 1,			
+			'type' => 'number',
+			'module' => 'number',
+			'active' => 0,			
 		),
 		'display' => array(
 			'default' => array(
@@ -109,23 +109,10 @@ function custom_enable() {
 				'type' => 'hidden',
 			),
 		),
+		'description' => 'Stores checkbox prefs in bit form - 0 is no notification, 1 neighborhood, 2 is same type, 4 is same type and neighborhood. Checked boxes are populated from sum of choices - each corresponds to a bit in a binary number - 001 011 111 010 etc',
+		'default_value' => array(0 => array( 'value' => '0')),
 	);
 	field_create_instance($instance);
 }
 
-function custom_disable() {	
-	# enable if you want to delete all user prefs info when turning off the module.
-	// field_delete_field('field_project_notify_prefs');
-}
-
-/* module update functions */
-/**
- * Add the mail queue table if it does not exist
- */
-function custom_update_7001() {
-	if (!db_table_exists('custom_notify_email_queue')) {
-		$schema = custom_schema();
-		db_create_table('custom_notify_email_queue', $schema['custom_notify_email_queue']);
-	}
-}
 

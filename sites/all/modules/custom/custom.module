@@ -41,27 +41,18 @@ function custom_form_user_profile_form_alter(&$form, &$form_state) {
 			'#prefix' => '<h2>',
 			'#markup' => t('Notify me about new projects that are:'),
 			'#suffix' => '</h2>',
-			'#weight' => 1,
+			'#weight' => 5,
 		),
-		'project_notify_prefs' => array( 
-			'neighborhood' => array(
-				'#type' => 'checkbox',
-				'#title' => t('In the same neighborhood as one of my projects'),
-				'#default_value' => in_array('neighborhood', $prefs),
-				'#weight' => 5,
-			),
-			'project_type' => array(
-				'#type' => 'checkbox',
-				'#title' => t('The same type as one of my projects'),
-				'#default_value' => in_array('project_type', $prefs),
-				'#weight' => 10,
-			),
-			'match_both' => array(
-				'#type' => 'checkbox',
-				'#title' => t('Both in the same neighborhood and of the same type as one of my projects'),
-				'#default_value' => in_array('match_both', $prefs),
-				'#weight' => 15,
-			),
+		'project_notification_prefs' => array(
+  			'#type' => 'checkboxes',
+  			'#title' => t(''),
+  			'#options' => array(
+  				1 => t('In the same neighborhood as one of my projects'),
+  				2 => t('The same type as one of my projects'),
+  				4 => t('Both in the same neighborhood and of the same type as one of my projects'),  				
+  			),
+			'#weight' => 10,
+			'#default_value' => array(1=>1,2=>2),
 		),
 		'email_notice' => array(
 			'#prefix' => '<p>',
@@ -81,13 +72,13 @@ function custom_user_presave(&$edit, $account, $category) {
 	$account->field_project_notify_prefs = array(LANGUAGE_NONE => array());
 	# adjust based on form
 	if ($edit['neighborhood']) {
-		$account->field_project_notify_prefs[LANGUAGE_NONE][]['value'] = 'neighborhood';
+		$account->field_project_notify_prefs[LANGUAGE_NONE][]['value'] = 'neighborhood'; // 1
 	} 
 	if ($edit['project_type']) {
-		$account->field_project_notify_prefs[LANGUAGE_NONE][]['value'] = 'project_type';
+		$account->field_project_notify_prefs[LANGUAGE_NONE][]['value'] = 'project_type'; // 2
 	}
 	if ($edit['match_both']) {
-		$account->field_project_notify_prefs[LANGUAGE_NONE][]['value'] = 'match_both';
+		$account->field_project_notify_prefs[LANGUAGE_NONE][]['value'] = 'match_both'; // 4
 	}
 }
 
@@ -101,12 +92,29 @@ function custom_user_presave(&$edit, $account, $category) {
 function custom_user_read_project_notify_field($account) {
 	$prefs = array();
 	if (property_exists($account,'field_project_notify_prefs')) {
+		if (empty($account->field_project_notify_prefs)) {
+
+			$account->field_project_notify_prefs = array(LANGUAGE_NONE=>array());
+		}
 		$fld = $account->field_project_notify_prefs[LANGUAGE_NONE];
 		foreach($fld as $val) {
 			$prefs[] = $val['value'];
 		}
 	}
 	return $prefs;
+}
+
+/**
+ * field stores a bit total like 7 - this splits it to 3 thigns and then to an associate array the form alter can use for a default value 
+ * @param int $bit_total value stored in field
+ */
+function _custom_project_notify_field_default_value($bit_total) {
+	$bits = str_pad(decbin($bit_total),3,'0',STR_PAD_LEFT);
+	$bit_array = str_split($bits);
+	$result = array();
+	if ($bit_array[2]) { $result[] = 1; }
+	if ($bit_array[1]) { $result[] = 2; }
+	if ($bit_array[0]) { $result[] = 4; }
 }
 
 /**
