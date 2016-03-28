@@ -1,0 +1,14 @@
+name = User Login Bar
+description = Module that provides a new straight user login bar block
+package = User Login bar
+version = "7.x-1.x"
+core = "7.x"
+project = "userloginbar"
+
+
+; Information added by drupal.org packaging script on 2013-01-11
+version = "7.x-1.0"
+core = "7.x"
+project = "userloginbar"
+datestamp = "1357892066"
+

@@ -1,0 +1,383 @@
+/* Styles to support the theme settings */
+
+/* Left */
+.hl-l #branding {
+  float: left;
+  margin: 0 20px;
+}
+.hl-l .region-header {
+  float: right;
+  margin: 0 10px;
+}
+.hl-l .region-header .block {
+  display: inline;
+  clear: none;
+  margin-bottom: 0;
+}
+.hl-l #logo {
+  padding: 0 20px 7px 3px;
+}
+
+/* Right */
+.hl-r #branding {
+  float: right;
+  margin: 0 20px;
+}
+.hl-r .region-header {
+  float: left;
+  margin: 0 10px;
+}
+.hl-r .region-header .block {
+  display: inline;
+  clear: none;
+  margin-bottom: 0;
+}
+.hl-r #logo {
+  padding: 0 3px 7px 20px;
+}
+
+/* Centered */
+.hl-c #branding {
+  float: none;
+  margin: auto;
+  text-align: center;
+}
+.hl-c .region-header {
+  display: table;
+  float: none;
+  margin: 15px auto 0;
+  text-align: center;
+}
+.hl-c .region-header .block {
+  margin: auto;
+  display: inline;
+  text-align: left;
+  clear: none;
+}
+.hl-c .region-header .block-inner {
+  margin: 0 20px;
+}
+.hl-c #logo {
+  padding: 0 0 10px 0;
+}
+
+/* Image Alignment */
+.ia-l .field-type-image figure,
+.iat-l .field-type-image figure {
+  margin: 6px 15px 5px 0;
+}
+.ia-l .field-type-image figcaption,
+.iat-l .field-type-image figcaption {
+  margin: 5px 0;
+}
+
+.ia-r .field-type-image figure,
+.iat-r .field-type-image figure {
+  margin: 6px 0 5px 15px;
+}
+.ia-r .field-type-image figcaption,
+.iat-r .field-type-image figcaption {
+  margin: 5px 0;
+}
+
+.ia-c .field-type-image figure,
+.ia-n .field-type-image figure,
+.iat-c .field-type-image figure,
+.iat-n .field-type-image figure {
+  border: none;
+  padding: 10px 0;
+}
+
+.field-type-image.field-label-above {
+  margin-top: 0;
+}
+
+.field-type-image .field-label {
+  margin-bottom: 0.5em;
+}
+
+.field-type-image.field-label-inline .field-label {
+  margin-bottom: 0;
+  line-height: 1;
+}
+
+/* Override image alignment with short codes,
+   its takes a lot to override the theme settings for image alignment */
+body .image-left,
+body div.image-left,
+body div.image-left .field-type-image {
+  float: left;
+  margin: 4px 15px 0 0;
+  text-align: left;
+}
+body .image-left img,
+body div.image-left img,
+body div.image-left .field-type-image img {
+  text-align: left;
+  margin: 0;
+}
+body .image-right,
+body div.image-right,
+body div.image-right .field-type-image {
+  float: right;
+  margin: 4px 0 0 15px;
+  text-align: right;
+}
+body .image-right img,
+body div.image-right img,
+body div.image-right .field-type-image img {
+  text-align: right;
+  margin: 0;
+}
+body .image-center,
+body .image-center img,
+body div.image-center,
+body div.image-center .field-type-image {
+  text-align: center;
+}
+body .image-center,
+body div.image-center,
+body div.image-center .field-type-image img{
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+
+/* Background overlays */
+.bb-n .texture-overlay {
+  background-image: none;
+}
+.bb-h .texture-overlay {
+  background-image: url(../images/ts/hatch.png);
+}
+.bb-vl .texture-overlay {
+  background-image: url(../images/ts/line-vert.png);
+}
+.bb-hl .texture-overlay {
+  background-image: url(../images/ts/line-horiz.png);
+}
+.bb-g .texture-overlay {
+  background-image: url(../images/ts/grid.png);
+}
+.bb-d .texture-overlay {
+  background-image: url(../images/ts/dots.png);
+}
+/* Box shadows */
+.sc-n #page  {
+  -webkit-box-shadow:0 0 0 transparent;
+  -moz-box-shadow:0 0 0 transparent;
+  box-shadow:0 0 0 transparent;
+}
+.bs-l #page {
+  -webkit-box-shadow:0 0 10px rgba(76, 76, 76, 0.7);
+  -moz-box-shadow:0 0 10px rgba(76, 76, 76, 0.7);
+  box-shadow:0 0 10px rgba(76, 76, 76, 0.7);
+}
+.bs-d #page  {
+  -webkit-box-shadow:0 0 10px rgba(0, 0, 0, 0.9);
+  -moz-box-shadow:0 0 10px rgba(0, 0, 0, 0.9);
+  box-shadow:0 0 10px rgba(0, 0, 0, 0.9);
+}
+
+/* Bullets */
+.mb-n ul.menu {
+  padding: 0;
+}
+.mb-n ul li.leaf,
+.mb-n ul li.collapsed,
+.mb-n ul li.expanded {
+  list-style: none;
+  list-style-image: none;
+  padding: 0;
+}
+.mb-ah ul li.leaf,
+.mb-ah ul li.collapsed,
+.mb-ah ul li.expanded {
+  list-style-image: url(../images/ts/arrow-head.png);
+}
+.mb-ad ul.menu {
+  padding: 0 0 0 0.4em;
+}
+.mb-ad ul li.leaf,
+.mb-ad ul li.collapsed,
+.mb-ad ul li.expanded {
+  list-style-image: url(../images/ts/arrow-double.png);
+}
+.mb-ca ul.menu {
+  padding: 0 0 0 1.2em;
+}
+.mb-ca ul li.leaf,
+.mb-ca ul li.collapsed,
+.mb-ca ul li.expanded {
+  list-style-image: url(../images/ts/arrow-circle.png);
+}
+.mb-fa ul.menu {
+  padding: 0 0 0 1.2em;
+}
+.mb-fa ul li.leaf,
+.mb-fa ul li.collapsed,
+.mb-fa ul li.expanded {
+  list-style-image: url(../images/ts/arrow-fat.png);
+}
+.mb-sa ul.menu {
+  padding: 0 0 0 1.2em;
+}
+.mb-sa ul li.leaf,
+.mb-sa ul li.collapsed,
+.mb-sa ul li.expanded {
+  list-style-image: url(../images/ts/arrow-skinny.png);
+}
+
+/* Rounded corners */
+ul.primary li a,
+div.item-list ul.pager li {
+  -moz-border-radius: 2px;
+  -webkit-border-radius: 2px;
+  -khtml-border-radius: 2px;
+  border-radius: 2px;
+}
+
+input.form-submit,
+input.form-text,
+.rc-4 .node-teaser,
+.rc-4 .comment,
+.rc-4 .block-inner {
+  -moz-border-radius: 4px;
+  -webkit-border-radius: 4px;
+  -khtml-border-radius: 4px;
+  border-radius: 4px;
+}
+div.admin-panel,
+.rc-8 .node-teaser,
+.rc-8 .comment,
+.rc-8 .block-inner {
+  -moz-border-radius: 8px;
+  -webkit-border-radius: 8px;
+  -khtml-border-radius: 8px;
+  border-radius: 8px;
+}
+.rc-12 .node-teaser,
+.rc-12 .comment,
+.rc-12 .block-inner {
+  -moz-border-radius: 12px;
+  -webkit-border-radius: 12px;
+  -khtml-border-radius: 12px;
+  border-radius: 12px;
+}
+.rc-4 .block-title {
+  -moz-border-radius: 4px 4px 0 0;
+  -webkit-border-top-left-radius: 4px;
+  -webkit-border-top-right-radius: 4px;
+  -webkit-border-bottom-right-radius: 0;
+  -webkit-border-bottom-left-radius: 0;
+  -khtml-border-radius-topleft: 4px;
+  -khtml-border-radius-topright: 4px;
+  -khtml-border-radius-bottomright: 0;
+  -khtml-border-radius-bottomleft: 0;
+  border-radius: 4px 4px 0 0;
+}
+.rc-8 .block-title {
+  -moz-border-radius: 8px 8px 0 0;
+  -webkit-border-top-left-radius: 8px;
+  -webkit-border-top-right-radius: 8px;
+  -webkit-border-bottom-right-radius: 0;
+  -webkit-border-bottom-left-radius: 0;
+  -khtml-border-radius-topleft: 8px;
+  -khtml-border-radius-topright: 8px;
+  -khtml-border-radius-bottomright: 0;
+  -khtml-border-radius-bottomleft: 0;
+  border-radius: 8px 8px 0 0;
+}
+.rc-12 .block-title {
+  -moz-border-radius: 12px 12px 0 0;
+  -webkit-border-top-left-radius: 12px;
+  -webkit-border-top-right-radius: 12px;
+  -webkit-border-bottom-right-radius: 0;
+  -webkit-border-bottom-left-radius: 0;
+  -khtml-border-radius-topleft: 12px;
+  -khtml-border-radius-topright: 12px;
+  -khtml-border-radius-bottomright: 0;
+  -khtml-border-radius-bottomleft: 0;
+  border-radius: 12px 12px 0 0;
+}
+/* Date/Calendar */
+.calendar-calendar div.date-nav {
+  border: 0;
+  padding: 1px;
+}
+.calendar-calendar td {
+  text-align: center;
+}
+.calendar-calendar th.days {
+  border: 0;
+}
+.calendar-calendar td.calendar-agenda-hour {
+  border-style: solid none none;
+}
+.calendar-calendar td.calendar-agenda-items {
+  border-style: solid;
+}
+.calendar-calendar td.calendar-agenda-hour {
+  border-style: none none solid solid;
+  border-width: 1px;
+}
+.calendar-calendar td.calendar-agenda-hour .calendar-hour {
+  padding: 0 5px;
+  white-space: nowrap;
+}
+.calendar-calendar div.calendar {
+  font-size: 1em;
+}
+.calendar-calendar td .inner div.calendar div {
+  background: #eee;
+  border: 0;
+  padding: 0 5px;
+}
+.calendar-calendar td .inner div.calendar div a {
+  padding: 0;
+  background: #eee;
+  font-weight: 700;
+  text-decoration: underline;
+}
+.calendar-calendar td .inner div,
+.calendar-calendar td .inner div a {
+  border-bottom: 1px solid #fff;
+}
+.view-content .calendar-calendar ul.inline {
+  padding: 0 0 10px;
+  display: block;
+}
+.view-content .calendar-calendar ul.inline li {
+  margin-right: 2px;
+  -moz-border-radius: 2px;
+  -webkit-border-radius: 2px;
+  border-radius: 2px;
+}
+
+/* Main menu position - left is default */
+/* Center */
+.mbp-c #menu-bar .menu-wrapper {
+  display: table;
+  margin: 0 auto;
+  text-align: center;
+}
+.mbp-c #menu-bar .menu-wrapper ul {
+  text-align: left;
+}
+/* IE6/7 */
+.ie6-7 .mbp-c #menu-bar .menu-wrapper  ul {
+	float: left;
+	position: relative;
+	left: 50%;
+}
+.ie6-7 .mbp-c #menu-bar .menu-wrapper  .sf-menu ul li {
+	left: 0;
+}
+.ie6-7 .mbp-c #menu-bar .menu-wrapper  .sf-menu li {
+	left: -50%;
+}
+/* Right */
+.mbp-r #menu-bar .menu-wrapper {
+  float: right;
+}

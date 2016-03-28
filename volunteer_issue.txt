@@ -1,0 +1,4 @@
+volunteer button for projects and way for users to sign up.
+maybe link to email form.
+interested users could click on the volunteer button and it would store in a field
+project authors can see the list of users on their project view page.

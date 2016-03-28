@@ -1,0 +1,175 @@
+<?php
+
+/**
+ * @file
+ * Taxonomy Term Google Maps module
+ *
+ * Provides a Google Maps link/map for taxonomy terms.
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function term_gmap_menu() {
+  $items['admin/config/services/term_gmap'] = array(
+    'title' => 'Taxonomy Term Google Maps',
+    'access arguments' => array('administer site configuration'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('term_gmap_term_settings'),
+    'access arguments' => array('administer site configuration'),
+    'description' => 'Configure Term map settings.',
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['admin/config/services/term_gmap/terms'] = array(
+    'title' => 'Term Maps settings',
+    'access arguments' => array('administer site configuration'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('term_gmap_term_settings'),
+    'access arguments' => array('administer site configuration'),
+    'description' => 'Configure Term map settings.',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+  );
+  $items['admin/config/services/term_gmap/settings'] = array(
+    'title' => 'Google Maps Settings',
+    'access arguments' => array('administer site configuration'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('term_gmap_admin_settings'),
+    'description' => 'Configure Term map settings.',
+    'type' => MENU_LOCAL_ACTION,
+  );
+
+  return $items;
+}
+/**
+ * Implements hook_block_info().
+ */
+function term_gmap_block_info() {
+  $blocks['term_gmap'] = array(
+    'info' => t('Term Google map'),
+    'cache' => DRUPAL_CACHE_PER_ROLE,
+  );
+  return $blocks;
+}
+/**
+ * Implements hook_block_view().
+ */
+function term_gmap_block_view() {
+  if (arg(0) == 'taxonomy' && arg(1) == 'term') {
+    $termid = arg(2);
+    $result = db_query('SELECT tid FROM {term_gmap_term} WHERE tid = :id', array(':id' => $termid));
+    if ($result->rowCount() > 0) {
+      $term = taxonomy_term_load($termid);
+      $title = check_plain($term->name);
+      $width = variable_get('term_gmap_width', 250);
+      $height = variable_get('term_gmap_height', 250);
+      drupal_add_js('http://maps.googleapis.com/maps/api/js?sensor=false', 'external');
+      drupal_add_js(drupal_get_path('module', 'term_gmap') . '/js/term_gmap.js');
+      drupal_add_js(array('term_gmap' => array('title' => $title)), array('type' => 'setting'));
+      $block['content'] = '<div id="map_canvas" style="height:' . $width . 'px;width:' . $height . 'px"></div>';
+      if (variable_get('term_gmap_large') == TRUE) {
+        $map_address_url = "http://maps.google.com/maps?hl=en&amp;z=10&amp;iwloc=A&amp;q=" . $title;
+        $block['content'] .= '<p class="term-gmap-link">' . l(t("View larger map"), $map_address_url, array("attributes" => array("target" => "_blank"))) . '</p>';
+      }
+      return $block;
+    }
+  }
+}
+/**
+ * Admin Settings Page.
+ */
+function term_gmap_admin_settings($form, &$form_state) {
+  $form['term_gmap_width'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Default width'),
+    '#default_value' => variable_get('term_gmap_width', 250),
+    '#size' => 2,
+    '#maxlength' => 3,
+    '#element_validate' => array('element_validate_number'),
+    '#description' => t('The default width of a Google map.'),
+    '#required' => TRUE,
+  );
+  $form['term_gmap_height'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Default height'),
+    '#default_value' => variable_get('term_gmap_height', 250),
+    '#size' => 2,
+    '#maxlength' => 3,
+    '#element_validate' => array('element_validate_number'),
+    '#description' => t('The default height of a Google map.'),
+    '#required' => TRUE,
+  );
+  $form['term_gmap_large'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('View larger map'),
+    '#default_value' => variable_get('term_gmap_large', FALSE),
+    '#description' => t('Open Google map in a new window.'),
+  );
+  return system_settings_form($form);
+}
+/**
+ * Taxonomy terms builder form.
+ */
+function term_gmap_term_settings($form, $form_state) {
+  $default_values = term_gmap_get_maped_terms();
+  $vocabularies = taxonomy_get_vocabularies();
+  foreach ($vocabularies as $vocabulary) {
+    $key = $vocabulary->vid;
+    $value = check_plain($vocabulary->name);
+    $form['terms_fieldset' . $key] = array(
+      '#title' => t($value),
+      '#type' => 'fieldset',
+      '#description' => '',
+      '#tree' => TRUE,
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+    );
+    $vocabulary_terms_array = array();
+    $vid = $vocabulary->vid;
+    $vocabulary_terms = taxonomy_get_tree($vid);
+    foreach ($vocabulary_terms as $item) {
+      $key_term = $item->tid;
+      $value_term = $item->name;
+      $vocabulary_terms_array[$key_term] = $value_term;
+    }
+    $form['terms_fieldset' . $key]['term_gmap_terms' . $key] = array(
+      '#type'             => 'checkboxes',
+      '#position'         => 'left' ,
+      '#options'          => $vocabulary_terms_array ,
+      '#default_value'    => $default_values,
+    );
+  }
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save'),
+    '#submit' => array('term_gmap_admin_settings_submit'),
+  );
+  return $form;
+}
+/**
+ * Get the list of selected taxonomy terms.
+ */
+function term_gmap_get_maped_terms() {
+  $default_values = array();
+  $result = db_query("SELECT tid FROM {term_gmap_term}");
+  $default_values = $result->fetchCol();
+  return $default_values;
+}
+/**
+ * Taxonomy Term Google Maps #process function.
+ */
+function term_gmap_admin_settings_submit($form, $form_state) {
+  db_truncate('term_gmap_term')->execute();
+  $vocabularies = taxonomy_get_vocabularies();
+  foreach ($vocabularies as $vocabulary) {
+    $key = $vocabulary->vid;
+    $checked = array_filter($form_state['values']['terms_fieldset' . $key]['term_gmap_terms' . $key]);
+    foreach ($checked as $value) {
+      db_insert('term_gmap_term')
+      ->fields(array(
+      'tid' => $value,
+      ))
+      ->execute();
+    }
+  }
+  drupal_set_message(t('The selected terms have been saved.'));
+}
