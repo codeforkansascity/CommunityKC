@@ -23,8 +23,13 @@ function custom_form_user_profile_form_alter(&$form, &$form_state) {
 	
 	# this is a prettier version of the default widget, which we will hide.
 	# otherwise admin would still see it.
-	unset($form['field_project_notify_prefs']);
-	$prefs = custom_user_read_project_notify_field($account);
+	unset($form['field_project_notification_prefs']);
+	$prefs_bit_value = 0;
+	if (!empty($account->field_project_notification_prefs) ) {
+		$prefs_bit_value = $account->field_project_notification_prefs[LANGUAGE_NONE][0]['value'];
+	}
+	$notify_prefs = _custom_project_notify_field_default_value($prefs_bit_value);
+	
 	$form['notification'] = array(
 		'#type' => 'fieldset',
 		'#title' => t('Notification settings'),
@@ -52,7 +57,7 @@ function custom_form_user_profile_form_alter(&$form, &$form_state) {
   				4 => t('Both in the same neighborhood and of the same type as one of my projects'),  				
   			),
 			'#weight' => 10,
-			'#default_value' => array(1=>1,2=>2),
+			'#default_value' => $notify_prefs, // array(1=>1,2=>2),
 		),
 		'email_notice' => array(
 			'#prefix' => '<p>',
@@ -69,52 +74,35 @@ function custom_form_user_profile_form_alter(&$form, &$form_state) {
  */
 function custom_user_presave(&$edit, $account, $category) {
 	# reset field
-	$account->field_project_notify_prefs = array(LANGUAGE_NONE => array());
+	//$account->field_project_notify_prefs = array(LANGUAGE_NONE => array());
 	# adjust based on form
-	if ($edit['neighborhood']) {
-		$account->field_project_notify_prefs[LANGUAGE_NONE][]['value'] = 'neighborhood'; // 1
-	} 
-	if ($edit['project_type']) {
-		$account->field_project_notify_prefs[LANGUAGE_NONE][]['value'] = 'project_type'; // 2
+	# we can express the selection of preferences in one number by summing all the non zero values in the array from the form.
+	$prefs_sum = 0;
+	if (!empty($edit['project_notification_prefs'])) {
+		foreach($edit['project_notification_prefs'] as $key=>$value) {
+			$prefs_sum += $value;
+		}
 	}
-	if ($edit['match_both']) {
-		$account->field_project_notify_prefs[LANGUAGE_NONE][]['value'] = 'match_both'; // 4
-	}
+	$account->field_project_notification_prefs[LANGUAGE_NONE][0]['value'] = $prefs_sum;
+
 }
 
 /* User related functions */
 
 /**
- * Flattens the field structure into a simple array of values
- * @param stdClass $account loaded user object
- * @return array list of string values stored in all field deltas.
- */
-function custom_user_read_project_notify_field($account) {
-	$prefs = array();
-	if (property_exists($account,'field_project_notify_prefs')) {
-		if (empty($account->field_project_notify_prefs)) {
-
-			$account->field_project_notify_prefs = array(LANGUAGE_NONE=>array());
-		}
-		$fld = $account->field_project_notify_prefs[LANGUAGE_NONE];
-		foreach($fld as $val) {
-			$prefs[] = $val['value'];
-		}
-	}
-	return $prefs;
-}
-
-/**
- * field stores a bit total like 7 - this splits it to 3 thigns and then to an associate array the form alter can use for a default value 
+ * field stores a bit total like 7 - this splits it to 3 things and then to an assoc array the form alter can use for a default value 
+ * $bit_array is 3 0 or 1 digits representing highest to lowest - left side is highest to array[0] is the 4 digit position.
  * @param int $bit_total value stored in field
  */
 function _custom_project_notify_field_default_value($bit_total) {
 	$bits = str_pad(decbin($bit_total),3,'0',STR_PAD_LEFT);
 	$bit_array = str_split($bits);
-	$result = array();
-	if ($bit_array[2]) { $result[] = 1; }
-	if ($bit_array[1]) { $result[] = 2; }
-	if ($bit_array[0]) { $result[] = 4; }
+	$result = array(
+		1 => $bit_array[2] ? 1 : 0,  // same neighborhood
+		2 => $bit_array[1] ? 2 : 0,  // same type
+		4 => $bit_array[0] ? 4 : 0   // same type and neighborhood
+	);
+	return $result;
 }
 
 /**
