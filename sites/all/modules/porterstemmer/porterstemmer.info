@@ -1,0 +1,17 @@
+; $Id: porterstemmer.info,v 1.5 2010/01/26 00:33:10 jhodgdon Exp $
+name = Porter Stemmer
+description = "Improves American English language searching by simplifying related words to their root (conjugations, plurals, ...)."
+core = 7.x
+package = "Search"
+files[] = porterstemmer.module
+files[] = porterstemmer.test
+
+
+
+
+; Information added by drupal.org packaging script on 2010-12-03
+version = "7.x-1.0"
+core = "7.x"
+project = "porterstemmer"
+datestamp = "1291405269"
+

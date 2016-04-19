@@ -55,7 +55,7 @@ function custom_schema() {
 	$schema['custom_flat_user_project_types_and_neighborhoods'] = array(
 		
 	); */
- 	return array();//  $schema;
+ 	return $schema;
 }
 
 /**
