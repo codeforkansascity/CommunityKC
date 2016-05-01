@@ -1,6 +1,53 @@
 <?php
 
-/* Drupal hooks for this module */
+/* webform intercept - mail to person on project contact
+   volunteer form
+   this is confusing but we drill down from the project url to load the
+   project node and find the contact person.
+*/
+function custom_mail_alter(&$message) {
+	// check for webform
+	if ($message['id'] == 'webform_submission') {
+		// check for node id 999 which is the volunteer form.
+		if ($message['params']) {
+			// search message body for url
+			$msg_body = $message['params']['message'];
+			$matches = array();
+			// preg_match
+			$has_match = preg_match("/This person has expressed interest in volunteering for\s*.*?:\s*(http.*?)\s/", $msg_body, $matches);
+			if ($has_match && count($matches) == 2) {
+				$url = $matches[1];
+				$node_id = _custom_find_node_id_from_project_url($url);
+				if ($node_id) {
+					$project = node_load($node_id);
+					$contact_email = $project->field_lead_contact_email[LANGUAGE_NONE][0]['value'];
+					$contact_name = $project->field_lead_contact_person[LANGUAGE_NONE][0]['value'];
+					$message['to'] .= ',' . $contact_email;
+				}
+			}
+		}
+	}
+}
+/**
+ * Find node id from a given url and path
+ * volunteer form
+ */
+function _custom_find_node_id_from_project_url($url) {
+	global $base_url;
+	$parsed = parse_url($url);
+	if ($parsed && !empty($parsed['path'])) {
+		// expecting path to start with a /
+		$path = strpos($parsed['path'],'/') === 0 ? substr($parsed['path'],1) : $parsed['path'];
+		$node_path = drupal_get_normal_path($path);
+		$nid = str_replace('node/', '', $node_path);
+		return $nid;
+	}
+	return false;
+}
+
+/* Drupal hooks for this module
+* notifications
+ */
 
 function custom_node_presave($node) {
 	switch ($node->type) {
@@ -14,6 +61,7 @@ function custom_node_presave($node) {
 /** 
  * implements hook_form_user_profile_form_alter()
  * Used to add the similar project preferences to the user preferences form.
+ * notifications
  */
 function custom_form_user_profile_form_alter(&$form, &$form_state) {
 	# watchdog('custom', 'user profile form !form', array('!form' => var_export($form,TRUE)), WATCHDOG_DEBUG);
@@ -29,7 +77,7 @@ function custom_form_user_profile_form_alter(&$form, &$form_state) {
 		$prefs_bit_value = $account->field_project_notification_prefs[LANGUAGE_NONE][0]['value'];
 	}
 	$notify_prefs = _custom_project_notify_field_default_value($prefs_bit_value);
-	
+
 	$form['notification'] = array(
 		'#type' => 'fieldset',
 		'#title' => t('Notification settings'),
@@ -71,6 +119,7 @@ function custom_form_user_profile_form_alter(&$form, &$form_state) {
 /**
  * implements hook_user_presave()
  * Saves the user preferences data added to the user profile form
+ * notifications
  */
 function custom_user_presave(&$edit, $account, $category) {
 	# reset field
@@ -93,6 +142,7 @@ function custom_user_presave(&$edit, $account, $category) {
  * field stores a bit total like 7 - this splits it to 3 things and then to an assoc array the form alter can use for a default value 
  * $bit_array is 3 0 or 1 digits representing highest to lowest - left side is highest to array[0] is the 4 digit position.
  * @param int $bit_total value stored in field
+ * notifications
  */
 function _custom_project_notify_field_default_value($bit_total) {
 	$bits = str_pad(decbin($bit_total),3,'0',STR_PAD_LEFT);
@@ -110,6 +160,7 @@ function _custom_project_notify_field_default_value($bit_total) {
  * @param int $uid - user id of user in question
  * @param string $type - node type, leave NULL for any
  * @return bool TRUE if user has authored a content node, FALSE if not.
+ * notifications
  */
 function _custom_user_is_author($account, $type = NULL) {
 	$rid = user_role_load_by_name('admin')->rid;
@@ -136,15 +187,21 @@ function _custom_user_is_author($account, $type = NULL) {
 
 /* end user related functions */
 
-/* Project node type functions */
-
+/* Project node type functions 
+* notifications
+*/
 function _custom_project_node_presave($node) {
 	if (empty($node->nid)) {
-		# only run if this is a new node
-		$neighborhood_tid = $node->field_neighborhood[LANGUAGE_NONE][0]['tid'];
+		# only run if this is a new node and has a neighborhood set
+		$neighborhood_tid = 0;
+		if (!empty($node->field_neighborhood)) {
+			$neighborhood_tid = $node->field_neighborhood[LANGUAGE_NONE][0]['tid'];
+		}
 		$project_types = array();
-		foreach($node->field_project_type[LANGUAGE_NONE] as $delta=>$fld) {
-			$project_types[] = $fld['tid'];			
+		if (!empty($node->field_project_type)) { 
+			foreach($node->field_project_type[LANGUAGE_NONE] as $delta=>$fld) {
+				$project_types[] = $fld['tid'];			
+			}
 		}
 		// query
 		// users with field_project_notify_prefs
