@@ -6,3 +6,5 @@ package = Custom
 
 dependencies[] = services
 dependencies[] = rest_server
+dependencies[] = features
+dependencies[] = custom_user_feature
