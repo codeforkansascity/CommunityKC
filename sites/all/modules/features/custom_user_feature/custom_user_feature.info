@@ -1,0 +1,14 @@
+name = custom_user_feature
+core = 7.x
+package = Features
+dependencies[] = features
+dependencies[] = number
+dependencies[] = text
+features[features_api][] = api:2
+features[field_base][] = field_full_name
+features[field_base][] = field_project_notification_prefs
+features[field_instance][] = user-user-field_full_name
+features[field_instance][] = user-user-field_project_notification_prefs
+features[user_role][] = admin
+features[user_role][] = communitykc
+project path = sites/all/modules/features
