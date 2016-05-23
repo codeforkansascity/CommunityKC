@@ -2,6 +2,26 @@
 /* include file imports */
 require_once('custom.user.inc');
 
+/**
+ * Implements hook_menu
+ * @return array
+ */
+function custom_menu() {
+	$items = array();
+  // Misc
+  // one-time data run
+  /*
+  $items['run_user_map'] = array(
+    'type' => MENU_CALLBACK,
+    'title' => 'Run User Map',
+    'page callback' => '_custom_page_map_users',
+    'description' => 'One time runs user maps to projects.',
+    'access callback' => TRUE,
+    'file' => 'custom.user.inc',
+    'menu_name' => 'devel',
+  ); */
+  return $items;
+}
 /* webform intercept - mail to person on project contact
    volunteer form
    this is confusing but we drill down from the project url to load the

@@ -131,3 +131,53 @@ function _custom_project_notify_field_default_value($bit_total) {
 	);
 	return $result;
 }
+
+/**
+* Used for one-time mapping users to projects
+*/
+function custom_map_user_to_project($nid, $full_name, $email) {
+ 	# load project node
+ 	echo "updating $nid..."; 	
+	$node = node_load($nid);
+	echo "with user $email\n";	
+	$user = user_load_by_mail($email);
+	if ($user) {		
+		$uid = $user->uid;
+		echo "\tfound user $uid\n";
+	}	
+	else {
+		$user = user_load_by_name($email);
+		if ($user) {
+			echo "\tfound by name..";
+			if (empty($user->mail)) {
+				$user->mail = $email;
+				user_save($user);
+				echo "updated email.\n";
+			}
+			$uid = $user->uid;			
+		}
+		else {
+		# create user
+		$account = new stdClass;
+		$account->is_new = true;
+		$account->name = $email;
+		$account->mail = $email;
+		$account->status = 1;
+		$account->field_full_name = array(LANGUAGE_NONE=>array(0=>array('value'=>$full_name)));
+		$account->pass = $node->title . $full_name;
+		user_save($account);
+		$uid = $account->uid;
+		echo "\tcreated user $uid\n";
+		}
+	}
+	$node->uid = $uid;
+	node_save($node);
+	watchdog('custom', 'custom user map to project !nid, !fn, !email', array('!nid'=>$nid, '!fn'=>$full_name, '!email' => $email), WATCHDOG_INFO);
+}
+
+function _custom_page_map_users() {
+	echo "<h1>User Mapping</h1>\n";
+	echo "<pre>\n";
+// add custom user map calls here if needed again
+	echo "</pre>\n";
+}
