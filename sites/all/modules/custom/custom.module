@@ -84,11 +84,13 @@ function custom_node_presave($node) {
 * notifications
 */
 function _custom_project_node_presave($node) {
-	if (empty($node->nid)) {
+	if (true || empty($node->nid)) {
 		# only run if this is a new node and has a neighborhood set
-		$neighborhood_tid = 0;
+		$neighborhoods = array();
 		if (!empty($node->field_neighborhood)) {
-			$neighborhood_tid = $node->field_neighborhood[LANGUAGE_NONE][0]['tid'];
+			foreach($node->field_neighborhood[LANGUAGE_NONE] as $delta=>$fld) {
+				$neighborhoods[] = $fld['tid'];
+			}
 		}
 		$project_types = array();
 		if (!empty($node->field_project_type)) { 
@@ -98,8 +100,76 @@ function _custom_project_node_presave($node) {
 		}
 		// query
 		// users with field_project_notify_prefs
+	// test only
+		# $notifications = _custom_notification_query($neighborhoods, $project_types, $node->uid);
 		// user is not $node->uid
 	}
+}
+
+/**
+ * @param array $neighborhoods array of tid ints for neighborhoods based on saved project
+ * @param $project_types array of tid ints for project types based on save project
+ */
+function _custom_notification_query($neighborhoods, $project_types, $uid) {
+
+	$neighborhood_vid = 1;
+	$project_type_vid = 2;
+	$query_sql = "
+select 
+	-- user
+	u.uid, u.name, u.mail, prefs.field_project_notification_prefs_value as notification_prefs,
+    -- project node
+    n.nid, n.title, 
+    -- neighborhood
+    ti_nh.tid as tid_nh, ttd_nh.name as neighborhood, 
+    -- project type
+    ti_pt.tid as tid_pt, ttd_pt.name as project_type
+-- 	*
+from 
+	{node} n
+    inner join
+		{users} u
+			on u.uid = n.uid
+-- user notification prefs
+	inner join
+		{field_data_field_project_notification_prefs} prefs
+			on prefs.bundle = 'user' and prefs.entity_id = u.uid
+-- neighborhood
+    inner join
+		{taxonomy_index} ti_nh
+			on ti_nh.nid = n.nid
+	inner join 
+		{taxonomy_term_data} ttd_nh
+			on ti_nh.tid = ttd_nh.tid and ttd_nh.vid = :nh_vid
+-- project type
+	inner join
+		{taxonomy_index} ti_pt
+			on ti_pt.nid = n.nid
+	inner join 
+		{taxonomy_term_data} ttd_pt
+			on ti_pt.tid = ttd_pt.tid and ttd_pt.vid = :pt_vid
+where
+	prefs.field_project_notification_prefs_value > 0 
+and
+	u.uid != :uid
+and
+	n.type = 'project'
+and 
+    n.status = 1
+and 
+(	ti_nh.tid in(:nh_tids)
+or
+	ti_pt.tid in(:pt_tids))";
+	$db = db_query($query_sql, array(':nh_vid' => $neighborhood_vid, ':pt_vid' => $project_type_vid, ':uid' => $uid,
+		':nh_tids'=>$neighborhoods, ':pt_tids'=>$project_types));
+	$results = array();
+	foreach($db as $record) {
+
+		$results[$record->uid]['neighborhoods'][$record->tid_nh] = $record->notification_prefs;
+		$results[$record->uid]['project_types'][$record->tid_pt] = $record->notification_prefs;
+	}
+	var_dump($results);
+	return $results;
 }
 
 /* end project node type functions */
