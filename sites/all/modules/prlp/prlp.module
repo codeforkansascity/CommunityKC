@@ -216,3 +216,39 @@ function prlp_get_hidden_account_fields() {
   }
   return $fields;
 }
+
+/**
+ * Implements hook_module_implements_alter().
+ */
+function prlp_module_implements_alter(&$implementations, $hook) {
+  // Ensure Password Policy form alteration occurs after PRLP form alteration.
+  // This allows PRLP to add the password element before Password Policy
+  // modifies it.
+  if (module_exists("password_policy") && $hook == 'form_alter') {
+    $group = $implementations['password_policy'];
+    unset($implementations['password_policy']);
+    $implementations['password_policy'] = $group;
+  }
+}
+
+/**
+ * Implements hook_variable_info() so that variable values can be
+ * translated.
+ */
+function prlp_variable_info($options) {
+  $variables['prlp_confirmation_message_existing_users'] = array(
+    'type' => 'string',
+    'title' => t('Confirmation message for new users', array(), $options),
+    'default' => 'Thank you for setting your password, the registration process has completed.',
+    'description' => t('Confirmation message that will be shown to new users after they set their password.', array(), $options),
+    'required' => FALSE,
+  );
+  $variables['prlp_confirmation_message_new_users'] = array(
+    'type' => 'drupal_path',
+    'title' => t('Confirmation message for existing users', array(), $options),
+    'default' => 'Your new password has been saved.',
+    'description' => t('Confirmation message that will be shown to existing users after they changed their password.', array(), $options),
+    'required' => FALSE,
+  );
+  return $variables;
+}
