@@ -1,0 +1,21 @@
+
+.ui-slider-horizontal .ui-widget-header {
+  background-image:         linear-gradient(left, lightgrey 0%, white 75%, lightpink 100%);
+  background-image:    -moz-linear-gradient(left, lightgrey 0%, white 75%, lightpink 100%);
+  background-image: -webkit-linear-gradient(left, lightgrey 0%, white 75%, lightpink 100%);
+}
+.ui-slider-vertical .ui-widget-header {
+  background-image:         linear-gradient(bottom, lightgrey 0%, white 75%, lightpink 100%);
+  background-image:    -moz-linear-gradient(bottom, lightgrey 0%, white 75%, lightpink 100%);
+  background-image: -webkit-linear-gradient(bottom, lightgrey 0%, white 75%, lightpink 100%);
+}
+
+.ui-slider .ui-state-default {
+  border: 1px solid #bbb;
+}
+
+.ui-slider .slider-bubble {
+	background-color: #ffdddd; /* pale pink */
+  border: 1px solid grey;
+}
+

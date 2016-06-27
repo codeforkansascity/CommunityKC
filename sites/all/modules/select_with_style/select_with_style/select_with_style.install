@@ -1,0 +1,45 @@
+<?php
+
+/**
+ * @file
+ * select_with_style.install
+ */
+
+/**
+ * Implements hook_install().
+ *
+ * Increase the module weight so that we reliably override implementations of
+ * Views filter widgets
+ */
+function select_with_style_install() {
+  db_update('system')
+    ->fields(array('weight' => 100))
+    ->condition('name', 'select_with_style')
+    ->execute();
+}
+
+/**
+ * Implements hook_update_N().
+ *
+ * Increase the module weight so that we reliably override implementations of
+ * Views filter widgets
+ */
+function select_with_style_update_7110() {
+  db_update('system')
+    ->fields(array('weight' => 100))
+    ->condition('name', 'select_with_style')
+    ->execute();
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function select_with_style_uninstall() {
+  variable_del('select_with_style_use_in_views');
+  variable_del('select_with_style_show_widgets_in_field_list');
+  variable_del('select_with_style_def_hierarchy_depth_prefix');
+  variable_del('select_with_style_def_term_transform_callback');
+  variable_del('select_with_style_def_multi_select_height');
+  variable_del('select_with_style_css_directory');
+  variable_del('select_with_style_def_css_files');
+}

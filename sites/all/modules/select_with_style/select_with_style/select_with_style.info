@@ -1,0 +1,15 @@
+name = Select with Style
+description = Provides two stylable taxonomy term selection widgets.
+package = Select with Style
+core = 7.x
+configure = admin/config/system/select_with_style
+dependencies[] = field
+; List files that contain classes
+files[] = views/select_with_style_handler_filter_term_node_tid.inc
+
+; Information added by Drupal.org packaging script on 2014-03-24
+version = "7.x-1.14"
+core = "7.x"
+project = "select_with_style"
+datestamp = "1395700159"
+

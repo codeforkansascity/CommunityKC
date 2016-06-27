@@ -1,0 +1,44 @@
+
+.slide-with-style-slider.ui-slider-horizontal {
+  background-image:         linear-gradient(left, green 0%, yellow 50%, darkorange 100%);
+  background-image:    -moz-linear-gradient(left, green 0%, yellow 50%, darkorange 100%);
+  background-image: -webkit-linear-gradient(left, green 0%, yellow 50%, darkorange 100%);
+  border-radius: 6px;
+}
+.slide-with-style-slider.ui-slider-vertical {
+  background-image:         linear-gradient(bottom, green 0%, yellow 50%, darkorange 100%);
+  background-image:    -moz-linear-gradient(bottom, green 0%, yellow 50%, darkorange 100%);
+  background-image: -webkit-linear-gradient(bottom, green 0%, yellow 50%, darkorange 100%);
+  border-radius: 6px;
+}
+.ui-slider .ui-slider-range,
+.ui-widget-header {
+  background-image: none;
+  background-color: transparent;
+}
+
+.ui-slider .ui-state-default {
+  border-radius: 8px;
+  background-image: none;
+  background-color: #444;
+}
+.ui-slider-horizontal .ui-slider-handle {
+  margin-top: 3.5px;
+}
+.ui-slider-vertical {
+  width: 12px;
+}
+.ui-slider-vertical .ui-slider-handle {
+  left: 0;
+  margin-bottom: -4px;
+}
+.ui-slider .ui-slider-handle {
+  height: 11px;
+  width: 11px;
+}
+
+.ui-slider .slider-bubble {
+	background-color: #eee;
+  border: 1px solid grey;
+}
+

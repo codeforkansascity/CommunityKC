@@ -1,0 +1,588 @@
+<?php
+
+/**
+ * @file
+ * select_with_style.module
+ *
+ * Adds CSS to select lists that feature parent/child hierarchies, so that they
+ * can be attractively styled.
+ */
+
+
+/**
+ * Implements hook_help().
+ */
+function select_with_style_help($path, $arg) {
+  switch ($path) {
+    case 'admin/help#select_with_style':
+      $t = t('Configuration and usage instructions are in this <a href="@README">README</a> file.<br/>Known issues and solutions may be found on the <a href="@select_with_style">Select with Style</a> project page.', array(
+        '@README' => url(drupal_get_path('module', 'select_with_style') . '/README.txt'),
+        '@select_with_style' => url('http://drupal.org/project/select_with_style')));
+      break;
+  }
+  return empty($t) ? '' : '<p>' . $t . '</p>';
+}
+
+/**
+ * Implements hook_field_widget_info().
+ *
+ * Defines two new select widgets, both allowing for CSS attributes to be added
+ * to the options so that they may be styled.
+ * The 'select_tree' widget is similar in appearance to 'select_optgroups',
+ * however the parent headings are selectable, not just labels.
+ */
+function select_with_style_field_widget_info() {
+  // @todo dynamically build list types, including contrib modules
+  $list_types = array('list_text', 'list_integer', 'list_float');
+
+  // Don't support list types until we can do hierarchies in lists.
+  $enabled_field_types = array('taxonomy_term_reference');
+
+  $common = array(
+    'field types' => $enabled_field_types,
+    'behaviors' => array('multiple values' => FIELD_BEHAVIOR_CUSTOM),
+    'settings' => array('select_with_style' => array(
+      'hierarchy_depth_prefix' => variable_get('select_with_style_def_hierarchy_depth_prefix', '-'),
+      'term_transform_callback' => variable_get('select_with_style_def_term_transform_callback'),
+      'multi_select_height' => variable_get('select_with_style_def_multi_select_height'),
+      'css file' => variable_get('select_with_style_def_css_file', array()),
+    ))
+  );
+  // We could probably have just one widget and a config parameter (tickbox)
+  // in select_with_style_field_widget_settings_form() to distinguish between
+  // the two... However, from a UI perspective two seperate options is clearer.
+  $widget_info = array(
+    'select_optgroups' => $common + array(
+      'label' => t('Select list, styled optgroups'),
+    ),
+    'select_tree' => $common + array(
+      'label' => t('Select list, styled tree'),
+    )
+  );
+  return $widget_info;
+}
+
+/**
+ * Implements hook_element_info().
+ *
+ * Declaring a 'select_with_style' theme hook to render the HTML select element
+ * for the select_tree and select_optgroups widgets works, except for one
+ * aspect: form validation. Function _form_validate() only performs the
+ * necessary flattening of the element['#options'] array, if it is of type
+ * 'select'. So if the widget is of type 'select_optgroups' validation will
+ * fail and the user won't be able to submit the form.
+ * This is why we decided to NOT go down the path of hook_element_info(), but
+ * instead override the existing select element via hook_element_info_alter(),
+ * rather than creating a new one through the function below.
+ *
+function select_with_style_element_info() {
+  $types['select_tree'] = array(
+    '#input' => TRUE,
+    '#multiple' => FALSE,
+    '#process' => array('form_process_select', 'ajax_process_form'),
+    '#theme' => 'select_with_style_select',
+    '#theme_wrappers' => array('form_element'),
+  );
+  $types['select_optgroups'] = array(
+    '#input' => TRUE,
+    '#multiple' => FALSE,
+    '#process' => array('form_process_select', 'ajax_process_form'),
+    '#theme' => 'select_with_style_select',
+    '#theme_wrappers' => array('form_element'),
+  );
+  return $types;
+}
+ */
+
+/**
+ * Implments hook_element_info_alter().
+ *
+ * See comments above at hook_element_info().
+ */
+function select_with_style_element_info_alter(&$types) {
+  $types['select']['#theme'] = 'select_with_style_select';
+}
+
+/**
+ * Implements hook_theme().
+ *
+ * Registers theme_select_with_style_select() to override theme_select().
+ */
+function select_with_style_theme($existing_themes, $type, $theme, $path) {
+  $themes['select_with_style_select'] = array(
+    'render element' => 'element',
+    'file' => 'select_with_style.theme.inc'
+  );
+  return $themes;
+}
+
+/**
+ * Implements hook_field_widget_settings_form().
+ */
+function select_with_style_field_widget_settings_form($field, $instance) {
+
+  $settings = $instance['widget']['settings']['select_with_style'];
+
+  $form['select_with_style'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Select list options',
+    '#collapsible' => TRUE,
+  );
+  $form['select_with_style']['hierarchy_depth_prefix'] = array(
+    '#type' => 'textfield',
+    '#size' => 12,
+    '#title' => t('Hierarchy depth indicator prefix for child options'),
+    '#description' => t("This particularly applies to taxonomy term select lists. Core default is a single hyphen. You may type any sequence of characters. Copy and paste from these if you like them: <strong>► ⇒ » ↘ ⁲ ◆ ❤ ❥ ❖ ✈ ♫ ♛ ♟ ★ ✱ ☺ ✔ ☯ ✉ </strong>.<br/>Blank out the field if you don't want a prefix."),
+    '#default_value' => $settings['hierarchy_depth_prefix'],
+    '#element_validate' => array('_select_with_style_validate_hierarchy_depth_prefix'),
+    '#required' => FALSE,
+  );
+  $form['select_with_style']['term_transform_callback'] = array(
+    '#type' => 'textfield',
+    '#size' => 60,
+    '#title' => t('Optionally invoke a callback to apply a transformation of option labels into CSS class names'),
+    '#description' => t('Enter <code>select_with_style_country_name_to_code</code> to transform localised country names into ISO two-letter codes.'),
+    '#default_value' => $settings['term_transform_callback'],
+    '#element_validate' => array('_select_with_style_validate_callback'),
+    '#required' => FALSE,
+  );
+  $form['select_with_style']['multi_select_height'] = array(
+    '#type' => 'textfield',
+    '#size' => 4,
+    '#title' => t('Height of select box (in rows)'),
+    '#description' => t('Applies only when <strong>Number of values</strong> (below) is greater than 1. If left blank the browser default (usually 4) will be used.'),
+    '#default_value' => $settings['multi_select_height'],
+    '#element_validate' => array('element_validate_integer_positive'),
+    '#required' => FALSE,
+  );
+  $options = array();
+  foreach (select_with_style_css_files() as $name => $filespec) {
+    $options[$name] = $name;
+  }
+  $form['select_with_style']['css file'] = array(
+    '#type' => 'select',
+    '#multiple' => TRUE,
+    '#size' => 3, // may not be honored
+    '#title' => t('Styling file(s)'),
+    '#default_value' => empty($settings['css file'])
+      ? array()
+      : is_array($settings['css file']) ? $settings['css file'] : array($settings['css file']),
+    '#options' => $options,
+    '#description' => t('The directory where the above files are looked up may be changed on the Select with Style <a href="@href">configuraton page</a>.', array(
+      '@href' => url('admin/config/system/select_with_style'),
+    )),
+    '#required' => FALSE,
+  );
+
+  return $form;
+}
+
+/**
+ * Implements hook_field_widget_form().
+ *
+ * Called by core when a user selects either the 'select_optgroups' or
+ * 'select_tree' or widgets. Also when the user edits a node.
+ * A hook_form_alter() implementation isn't going to cut it, as the select_tree
+ * or select_optgroups field won't be on the form without this function!
+ */
+function select_with_style_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
+
+  $multiple = $field['cardinality'] > 1 || $field['cardinality'] == FIELD_CARDINALITY_UNLIMITED;
+  $required = $element['#required'];
+  $value_key = key($field['columns']);
+  $has_value = isset($items[0][$value_key]);
+
+  $properties = _options_properties('select', $multiple, $required, $has_value);
+
+  // Prepare the list of options and their attributes.
+  // Similar to _options_get_options(), but also returns option attributes.
+  list($options, $option_attributes) = _select_with_style_get_options_and_attributes($field, $instance, $properties);
+
+  $properties['optgroups'] = TRUE; // prevents flattening of $options.
+  $default_value = _options_storage_to_form($items, $options, $value_key, $properties);
+
+  $settings = $instance['widget']['settings']['select_with_style'];
+
+  $element += array(
+    '#type' => 'select',
+    '#multiple' => $multiple && count($options) > 1,
+    '#options' => $options,
+    '#option_attributes' => $option_attributes,
+    '#default_value' => $default_value,
+    '#value_key' => $value_key,
+    '#element_validate' => array('options_field_widget_validate'),
+    '#properties' => $properties
+  );
+  if ($multiple && !empty($settings['multi_select_height'])) {
+    $element['#size'] = $settings['multi_select_height'];
+  }
+  // Add core and optional CSS
+  $element['#attached']['css'][] = drupal_get_path('module', 'select_with_style') . '/select_with_style.css';
+
+  if (!empty($settings['css file'])) {
+    if (!is_array($settings['css file'])) {
+      $settings['css file'] = array($settings['css file']);
+    }
+    $css_files = select_with_style_css_files();
+    foreach ($settings['css file'] as $css_file) {
+      if (!empty($css_files[$css_file])) {
+        $element['#attached']['css'][] = $css_files[$css_file];
+      }
+    }
+  }
+  return $element;
+}
+
+/**
+ * Collects the options for a field.
+ *
+ * Field may be of type list_* or taxonomy_term_reference.
+ */
+function _select_with_style_get_options_and_attributes($field, $instance, $properties) {
+
+  // Get the lists of options and attributes.
+  list($options, $option_attributes) = _select_with_style_options_and_attributes_lists(
+    $field, $instance['widget']['type'],  $instance['widget']['settings']['select_with_style']);
+
+  // Sanitize the options (strip tags from labels, apply XSS filter).
+  _options_prepare_options($options, $properties);
+
+  if ($properties['empty_option']) {
+    // Trick theme_options_none() into thinking this is for an 'options_select'.
+    $instance['widget']['type'] = 'options_select';
+
+    $label = theme('options_none', array(
+      'instance' => $instance,
+      'option' => $properties['empty_option'])
+    );
+    // Prepend _none to the options list.
+    $options = array('_none' => $label) + $options;
+  }
+  return array($options, $option_attributes);
+}
+
+/**
+ * Build the list option attirbutes in tandem with the option values.
+ *
+ * If the taxonomy is hierarchical, then we also assemble the options list in
+ * hierarchical form.
+ *
+ * @see modules/field/modules/options/options.api.php
+ */
+function _select_with_style_options_and_attributes_lists($field, $widget_type, $settings) {
+  $options = array();
+
+  if ($field['type'] == 'taxonomy_term_reference') {
+
+    $values = $field['settings']['allowed_values'][0];
+    if ($vocabulary = taxonomy_vocabulary_machine_name_load($values['vocabulary'])) {
+      if ($terms = taxonomy_get_tree($vocabulary->vid, $values['parent'])) {
+
+        $prefix = isset($settings['hierarchy_depth_prefix']) ? $settings['hierarchy_depth_prefix'] : NULL;
+        $term_transform_callback = isset($settings['term_transform_callback']) ? $settings['term_transform_callback'] : NULL;
+        
+        return empty($widget_type) || $widget_type == 'select_tree'
+          ? select_with_style_assemble_tree_options_and_attributes($terms, $prefix, $term_transform_callback)
+          : select_with_style_assemble_optgroups_options_and_attributes($terms, $prefix, $term_transform_callback);
+      }
+    }
+  }
+  elseif (drupal_substr($field['type'], 0, 4) == 'list') {
+
+    $options = $field['settings']['allowed_values'];
+  }
+  return array($options, array());
+}
+
+/**
+ * Returns a linear list of attributes to go with an optgroup list of options.
+ *
+ * @param $terms
+ *   Terms belonging to the vocabulary in question.
+ * @param $prefix
+ *   The hierarchy depth prefix to be prepended to each child term label.
+ * @param $term_transform
+ *   The term transform function, e.g., country-to-code, if desired.
+ * @return
+ *   A linear array of option attributes with one key for each key in the
+ *   options array. The options array will reflect the taxonomy tree, flattened
+ *   to a depth of one.
+ */
+function select_with_style_assemble_optgroups_options_and_attributes($terms, $prefix = NULL, $term_transform_callback = NULL) {
+  $options = array();
+  $option_attributes = array();
+
+  // This is here to detect items that are not in optgroups, i.e. orphaned
+  // children that have no children. We don't want them to be treated like
+  // parents, as they ought to be selectable, not labels.
+  $term_tree = array();
+  select_with_style_build_term_tree($terms, $term_tree);
+  select_with_style_flag_child_terms($terms, $term_tree);
+  $translate = module_exists('i18n_taxonomy');
+
+  foreach ($terms as $term) {
+    $has_parent = !empty($term->parents[0]);
+    $has_children = !$term->is_leaf;
+
+    if (!$has_parent || $has_children) {
+      // Parent, sets the CSS group for itself and its children.
+      $css_group = select_with_style_term_to_class($term->name, $term_transform_callback);
+    }
+    // else keep the $css_group previously set
+
+    if ($translate) {
+      $term->name = i18n_taxonomy_term_name($term);
+    }
+    if (!$has_parent && $has_children) {
+      // As this is a "root" parent, no $option entry is created.
+      $parent_name = $term->name;
+      $first_class = 'option-parent';
+    }
+    elseif ($has_parent) {
+      // Has parent. Keep parent css_group
+      $options[$parent_name][$term->tid] = str_repeat($prefix, $term->depth) . $term->name;
+      $first_class = 'option-child';
+    }
+    else {
+      // No parent and no children.
+      $options[$term->tid] = str_repeat($prefix, $term->depth) . $term->name;
+      $first_class = 'option-child';
+    }
+    $option_attributes[(!$has_parent && $has_children) ? $term->name : $term->tid] = array('class' => (empty($css_group) ? $first_class : "$first_class group-$css_group") . ' tid-' . $term->tid . ' depth-' . $term->depth);
+  }
+  return array($options, $option_attributes);
+}
+
+/**
+ * Returns a linear list of options, with may be styled like a tree using the also returned option attributes.
+ *
+ * @param $terms
+ *   Terms belonging to the vocabulary in question.
+ * @param $prefix
+ *   The hierarchy depth prefix to be prepended to each child term label.
+ * @param $term_transform
+ *   The term transform function, e.g., country-to-code, if desired.
+ * @return
+ *   A linear array of option attributes with one key for each key in the
+ *   options array. The options array is flattened to a linear list.
+ */
+function select_with_style_assemble_tree_options_and_attributes($terms, $prefix = NULL, $term_transform_callback = NULL) {
+  $options = array();
+  $option_attributes = array();
+
+  $term_tree = array();
+  select_with_style_build_term_tree($terms, $term_tree);
+  select_with_style_flag_child_terms($terms, $term_tree);
+
+  foreach ($terms as $term) {
+    $options[$term->tid] = str_repeat($prefix, $term->depth) . $term->name;
+
+    if (!$term->is_leaf || empty($term->parents[0])) {
+      // Parent, sets the CSS group for itself and its children.
+      $css_group = select_with_style_term_to_class($term->name, $term_transform_callback);
+    }
+    // else keep the $css_group previously set
+
+    $first_class = $term->is_leaf ? 'option-child' : 'option-parent';
+    $option_attributes[$term->tid] = array('class' => (empty($css_group) ? $first_class : "$first_class group-$css_group") . ' tid-' . $term->tid . ' depth-' . $term->depth);
+  }
+  return array($options, $option_attributes);
+}
+
+/**
+ * Converts input string to something that can be used as a CSS class name.
+ *
+ * Note that select option values and labels are sanitized already, this is
+ * just for readibility.
+ *
+ * @param string $value
+ * @param string $term_transform_callback
+ *   Function to transfrom $value before applying character replacement
+ * @return more readible version of $value, suitable for use in HTML
+ */
+function select_with_style_term_to_class($value, $term_transform_callback = NULL) {
+  if (!empty($term_transform_callback)) {
+    $value = $term_transform_callback($value);
+  }
+  $value = drupal_html_class($value);
+  return $value;
+}
+
+/**
+ * Get all the instances belonging to a field, identified by its name.
+ *
+ * @param string $field_name, or NULL to return all instances of all fields
+ *
+ * @return array of instances
+ */
+function select_with_style_get_field_instances($field_name = NULL) {
+  $instances = array();
+  foreach (field_info_instances() as $type_bundles) {
+    foreach ($type_bundles as $bundle_instances) {
+      foreach ($bundle_instances as $fld_name => $instance) {
+        if (!isset($field_name) || $fld_name == $field_name) {
+          $instances[] = $instance;
+        }
+      }
+    }
+  }
+  return $instances;
+}
+
+/**
+ * Build a tree from the supplied terms.
+ *
+ * @param array $terms
+ * @param array $term_tree
+ * @param int $i_start
+ * @param int $parent_tid
+ */
+function select_with_style_build_term_tree($terms, &$term_tree, $i_start = 0, $parent_tid = 0) {
+  $num_terms = count($terms);
+  for ($i = $i_start; $i < $num_terms; $i++) {
+    $term = $terms[$i];
+    if ($parent_tid == reset($term->parents)) {
+      $term_tree[$term->tid] = array();
+      select_with_style_build_term_tree($terms, $term_tree[$term->tid], $i + 1, $term->tid);
+    }
+  }
+}
+
+/**
+ * Flag on each of the supplied terms whether they're a leaf or not.
+ *
+ * @param array $terms
+ * @param array $term_tree
+ */
+function select_with_style_flag_child_terms(&$terms, $term_tree) {
+  foreach ($term_tree as $tid => $children) {
+    foreach ($terms as &$term) {
+      if ($term->tid == $tid) {
+        $term->is_leaf = empty($children);
+        break;
+      }
+    }
+    select_with_style_flag_child_terms($terms, $children);
+  }
+}
+
+/**
+ * Converts a country name to a 2-letter ISO country code. Case-insensitve.
+ *
+ * @param type $country_name
+ * @return 2-letter code or the original country name if not found
+ */
+function select_with_style_country_name_to_code($country_name) {
+  require_once DRUPAL_ROOT . '/includes/locale.inc';
+  $country_name_lower = drupal_strtolower($country_name);
+  foreach ($country_names = country_get_list() as $code => $name) {
+    if (drupal_strtolower($name) == $country_name_lower) {
+      return $code;
+    }
+  }
+  return $country_name;
+}
+
+/**
+ * Check whether the element value is already plain or will be sanitized.
+ *
+ * @param array $element
+ * @param array $form_state
+ */
+function _select_with_style_validate_hierarchy_depth_prefix($element, &$form_state) {
+  $prefix = $element['#value'];
+  if (!empty($prefix)) {
+    $sanitized_prefix = check_plain($prefix);
+    if ($sanitized_prefix != $prefix) {
+      drupal_set_message(t('This prefix will be sanitized and will appear in the select list like this: "!prefix"', array('!prefix' => $sanitized_prefix)));
+    }
+  }
+}
+
+/**
+ * Check whether element's callback (if specified) indeed exists as function.
+ *
+ * @param array $element
+ * @param array $form_state
+ */
+function _select_with_style_validate_callback($element, &$form_state) {
+  $callback = trim($element['#value']);
+  if (!empty($callback) && !function_exists($callback )) {
+    form_set_error($element, t('Callback %function does not exist', array('%function' => $callback)));
+  }
+}
+
+/**
+ * Implements hook_views_api().
+ */
+function select_with_style_views_api() {
+  return array(
+    'api' => views_api_version(),
+    'path' => drupal_get_path('module', 'select_with_style') . '/views'
+  );
+}
+
+/**
+ * Implements hook_init().
+ *
+ * Loads the Select with Style javascript effects bonus pack!
+ */
+function select_with_style_init() {
+  drupal_add_js(drupal_get_path('module', 'select_with_style') . '/select_with_style.js');
+}
+
+/**
+ * Implements hook_menu().
+ */
+function select_with_style_menu() {
+  $items = array();
+  // Put the administrative settings under System on the Configuration page.
+  $items['admin/config/system/select_with_style'] = array(
+    'title' => 'Select with Style',
+    'description' => 'Configure Select with Style module.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('select_with_style_admin_configure'),
+    'access arguments' => array('administer site configuration'),
+    'file' => 'select_with_style.admin.inc'
+  );
+  return $items;
+}
+
+/**
+ * Implements hook_menu_alter().
+ */
+function select_with_style_menu_alter(&$items) {
+  $items['admin/reports/fields']['description'] = 'Overview of fields (and optionally widgets) on all entity types.';
+  $items['admin/reports/fields']['page callback'] = 'select_with_style_fields_and_widgets_list';
+  $items['admin/reports/fields']['module'] = 'select_with_style';
+  $items['admin/reports/fields']['file'] = 'select_with_style.admin.inc';
+}
+
+/**
+ * Returns an array of CSS files in a directory.
+ *
+ * @param $dir
+ *   A stream wreapper URI that is a directory or NULL.
+ *
+ * @return
+ *   An array of full CSS file names in the supplied directory.
+ */
+function select_with_style_css_files($dir = NULL) {
+  if (empty($dir)) {
+    $default_path = drupal_get_path('module', 'select_with_style') . '/css';
+    $path = variable_get('select_with_style_css_directory', $default_path);
+    $dirname = DRUPAL_ROOT . "/$path";
+  }
+  else { // not tested, not used
+    $dirname = file_stream_wrapper_uri_normalize($dir);
+  }
+  $files = array();
+  if ($all_files = @scandir($dirname)) {
+    foreach ($all_files as $filename) {
+      if (drupal_substr($filename, -4) == '.css' && is_file("$dirname/$filename")) {
+        $files[$filename] = "$path/$filename";
+      }
+    }
+  }
+  return $files;
+}

@@ -1,0 +1,35 @@
+
+/* CSS "skin" for use with a department store or similar vocabulary.
+ *
+ * The group names must correspond to the taxonomy terms in the vocabulary.
+ * Either change the group names below or change the term names to match. Or 
+ * specify a transformation callback function on the "Select List Options" 
+ * section of the taxonomy term field's configuration panel.
+ * Term names may be mixed case and may contain spaces and some special characters.
+ *
+ * Icons taken from mapicons.nicolasmollet.com and customised using this URL:
+ * http://mapicons.nicolasmollet.com/category/markers/stores/apparel?custom_color=c21393&style=simple
+ */
+
+.option-parent,
+.option-child {
+  font-size: 15px;
+  height: 24px;
+  padding: 3px 0 0 29px;
+}
+.option-parent.depth-1,
+.option-child.depth-1 {
+  margin-left: 22px;
+}
+
+.group-bags           { background: url(department-store-icons/bags.png)          no-repeat -3px -13px; }
+.group-hats           { background: url(department-store-icons/hats.png)          no-repeat -3px -13px; }
+.group-jewelry        { background: url(department-store-icons/jewelry.png)       no-repeat -3px -13px; }
+.group-lingerie       { background: url(department-store-icons/lingerie.png)      no-repeat -3px -13px; }
+.group-mens-fashion   { background: url(department-store-icons/mens-fashion.png)  no-repeat -3px -13px; }
+.group-perfumes       { background: url(department-store-icons/perfumes.png)      no-repeat -3px -13px; }
+.group-shoes          { background: url(department-store-icons/shoes.png)         no-repeat -3px -13px; }
+.group-stationary     { background: url(department-store-icons/stationary.png)    no-repeat -3px -13px; }
+.group-textiles       { background: url(department-store-icons/textiles.png)      no-repeat -3px -13px; }
+.group-womens-fashion { background: url(department-store-icons/womens-fashion.png)no-repeat -3px -13px; }
+

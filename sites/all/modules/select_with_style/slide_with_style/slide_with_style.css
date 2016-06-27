@@ -1,0 +1,22 @@
+
+.ui-slider-horizontal {
+  margin: 1.8em 0 0 0.4em;
+  min-width: 170px;
+  border-radius: 4px;
+}
+.ui-slider-vertical {
+  margin: 1.8em 0 1em 0.3em;
+  min-height: 130px;
+  border-radius: 4px;
+}
+.ui-slider .slider-bubble {
+  position: relative;
+  top: -26px;
+  border: 1px solid #ccc;
+  padding: 0px 3px;
+  border-radius: 4px;
+  display: inline-block;
+}
+.ui-widget {
+  font-size: 1em;
+}

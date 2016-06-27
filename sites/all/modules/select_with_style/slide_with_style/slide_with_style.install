@@ -1,0 +1,14 @@
+<?php
+
+/**
+ * @file
+ * slide_with_style.install
+ */
+
+/**
+ * Implements hook_uninstall().
+ */
+function slide_with_style_uninstall() {
+  variable_del('slide_with_style_use_in_views');
+  variable_del('slide_with_style_css_directory');
+}

@@ -1,0 +1,299 @@
+
+/* CSS for using flag images as select box option backgrounds.
+
+   For this to work create a country taxonomy, the country names being the
+   terms: United Kingdom, Netherlands, etc.
+   Then when configuring the Select with Style widget for the Taxonomy Term
+   field, enter as the callback "select_with_style_country_name_to_code".
+   Note: that optgroups can only handle taxonomies of a depth of 1, so use
+   "styled tree" in cases of a depth of 1 or greater.
+
+   In addition to the flags of the countries of the world, flags for the
+   following are available also:
+    o European Union
+    o England, Scotland, Wales
+    o Catalonia
+*/
+.option-parent,
+.option-child {
+  font-size: 15px;
+  padding-left: 25px;
+}
+.option-parent.depth-1,
+.option-child.depth-1 {
+  margin-left: 25px;
+}
+.option-parent.depth-2,
+.option-child.depth-2 {
+  margin-left: 50px;
+}
+.option-parent.depth-3,
+.option-child.depth-3 {
+  margin-left: 75px;
+}
+
+.group-ad { background: url(flags/ad.png) no-repeat 2px 4px; }
+.group-ae { background: url(flags/ae.png) no-repeat 2px 4px; }
+.group-af { background: url(flags/af.png) no-repeat 2px 4px; }
+.group-ag { background: url(flags/ag.png) no-repeat 2px 4px; }
+.group-ai { background: url(flags/ai.png) no-repeat 2px 4px; }
+.group-am { background: url(flags/am.png) no-repeat 2px 4px; }
+.group-an { background: url(flags/an.png) no-repeat 2px 4px; }
+.group-ao { background: url(flags/ao.png) no-repeat 2px 4px; }
+.group-ar { background: url(flags/ar.png) no-repeat 2px 4px; }
+.group-as { background: url(flags/as.png) no-repeat 2px 4px; }
+.group-at { background: url(flags/at.png) no-repeat 2px 4px; }
+.group-au { background: url(flags/au.png) no-repeat 2px 4px; }
+.group-aw { background: url(flags/aw.png) no-repeat 2px 4px; }
+.group-ax { background: url(flags/ax.png) no-repeat 2px 4px; }
+.group-az { background: url(flags/az.png) no-repeat 2px 4px; }
+
+.group-ba { background: url(flags/ba.png) no-repeat 2px 4px; }
+.group-bb { background: url(flags/bb.png) no-repeat 2px 4px; }
+.group-bd { background: url(flags/bd.png) no-repeat 2px 4px; }
+.group-be { background: url(flags/be.png) no-repeat 2px 4px; }
+.group-bf { background: url(flags/bf.png) no-repeat 2px 4px; }
+.group-bg { background: url(flags/bg.png) no-repeat 2px 4px; }
+.group-bh { background: url(flags/bh.png) no-repeat 2px 4px; }
+.group-bi { background: url(flags/bi.png) no-repeat 2px 4px; }
+.group-bj { background: url(flags/bj.png) no-repeat 2px 4px; }
+.group-bm { background: url(flags/bm.png) no-repeat 2px 4px; }
+.group-bn { background: url(flags/bn.png) no-repeat 2px 4px; }
+.group-bo { background: url(flags/bo.png) no-repeat 2px 4px; }
+.group-br { background: url(flags/br.png) no-repeat 2px 4px; }
+.group-bs { background: url(flags/bs.png) no-repeat 2px 4px; }
+.group-bt { background: url(flags/bt.png) no-repeat 2px 4px; }
+.group-bv { background: url(flags/bv.png) no-repeat 2px 4px; }
+.group-bw { background: url(flags/bw.png) no-repeat 2px 4px; }
+.group-by { background: url(flags/by.png) no-repeat 2px 4px; }
+.group-bz { background: url(flags/bz.png) no-repeat 2px 4px; }
+
+.group-ca { background: url(flags/ca.png) no-repeat 2px 4px; }
+.group-catalonia { background: url(flags/catalonia.png) no-repeat 2px 4px; }
+.group-cc { background: url(flags/cc.png) no-repeat 2px 4px; }
+.group-cd { background: url(flags/cd.png) no-repeat 2px 4px; }
+.group-cf { background: url(flags/cf.png) no-repeat 2px 4px; }
+.group-cg { background: url(flags/cg.png) no-repeat 2px 4px; }
+.group-ch { background: url(flags/ch.png) no-repeat 2px 4px; }
+.group-ci { background: url(flags/ci.png) no-repeat 2px 4px; }
+.group-ck { background: url(flags/ck.png) no-repeat 2px 4px; }
+.group-cl { background: url(flags/cl.png) no-repeat 2px 4px; }
+.group-cm { background: url(flags/cm.png) no-repeat 2px 4px; }
+.group-cn { background: url(flags/cn.png) no-repeat 2px 4px; }
+.group-co { background: url(flags/co.png) no-repeat 2px 4px; }
+.group-cr { background: url(flags/cr.png) no-repeat 2px 4px; }
+.group-cs { background: url(flags/cs.png) no-repeat 2px 4px; }
+.group-cu { background: url(flags/cu.png) no-repeat 2px 4px; }
+.group-cv { background: url(flags/cv.png) no-repeat 2px 4px; }
+.group-cx { background: url(flags/cx.png) no-repeat 2px 4px; }
+.group-cy { background: url(flags/cy.png) no-repeat 2px 4px; }
+.group-cz { background: url(flags/cz.png) no-repeat 2px 4px; }
+
+.group-de { background: url(flags/de.png) no-repeat 2px 4px; }
+.group-dj { background: url(flags/dj.png) no-repeat 2px 4px; }
+.group-dk { background: url(flags/dk.png) no-repeat 2px 4px; }
+.group-dm { background: url(flags/dm.png) no-repeat 2px 4px; }
+.group-do { background: url(flags/do.png) no-repeat 2px 4px; }
+.group-dz { background: url(flags/dz.png) no-repeat 2px 4px; }
+
+.group-ec { background: url(flags/ec.png) no-repeat 2px 4px; }
+.group-ee { background: url(flags/ee.png) no-repeat 2px 4px; }
+.group-eg { background: url(flags/eg.png) no-repeat 2px 4px; }
+.group-eh { background: url(flags/eh.png) no-repeat 2px 4px; }
+.group-england { background: url(flags/england.png) no-repeat 2px 4px; }
+.group-er { background: url(flags/er.png) no-repeat 2px 4px; }
+.group-es { background: url(flags/es.png) no-repeat 2px 4px; }
+.group-et { background: url(flags/et.png) no-repeat 2px 4px; }
+.group-european-union { background: url(flags/europeanunion.png) no-repeat 2px 4px; }
+
+.group-fi { background: url(flags/fi.png) no-repeat 2px 4px; }
+.group-fj { background: url(flags/fj.png) no-repeat 2px 4px; }
+.group-fk { background: url(flags/fk.png) no-repeat 2px 4px; }
+.group-fm { background: url(flags/fm.png) no-repeat 2px 4px; }
+.group-fo { background: url(flags/fo.png) no-repeat 2px 4px; }
+.group-fr { background: url(flags/fr.png) no-repeat 2px 4px; }
+
+.group-ga { background: url(flags/ga.png) no-repeat 2px 4px; }
+.group-gb { background: url(flags/gb.png) no-repeat 2px 4px; }
+.group-gd { background: url(flags/gd.png) no-repeat 2px 4px; }
+.group-ge { background: url(flags/ge.png) no-repeat 2px 4px; }
+.group-gf { background: url(flags/gf.png) no-repeat 2px 4px; }
+.group-gh { background: url(flags/gh.png) no-repeat 2px 4px; }
+.group-gi { background: url(flags/gi.png) no-repeat 2px 4px; }
+.group-gl { background: url(flags/gl.png) no-repeat 2px 4px; }
+.group-gm { background: url(flags/gm.png) no-repeat 2px 4px; }
+.group-gn { background: url(flags/gn.png) no-repeat 2px 4px; }
+.group-gp { background: url(flags/g[.png) no-repeat 2px 4px; }
+.group-gq { background: url(flags/gq.png) no-repeat 2px 4px; }
+.group-gr { background: url(flags/gr.png) no-repeat 2px 4px; }
+.group-gs { background: url(flags/gs.png) no-repeat 2px 4px; }
+.group-gt { background: url(flags/gt.png) no-repeat 2px 4px; }
+.group-gu { background: url(flags/gu.png) no-repeat 2px 4px; }
+.group-gw { background: url(flags/gw.png) no-repeat 2px 4px; }
+.group-gy { background: url(flags/gy.png) no-repeat 2px 4px; }
+
+.group-hk { background: url(flags/hk.png) no-repeat 2px 4px; }
+.group-hm { background: url(flags/hm.png) no-repeat 2px 4px; }
+.group-hn { background: url(flags/hn.png) no-repeat 2px 4px; }
+.group-hr { background: url(flags/hr.png) no-repeat 2px 4px; }
+.group-ht { background: url(flags/ht.png) no-repeat 2px 4px; }
+.group-hu { background: url(flags/hu.png) no-repeat 2px 4px; }
+
+.group-id { background: url(flags/id.png) no-repeat 2px 4px; }
+.group-ie { background: url(flags/ie.png) no-repeat 2px 4px; }
+.group-il { background: url(flags/il.png) no-repeat 2px 4px; }
+.group-in { background: url(flags/in.png) no-repeat 2px 4px; }
+.group-io { background: url(flags/io.png) no-repeat 2px 4px; }
+.group-iq { background: url(flags/iq.png) no-repeat 2px 4px; }
+.group-ir { background: url(flags/ir.png) no-repeat 2px 4px; }
+.group-is { background: url(flags/is.png) no-repeat 2px 4px; }
+.group-it { background: url(flags/it.png) no-repeat 2px 4px; }
+
+.group-jm { background: url(flags/jm.png) no-repeat 2px 4px; }
+.group-jo { background: url(flags/jo.png) no-repeat 2px 4px; }
+.group-jp { background: url(flags/jp.png) no-repeat 2px 4px; }
+
+.group-ke { background: url(flags/ke.png) no-repeat 2px 4px; }
+.group-kg { background: url(flags/kg.png) no-repeat 2px 4px; }
+.group-kh { background: url(flags/kh.png) no-repeat 2px 4px; }
+.group-ki { background: url(flags/ki.png) no-repeat 2px 4px; }
+.group-km { background: url(flags/km.png) no-repeat 2px 4px; }
+.group-kn { background: url(flags/kn.png) no-repeat 2px 4px; }
+.group-kp { background: url(flags/kp.png) no-repeat 2px 4px; }
+.group-kr { background: url(flags/kr.png) no-repeat 2px 4px; }
+.group-kw { background: url(flags/kw.png) no-repeat 2px 4px; }
+.group-ky { background: url(flags/ky.png) no-repeat 2px 4px; }
+.group-kz { background: url(flags/kz.png) no-repeat 2px 4px; }
+
+.group-la { background: url(flags/la.png) no-repeat 2px 4px; }
+.group-lb { background: url(flags/lb.png) no-repeat 2px 4px; }
+.group-lc { background: url(flags/lc.png) no-repeat 2px 4px; }
+.group-li { background: url(flags/li.png) no-repeat 2px 4px; }
+.group-lk { background: url(flags/lk.png) no-repeat 2px 4px; }
+.group-lr { background: url(flags/lr.png) no-repeat 2px 4px; }
+.group-ls { background: url(flags/ls.png) no-repeat 2px 4px; }
+.group-lt { background: url(flags/lt.png) no-repeat 2px 4px; }
+.group-lu { background: url(flags/lu.png) no-repeat 2px 4px; }
+.group-lv { background: url(flags/lv.png) no-repeat 2px 4px; }
+.group-ly { background: url(flags/ly.png) no-repeat 2px 4px; }
+
+.group-ma { background: url(flags/ma.png) no-repeat 2px 4px; }
+.group-mc { background: url(flags/mc.png) no-repeat 2px 4px; }
+.group-md { background: url(flags/md.png) no-repeat 2px 4px; }
+.group-me { background: url(flags/me.png) no-repeat 2px 4px; }
+.group-mg { background: url(flags/mg.png) no-repeat 2px 4px; }
+.group-mh { background: url(flags/mh.png) no-repeat 2px 4px; }
+.group-mk { background: url(flags/mk.png) no-repeat 2px 4px; }
+.group-ml { background: url(flags/ml.png) no-repeat 2px 4px; }
+.group-mm { background: url(flags/mm.png) no-repeat 2px 4px; }
+.group-mn { background: url(flags/mn.png) no-repeat 2px 4px; }
+.group-mo { background: url(flags/mo.png) no-repeat 2px 4px; }
+.group-mq { background: url(flags/mq.png) no-repeat 2px 4px; }
+.group-mr { background: url(flags/mr.png) no-repeat 2px 4px; }
+.group-ms { background: url(flags/ms.png) no-repeat 2px 4px; }
+.group-mt { background: url(flags/mt.png) no-repeat 2px 4px; }
+.group-mu { background: url(flags/mu.png) no-repeat 2px 4px; }
+.group-mv { background: url(flags/mv.png) no-repeat 2px 4px; }
+.group-mw { background: url(flags/mw.png) no-repeat 2px 4px; }
+.group-mx { background: url(flags/mx.png) no-repeat 2px 4px; }
+.group-my { background: url(flags/my.png) no-repeat 2px 4px; }
+.group-mz { background: url(flags/mz.png) no-repeat 2px 4px; }
+
+.group-na { background: url(flags/na.png) no-repeat 2px 4px; }
+.group-nc { background: url(flags/nc.png) no-repeat 2px 4px; }
+.group-ne { background: url(flags/ne.png) no-repeat 2px 4px; }
+.group-nf { background: url(flags/nf.png) no-repeat 2px 4px; }
+.group-ng { background: url(flags/ng.png) no-repeat 2px 4px; }
+.group-ni { background: url(flags/ni.png) no-repeat 2px 4px; }
+.group-nl { background: url(flags/nl.png) no-repeat 2px 4px; }
+.group-no { background: url(flags/no.png) no-repeat 2px 4px; }
+.group-np { background: url(flags/np.png) no-repeat 2px 4px; }
+.group-nr { background: url(flags/nr.png) no-repeat 2px 4px; }
+.group-nu { background: url(flags/nu.png) no-repeat 2px 4px; }
+.group-nz { background: url(flags/nz.png) no-repeat 2px 4px; }
+
+.group-om { background: url(flags/om.png) no-repeat 2px 4px; }
+
+.group-pa { background: url(flags/pa.png) no-repeat 2px 4px; }
+.group-pe { background: url(flags/pe.png) no-repeat 2px 4px; }
+.group-pf { background: url(flags/pf.png) no-repeat 2px 4px; }
+.group-pk { background: url(flags/pk.png) no-repeat 2px 4px; }
+.group-pl { background: url(flags/pl.png) no-repeat 2px 4px; }
+.group-pm { background: url(flags/pm.png) no-repeat 2px 4px; }
+.group-pn { background: url(flags/pn.png) no-repeat 2px 4px; }
+.group-pr { background: url(flags/pr.png) no-repeat 2px 4px; }
+.group-ps { background: url(flags/ps.png) no-repeat 2px 4px; }
+.group-pt { background: url(flags/pt.png) no-repeat 2px 4px; }
+.group-pw { background: url(flags/pw.png) no-repeat 2px 4px; }
+.group-py { background: url(flags/py.png) no-repeat 2px 4px; }
+
+.group-qa { background: url(flags/qa.png) no-repeat 2px 4px; }
+
+.group-re { background: url(flags/re.png) no-repeat 2px 4px; }
+.group-ro { background: url(flags/ro.png) no-repeat 2px 4px; }
+.group-rs { background: url(flags/rs.png) no-repeat 2px 4px; }
+.group-ru { background: url(flags/ru.png) no-repeat 2px 4px; }
+.group-rw { background: url(flags/rw.png) no-repeat 2px 4px; }
+
+.group-sa { background: url(flags/sa.png) no-repeat 2px 4px; }
+.group-sb { background: url(flags/sb.png) no-repeat 2px 4px; }
+.group-sc { background: url(flags/sc.png) no-repeat 2px 4px; }
+.group-scotland { background: url(flags/scotland.png) no-repeat 2px 4px; }
+.group-sd { background: url(flags/sd.png) no-repeat 2px 4px; }
+.group-se { background: url(flags/se.png) no-repeat 2px 4px; }
+.group-sg { background: url(flags/sg.png) no-repeat 2px 4px; }
+.group-sh { background: url(flags/sh.png) no-repeat 2px 4px; }
+.group-si { background: url(flags/si.png) no-repeat 2px 4px; }
+.group-sj { background: url(flags/sj.png) no-repeat 2px 4px; }
+.group-sk { background: url(flags/sk.png) no-repeat 2px 4px; }
+.group-sl { background: url(flags/sl.png) no-repeat 2px 4px; }
+.group-sm { background: url(flags/sm.png) no-repeat 2px 4px; }
+.group-sn { background: url(flags/sn.png) no-repeat 2px 4px; }
+.group-so { background: url(flags/sp.png) no-repeat 2px 4px; }
+.group-sr { background: url(flags/sr.png) no-repeat 2px 4px; }
+.group-st { background: url(flags/st.png) no-repeat 2px 4px; }
+.group-sv { background: url(flags/sv.png) no-repeat 2px 4px; }
+.group-sy { background: url(flags/sy.png) no-repeat 2px 4px; }
+.group-sz { background: url(flags/sz.png) no-repeat 2px 4px; }
+
+.group-tc { background: url(flags/tc.png) no-repeat 2px 4px; }
+.group-td { background: url(flags/td.png) no-repeat 2px 4px; }
+.group-tf { background: url(flags/tf.png) no-repeat 2px 4px; }
+.group-tg { background: url(flags/tg.png) no-repeat 2px 4px; }
+.group-th { background: url(flags/th.png) no-repeat 2px 4px; }
+.group-tj { background: url(flags/tj.png) no-repeat 2px 4px; }
+.group-tl { background: url(flags/tl.png) no-repeat 2px 4px; }
+.group-tm { background: url(flags/tm.png) no-repeat 2px 4px; }
+.group-tn { background: url(flags/to.png) no-repeat 2px 4px; }
+.group-to { background: url(flags/tp.png) no-repeat 2px 4px; }
+.group-tr { background: url(flags/tr.png) no-repeat 2px 4px; }
+.group-tt { background: url(flags/tt.png) no-repeat 2px 4px; }
+.group-tv { background: url(flags/tv.png) no-repeat 2px 4px; }
+.group-tw { background: url(flags/tw.png) no-repeat 2px 4px; }
+.group-tz { background: url(flags/tz.png) no-repeat 2px 4px; }
+
+.group-ua { background: url(flags/ua.png) no-repeat 2px 4px; }
+.group-ug { background: url(flags/ug.png) no-repeat 2px 4px; }
+.group-um { background: url(flags/um.png) no-repeat 2px 4px; }
+.group-us { background: url(flags/us.png) no-repeat 2px 4px; }
+.group-uy { background: url(flags/uy.png) no-repeat 2px 4px; }
+.group-uz { background: url(flags/uz.png) no-repeat 2px 4px; }
+
+.group-va { background: url(flags/va.png) no-repeat 2px 4px; }
+.group-vc { background: url(flags/vc.png) no-repeat 2px 4px; }
+.group-ve { background: url(flags/ve.png) no-repeat 2px 4px; }
+.group-vg { background: url(flags/vg.png) no-repeat 2px 4px; }
+.group-vi { background: url(flags/vi.png) no-repeat 2px 4px; }
+.group-vn { background: url(flags/vn.png) no-repeat 2px 4px; }
+.group-vu { background: url(flags/vu.png) no-repeat 2px 4px; }
+
+.group-wales { background: url(flags/wales.png) no-repeat 2px 4px; }
+.group-wf { background: url(flags/wf.png) no-repeat 2px 4px; }
+.group-ws { background: url(flags/ws.png) no-repeat 2px 4px; }
+
+.group-ye { background: url(flags/ye.png) no-repeat 2px 4px; }
+.group-yt { background: url(flags/yt.png) no-repeat 2px 4px; }
+
+.group-za { background: url(flags/za.png) no-repeat 2px 4px; }
+.group-zm { background: url(flags/zm.png) no-repeat 2px 4px; }
+.group-zw { background: url(flags/zw.png) no-repeat 2px 4px; }
