@@ -1,3 +1,5 @@
+[![Stories in Ready](https://badge.waffle.io/codeforkansascity/CommunityKC.svg?label=ready&title=Ready)](http://waffle.io/codeforkansascity/CommunityKC)
+
 # CommunityKC
 <p>Visualization and management of community-based projects</p>
 <p>Drupal site currently hosted at http://communitykc.org</p>
