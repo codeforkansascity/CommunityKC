@@ -1,4 +1,4 @@
-[![Stories in Ready](https://badge.waffle.io/codeforkansascity/CommunityKC.svg?label=ready&title=Ready)](http://waffle.io/codeforkansascity/CommunityKC)
+[![Stories in Ready](https://badge.waffle.io/codeforkansascity/CommunityKC.svg?label=ready&title=Cards%20Ready%20To%20Work%20On)](http://waffle.io/codeforkansascity/CommunityKC)
 
 # CommunityKC
 <p>Visualization and management of community-based projects</p>
