@@ -1,6 +1,7 @@
 <?php
 /* include file imports */
 require_once('custom.user.inc');
+require_once('custom.helpers.inc');
 
 /**
  * Implements hook_menu
@@ -84,6 +85,7 @@ function custom_node_presave($node) {
 * notifications
 */
 function _custom_project_node_presave($node) {
+
 	if (true || empty($node->nid)) {
 		# only run if this is a new node and has a neighborhood set
 		$neighborhoods = array();
@@ -98,17 +100,107 @@ function _custom_project_node_presave($node) {
 				$project_types[] = $fld['tid'];			
 			}
 		}
-		// query
-		// users with field_project_notify_prefs
-	// test only
-		# $notifications = _custom_notification_query($neighborhoods, $project_types, $node->uid);
-		// user is not $node->uid
+		# query
+		# users with field_project_notify_prefs
+		# test only
+		$notifications = _custom_notification_query($neighborhoods, $project_types, $node->uid);
+		foreach ($notifications as $uid=>$matches) {
+			# loop through notifications
+			if ($uid == $node->uid) {
+				# skip if current user matches up.
+				continue;
+			}
+			foreach ($matches as $taxonomy_type=>$records) {
+				foreach($records as $tid=>$pref) {
+					# turn pref to bit array, function in helpers.
+					$prefs_bit = _custom_decimal_prefs_to_bit_array($pref);
+/* drush eval "var_dump(_custom_decimal_prefs_to_bit_array(5));"
+array(3) {
+  [0]=>
+  string(1) "1"
+  [1]=>
+  string(1) "0"
+  [2]=>
+  string(1) "1"
+}
+
+positions seem backwards because binary is right to left and string is left to right - so 0 is highest digit, etc. 
+ [2]same neighborhood, [1] same type, [0] same type and neighborhood.
+ */
+				}
+			}
+			
+
+		}
 	}
 }
 
+/* test/proof of concept code 
+result of below:
+uid = 1:
+array (
+  'neighborhoods' => 
+  array (
+    4 => 3,
+    5 => 0,
+    6 => 1,
+    14 => 7,
+  ),
+  'project_types' => 
+  array (
+    3 => 2,
+    91 => 5,
+    100 => 1,
+  ),
+)
+
+uid = 2:
+array (
+  'neighborhoods' => 
+  array (
+    6 => 6,
+  ),
+  'project_types' => 
+  array (
+    14 => 5,
+    10 => 4,
+  ),
+)
+
+
+
+function _custom_get_notification_test_array() {
+	$results = array();
+	$results[1]['neighborhoods'][4] = 3;
+	$results[1]['neighborhoods'][5] = 0;
+	$results[1]['neighborhoods'][6] = 1;
+	$results[1]['neighborhoods'][14] = 7;
+	$results[1]['project_types'][3] = 2;
+	$results[1]['project_types'][91] = 5;
+	$results[1]['project_types'][100] = 1;
+
+	$results[2]['neighborhoods'][6] = 6;
+	$results[2]['project_types'][14] = 5;	
+	$results[2]['project_types'][10] = 4;
+	return $results;
+}
+
+function _custom_test_notification_loop() {
+	$results = _custom_get_notification_test_array();
+	foreach($results as $uid=>$match) {
+		echo "$uid\n";
+		echo var_export($match,true);
+		echo "\n\n";
+	}
+}
+*/
+
 /**
+ * Queries the database for users with projects matching the TIDs in neighborhood and project types
+ * returns a list of users, and their notification prefs.
  * @param array $neighborhoods array of tid ints for neighborhoods based on saved project
  * @param $project_types array of tid ints for project types based on save project
+ * @return  array of notification results in the format results[user_id][neighborhoods|project_types][tid] => [0-7]
  */
 function _custom_notification_query($neighborhoods, $project_types, $uid) {
 
@@ -167,8 +259,7 @@ or
 
 		$results[$record->uid]['neighborhoods'][$record->tid_nh] = $record->notification_prefs;
 		$results[$record->uid]['project_types'][$record->tid_pt] = $record->notification_prefs;
-	}
-	var_dump($results);
+	}	
 	return $results;
 }
 

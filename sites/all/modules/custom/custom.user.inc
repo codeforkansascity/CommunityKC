@@ -116,14 +116,15 @@ function custom_user_presave(&$edit, $account, $category) {
 
 }
 /**
- * field stores a bit total like 7 - this splits it to 3 things and then to an assoc array the form alter can use for a default value 
+ * field stores a bit total like 7 - this splits it to 3 things and then to an assoc array the form alter can use for a default value.
+ * Data format is set up specifically for the form.
  * $bit_array is 3 0 or 1 digits representing highest to lowest - left side is highest to array[0] is the 4 digit position.
  * @param int $bit_total value stored in field
  * notifications
  */
 function _custom_project_notify_field_default_value($bit_total) {
-	$bits = str_pad(decbin($bit_total),3,'0',STR_PAD_LEFT);
-	$bit_array = str_split($bits);
+	$bit_array = _custom_decimal_prefs_to_bit_array($bit_total);
+	
 	$result = array(
 		1 => $bit_array[2] ? 1 : 0,  // same neighborhood
 		2 => $bit_array[1] ? 2 : 0,  // same type
@@ -131,6 +132,8 @@ function _custom_project_notify_field_default_value($bit_total) {
 	);
 	return $result;
 }
+
+
 
 /**
 * Used for one-time mapping users to projects
