@@ -5,5 +5,8 @@ sites/*/settings*.php
 sites/*/files
 sites/*/private
 
+# Ignore devel module on local
+sites/all/modules/devel
+
 # ide files
 .idea
