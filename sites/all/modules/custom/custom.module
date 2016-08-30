@@ -110,10 +110,35 @@ function _custom_project_node_presave($node) {
 				# skip if current user matches up.
 				continue;
 			}
+			$add_to_queue = false;
 			foreach ($matches as $taxonomy_type=>$records) {
+				$both_matches = 0; # if this gets to 2 then add to queue = true
 				foreach($records as $tid=>$pref) {
 					# turn pref to bit array, function in helpers.
 					$prefs_bit = _custom_decimal_prefs_to_bit_array($pref);
+					# same neighborhood
+					if ($taxonomy_type == "neighborhood" && array_key_exists($tid, $neighborhoods) ) {
+						if ($prefs_bit[2] == "1") {
+							# same neighborhood
+							$add_to_queue = TRUE;
+						}
+						else {
+							if ($prefs_bit[0] == "1") {
+								$both_matches++;
+							}
+						}
+					}
+					# same project type
+					if ($taxonomy_type == "project_type" && array_key_exits($tid, $project_types) ) {
+						if ($prefs_bit[1] == "1") {
+							$add_to_queue = TRUE;
+						}
+						else {
+							if($prefs_bit[0] == "1") {
+								$both_matches++;
+							}
+						}
+					}
 /* drush eval "var_dump(_custom_decimal_prefs_to_bit_array(5));"
 array(3) {
   [0]=>
@@ -126,15 +151,37 @@ array(3) {
 
 positions seem backwards because binary is right to left and string is left to right - so 0 is highest digit, etc. 
  [2]same neighborhood, [1] same type, [0] same type and neighborhood.
- */
+		 */
+				}
+				if ($both_matches == 2) {
+					$add_to_queue = true;
 				}
 			}
-			
-
+			if ($add_to_queue) {
+				// now add if needed.
+				_custom_enqueue_project_notification($node,$uid, $neighborhoods, $project_types);
+			}
 		}
 	}
 }
 
+function _custom_enqueue_project_notification($node, $uid, $neighborhoods, $project_types) {
+	$user = user_load($uid);
+	$tokens = array(
+		'name' => $user->name,
+		'mail' => $user->mail,
+		'project' => $node->title,
+		'neighborhoods' => $neighborhoods,
+		'project_types' => $project_types
+	);
+	$queue = new stdClass();
+	$queue->uid = $uid;
+	$queue->mail_type = 'custom_project_notification_email';
+	$queue->tokens = serialize($tokens);
+	$queue->created = REQUEST_TIME;
+	$queue->sent = null;
+	drupal_write_record( 'custom_notify_email_queue', $queue);
+}
 /* test/proof of concept code 
 result of below:
 uid = 1:
