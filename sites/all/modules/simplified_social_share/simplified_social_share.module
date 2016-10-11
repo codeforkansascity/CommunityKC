@@ -1,0 +1,494 @@
+<?php
+
+/**
+ * @file
+ * Implement socialshare support for Drupal
+ */
+/**
+ * Implements hook_menu().
+ * Responed to url handling for simplified_social_share module.
+ *
+ * @return array An array of menu items
+ */
+ 
+
+function simplified_social_share_menu() {
+  $file_path = drupal_get_path('module', 'simplified_social_share');
+
+  $path = 'admin/config/people/social9/share';
+    $path = 'admin/config/people/social9/share/settings';
+    $items['admin/config/people/social9/share'] = array(
+      'title' => 'Simplified Open Social Share',
+      'description' => 'Configure setting for Simplified Open Social Share',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('simplified_open_social_sharebar_settings_form'),
+      'access arguments' => array('administer open social sharing'),
+      'weight' => -4,
+      'file' => 'simplified_social_share.admin.inc',
+    );
+  $items[$path] = array(
+    'title' => 'Open Social Sharing',
+    'description' => 'simplified_open_social_share settings.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('simplified_open_social_sharebar_settings_form'),
+    'access arguments' => array('administer open social sharing'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 2,
+    'file path' => $file_path,
+    'file' => 'simplified_social_share.admin.inc',
+  );
+  return $items;
+}
+
+/**
+ * Implements hook_permission().
+ *
+ * Responed to Define user permissions.
+ *
+ * @return array An array of permission settings
+ */
+function simplified_social_share_permission() {
+  return array(
+    'administer open social sharing' => array(
+      'title' => t('Administer open Social Sharing settings'),
+      'restrict access' => TRUE,
+    ),
+  );
+}
+
+/**
+ * Implements hook_theme().
+ *
+ * @return array An associative array of theme hook information
+ */
+function simplified_social_share_theme() {
+  return array(
+    'simplified_open_social_share' => array(
+      'variables' => array(
+        'node' => NULL,
+        'position' => NULL,
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_block_info().
+ *
+ * @return array An associative array whose keys define the delta for each block and whose values contain the block descriptions
+ */
+function simplified_social_share_block_info() {
+  $blocks['open_sharing'] = array(
+    'info' => t('Open Social Sharing'),
+  );
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_view().
+ *
+ * @param $delta Which block to render. This is a unique identifier for the block within the module, defined in hook_block_info()
+ * @return array Contain block's body and subject
+ */
+
+function simplified_social_share_block_view($delta) {      
+  $block = array();
+  $item = menu_get_object($type = 'node', $position = 1, $path = NULL); 
+  $item_summary = isset($item->body['und'][0]['summary']) && !empty($item->body['und'][0]['summary']) ? $item->body['und'][0]['summary'] :'';
+  if (empty($item_summary ) && !empty($item->body['und'][0]['value'])) {
+      if(strlen($item->body['und'][0]['value']) >= 500){     
+       $item_summary = substr($item->body['und'][0]['value'], 0, strpos($item->body['und'][0]['value'], '.', 500)); 
+      }else{
+        $item_summary = $item->body['und'][0]['value'];
+      }
+       $item_summary.= '.';
+  }  
+  $item_image = isset($item->field_image['und'][0]['uri']) && !empty($item->field_image['und'][0]['uri']) ? file_create_url($item->field_image['und'][0]['uri']) :'';
+ 
+
+  if ($delta == 'open_sharing') {
+    $output = '';
+    if (variable_get('simplified_open_social_share_enable_horizontal_share') == 1) {
+      simplified_open_social_share_horizontal_script_code();
+      $output .= simplified_open_social_share_horizontal_sharing_div($item_summary,$item_image);
+    }
+    if (variable_get('simplified_open_social_share_enable_vertical_share') == 1) {
+      simplified_open_social_share_vertical_script_code();
+       $position1 = 'bottom';
+        $position2 = 'right';
+      if (variable_get('opensocialshare_vertical_position') == '0') {
+        $position1 = 'top';
+        $position2 = 'left';
+      }
+      elseif (variable_get('opensocialshare_vertical_position') == '1') {
+        $position1 = 'top';
+        $position2 = 'right';
+      }
+      elseif (variable_get('opensocialshare_vertical_position') == '2') {
+        $position1 = 'bottom';
+        $position2 = 'left';
+      }
+      $output .= simplified_open_social_share_vertical_sharing_div($item_summary,$item_image,$position1,$position2);
+    }
+    $block['content'] = $output;
+  }
+  return $block;
+}
+
+/**
+ * Theme social share
+ *
+ * @param object $node The node that is being assembled for rendering.
+ * @return string Sharing div
+ */
+
+function theme_simplified_open_social_share($node) { 
+
+  $output = "";
+  $item = menu_get_object($type = 'node', $position = 1, $path = NULL);
+  $item_nid = (!empty($item->nid) ? $item->nid : "");
+  $item_title = (!empty($item->title) ? $item->title : "");  
+  $item_summary = isset($item->body['und'][0]['summary']) && !empty($item->body['und'][0]['summary']) ? $item->body['und'][0]['summary'] :'';
+  if (empty($item_summary ) && !empty($item->body['und'][0]['value'])) {    
+      if(strlen($item->body['und'][0]['value']) >= 500){  
+        $item_summary = substr($item->body['und'][0]['value'], 0, strpos($item->body['und'][0]['value'], '.', 500)); 
+      }else{    
+        $item_summary = $item->body['und'][0]['value'];
+      }
+       $item_summary.= '.';
+  }
+  
+  $item_image = isset($item->field_image['und'][0]['uri']) && !empty($item->field_image['und'][0]['uri']) ? file_create_url($item->field_image['und'][0]['uri']) :'';
+ 
+  $shareall_withexcept = variable_get('opensocialshare_show_pages');
+  $node_withexcept = variable_get('opensocialshare_show_exceptpages');
+  $node_except = explode(',', $node_withexcept);
+  $vertical_shareall_withexcept = variable_get('opensocialshare_vertical_show_pages');
+  $vertical_node_withexcept = variable_get('opensocialshare_vertical_show_exceptpages');
+  $vertical_node_except = explode(',', $vertical_node_withexcept);
+  $share_title = variable_get('opensocialshare_label_string', 'Share it now!');
+
+  if (variable_get('simplified_open_social_share_enable_horizontal_share') == 1) {   
+    if ($node['position'] == 'horizontal') {
+      if ($shareall_withexcept == 0) {
+        if (!in_array($item_nid, $node_except) AND !in_array($item_title, $node_except)) {         
+          $output .= '<div>' . $share_title . '</div>';
+          $output .= simplified_open_social_share_horizontal_sharing_div($item_summary,$item_image);
+        }
+      }
+      elseif ($shareall_withexcept == 1) {
+        if (in_array($item_nid, $node_except) OR in_array($item_title, $node_except)) {      
+          $output .= '<div>' . $share_title . '</div>';
+          $output .= simplified_open_social_share_horizontal_sharing_div($item_summary,$item_image);
+        }
+      }
+    }
+
+    simplified_open_social_share_horizontal_script_code();
+  }
+
+  if (variable_get('simplified_open_social_share_enable_vertical_share') == 1) {
+    if ($node['position'] == 'vertical') {
+        $position1 = 'bottom';
+        $position2 = 'right';
+      if (variable_get('opensocialshare_vertical_position') == '0') {
+        $position1 = 'top';
+        $position2 = 'left';
+      }
+      elseif (variable_get('opensocialshare_vertical_position') == '1') {
+        $position1 = 'top';
+        $position2 = 'right';
+      }
+      elseif (variable_get('opensocialshare_vertical_position') == '2') {
+        $position1 = 'bottom';
+        $position2 = 'left';
+      }
+      if ($vertical_shareall_withexcept == 0) {
+        if (!in_array($item_nid, $vertical_node_except) AND !in_array($item_title, $vertical_node_except)) {
+          $output .= simplified_open_social_share_vertical_sharing_div($item_summary,$item_image,$position1,$position2);
+        }
+      }
+      elseif ($vertical_shareall_withexcept == 1) {
+        if (in_array($item_nid, $vertical_node_except) OR in_array($item_title, $vertical_node_except)) {
+          $output .= simplified_open_social_share_vertical_sharing_div($item_summary,$item_image,$position1,$position2);
+        }
+      }
+    }
+    simplified_open_social_share_vertical_script_code();
+  }
+
+  return $output;
+}
+
+/**
+ * Implements hook_node_view().
+ *
+ * @param object $node The node that is being assembled for rendering.
+ * @param array $view_mode The $view_mode parameter from node_view()
+ * @param string $langcode The language code used for rendering.
+ */
+
+function simplified_social_share_node_view($node, $view_mode, $langcode) {
+
+  if (variable_get('simplified_open_social_share_enable_horizontal_share') == 1) {
+    if (variable_get('opensocialshare_position_top', 1)) {        
+      $node->content['opensocialshare_top'] = array(
+        '#markup' => theme('simplified_open_social_share', array(
+          'node' => $node,
+          'position' => 'horizontal',
+        )),
+        '#weight' => -10,
+      );
+    }
+
+    if (variable_get('opensocialshare_position_bottom', 1)) {
+      $node->content['opensocialshare_bottom'] = array(
+        '#markup' => theme('simplified_open_social_share', array(
+          'node' => $node,
+          'position' => 'horizontal',
+        )),
+        '#weight' => 10,
+      );
+    }
+  }
+
+  if (variable_get('simplified_open_social_share_enable_vertical_share') == 1) {
+    $node->content['opensocialshare_vertical'] = array(
+      '#markup' => theme('simplified_open_social_share', array(
+        'node' => $node,
+        'position' => 'vertical',
+      )),
+      '#weight' => 10,
+    );
+  }
+}
+/**
+ * Implements pop up window option. 
+ */
+function simplified_open_social_share_get_pop_up_window(){
+  $popup_window = '';
+  $popupVal = variable_get('opensocialshare_popup_window');
+  $height = variable_get('opensocialshare_popup_window_size_height');
+  $width = variable_get('opensocialshare_popup_window_size_width');
+  if ($popupVal != 0 && !empty($height) && !empty($width)) {
+    $popup_window = '{height:' . $height . ',width:' . $width . '}';
+  }   
+  return $popup_window;
+}
+/**
+ *  Horizontal Open Social Sharing Script code.
+ */
+function simplified_open_social_share_horizontal_script_code() {
+
+  module_load_include('inc', 'simplified_social_share', 'simplified_social_share.admin');
+  $share_providers = variable_get("simplified_open_social_share_rearrange_providers_list");
+  $horizontal_image = variable_get('simplified_open_social_share_horizontal_images');   
+
+  if (empty($share_providers)) {
+    variable_set('simplified_open_social_share_rearrange_providers_list', simplified_open_social_share_default_sharing_networks('simplified_open_social_share_rearrange_providers_list'));
+  } 
+  
+  $defaultsettings = array(  
+      'horizontal' => TRUE, 
+      'providers' => implode(",", variable_get('simplified_open_social_share_rearrange_providers_list')),
+      'widgets' => implode(",", variable_get('socialcounter_rearrange_providers_list')), 
+      'isHorizontalLayout' => 1, // 0 or 1 - vertical layout or horizontal layout    
+      'emailMessage' => variable_get('opensocialshare_email_message'),
+      'emailSubject' => variable_get('opensocialshare_email_subject'),
+      'isEmailContentReadOnly' => variable_get('opensocialshare_is_email_content_read_only'),    
+      'theme' => 'OpenSocialShareDefaultTheme',
+      'isShortenUrl' => variable_get('opensocialshare_is_shorten_url'), 
+      'facebookAppId' => variable_get('opensocialshare_facebook_app_id'), 
+      'isTotalShare' => variable_get('opensocialshare_is_total_share'),
+      'isOpenSingleWindow' => variable_get('opensocialshare_is_open_single_window'),      
+      'twittermention' => variable_get('opensocialshare_twitter_mention'),   
+      'twitterhashtags' => variable_get('opensocialshare_twitter_hash_tags'),  
+      'popupWindowSize' => simplified_open_social_share_get_pop_up_window(),
+      'isMobileFriendly' => variable_get('opensocialshare_is_mobile_friendly'),
+      'totalShareContainer' => 'os-share-count',
+      'customOption' => variable_get('opensocialshare_custom_options')
+    );
+          
+  if (in_array($horizontal_image, array('8', '9'))) {       
+    $counter_providers = variable_get('socialcounter_rearrange_providers_list');
+
+    if (empty($counter_providers)) {
+      variable_set('socialcounter_rearrange_providers_list', simplified_open_social_share_default_sharing_networks('socialcounter_rearrange_providers_list'));
+    }
+    
+    $counter = 1;
+    if (variable_get('simplified_open_social_share_horizontal_images') == '8') {  
+      $counter = 0;
+    }
+    
+    $horizontalsettings = array(           
+      'divwidget' => 'open-social-counter-simplebox',   
+      'isCounterWidgetTheme' => 1, // 0 or 1 - standard themes or counter widget themes
+      'isHorizontalCounter' => $counter, // 0 or 1 - counter on top or counter to right - counter themes only 
+      'widgetIconSize' => "32", // "16" or "32" - 16px or 32px standard themes only
+      'widgetStyle' => "responsive" //"image", "square" or "responsive" - standard themes only     
+    );
+  }
+  else {     
+    $interface = 'square';   
+    if ($horizontal_image == '2' || $horizontal_image == '3') {       
+      $interface = 'image';
+    }
+    elseif ($horizontal_image == '10') {         
+      $interface = 'responsive';
+    }
+    $size = '32';
+
+    if (in_array($horizontal_image, array('1', '3', '8', '9'))) {         
+      $size = '16';
+    }    
+ 
+    $horizontalsettings = array(   
+      'divwidget' => 'os-share-widget-interface',   
+      'isCounterWidgetTheme' => 0, // 0 or 1 - standard themes or counter widget themes
+      'isHorizontalCounter' => 0, // 0 or 1 - counter on top or counter to right - counter themes only
+      'widgetIconSize' => $size, // "16" or "32" - 16px or 32px standard themes only
+      'widgetStyle' => $interface //"image", "square" or "responsive" - standard themes only    
+    );     
+  }
+  $mysettings = array_merge($defaultsettings, $horizontalsettings); 
+  drupal_add_js(array('advanceopensocialshare' => $mysettings), 'setting');  
+}
+/**
+ * Vertical Open Social Sharing Script code.
+ */
+function simplified_open_social_share_vertical_script_code() {
+  module_load_include('inc', 'simplified_social_share', 'simplified_social_share.admin');
+  
+  $defaultsettings = array(
+      'vertical' => TRUE,              
+      'vericalProviders' => implode(",", variable_get('opensocialshare_vertical_rearrange_providers_list')), 
+      'verticalWidgets' => implode(",", variable_get('socialcounter_vertical_rearrange_providers_list')),  
+      'verticalIsHorizontalLayout' => 0, // 0 or 1 - vertical layout or horizontal layout
+      'verticalEmailMessage' => variable_get('opensocialshare_email_message'),
+      'verticalEmailSubject' => variable_get('opensocialshare_email_subject'),
+      'verticalIsEmailContentReadOnly' => variable_get('opensocialshare_is_email_content_read_only'),             
+      'verticalTheme' =>  'OpenSocialShareDefaultTheme',  
+      'verticalIsShortenUrl' => variable_get('opensocialshare_is_shorten_url'), 
+      'verticalFacebookAppId' => variable_get('opensocialshare_facebook_app_id'), 
+      'verticalIsTotalShare' => variable_get('opensocialshare_is_total_share'),
+      'verticalIsOpenSingleWindow' => variable_get('opensocialshare_is_open_single_window'),   
+      'verticalTwitterMention' => variable_get('opensocialshare_twitter_mention'),   
+      'verticalTwitterHashTags' => variable_get('opensocialshare_twitter_hash_tags'),     
+      'verticalPopupWindowSize' => simplified_open_social_share_get_pop_up_window(),  
+      'verticalIsMobileFriendly' => variable_get('opensocialshare_is_mobile_friendly'),
+      'verticalTotalShareContainer' => 'os-share-count',
+      'verticalCustomOption' => variable_get('opensocialshare_custom_options')
+    );
+  
+  if (variable_get('simplified_open_social_share_vertical_images') == '4' || variable_get('simplified_open_social_share_vertical_images') == '5') {
+    $share_providers = variable_get("opensocialshare_vertical_rearrange_providers_list");
+
+    if (empty($share_providers)) {
+      variable_set('opensocialshare_vertical_rearrange_providers_list', simplified_open_social_share_default_sharing_networks('opensocialshare_vertical_rearrange_providers_list'));
+    }
+
+    $size = '16';
+    if (variable_get('simplified_open_social_share_vertical_images') == '4') {
+      $size = '32';
+    }
+      
+    $verticalsettings = array(   
+      'verticalDivwidget' => 'open-social-share-vertical-container',                     
+      'verticalIsCounterWidgetTheme' => 0, // 0 or 1 - standard themes or counter widget themes
+      'verticalIsHorizontalCounter' => 0, // 0 or 1 - counter on top or counter to right - counter themes only
+      'verticalWidgetIconSize' => $size, // "16" or "32" - 16px or 32px standard themes only
+      'verticalWidgetStyle' => 'square' //"image", "square" or "responsive" - standard themes only      
+    );
+  }
+  else {
+    $counter_providers = variable_get('socialcounter_rearrange_providers_list');
+
+    if (empty($counter_providers)) {
+      variable_set('socialcounter_rearrange_providers_list', simplified_open_social_share_default_sharing_networks('socialcounter_rearrange_providers_list'));
+    }
+
+    $counter = 1;
+    if (variable_get('simplified_open_social_share_vertical_images') == '6') {
+      $counter = 0;
+    }   
+    $verticalsettings = array(      
+      'verticalDivwidget' => 'open-social-counter-vertical-simplebox',                      
+      'verticalIsCounterWidgetTheme' => 1, // 0 or 1 - standard themes or counter widget themes
+      'verticalIsHorizontalCounter' => $counter, // 0 or 1 - counter on top or counter to right - counter themes only
+      'verticalWidgetIconSize' => '16', // "16" or "32" - 16px or 32px standard themes only
+      'verticalWidgetStyle' => 'image' //"image", "square" or "responsive" - standard themes only        
+    );
+  }
+  $mysettings = array_merge($defaultsettings, $verticalsettings);
+  drupal_add_js(array('advanceopensocialshare' => $mysettings), 'setting');
+}
+/**
+ * Check values in array.
+ *
+ * @param string $value check value is in array
+ * @return boolean true if value exist in array
+ */
+function simplified_open_social_share_in_array($value) {
+  if (in_array($value, array('0', '1', '2', '3', '10'))) {
+    return TRUE;
+  }
+  return FALSE;
+}
+
+/**
+ * Get horizontal div to show sharing widget
+ *
+ * @return string Horizontal sharing div
+ */
+function simplified_open_social_share_horizontal_sharing_div($item_summary,$item_image) {     
+  $socialsharing_horizontal_images = variable_get('simplified_open_social_share_horizontal_images'); 
+  simplified_open_social_share_sharing_script();
+  $current_path = url($_GET['q'], array('absolute' => TRUE));
+  if (in_array($socialsharing_horizontal_images, array('8', '9'))) {
+    return '<div class="open-social-counter-simplebox" data-share-url="' . $current_path . '" data-share-description="'. $item_summary.'" data-share-imageurl="'.$item_image.'"></div>';
+  }
+  else {    
+    return '<div class="os-share-widget-interface" data-share-url="' . $current_path . '" data-share-description="'. $item_summary.'" data-share-imageurl="'.$item_image.'"></div>';
+  }
+}
+
+/**
+ * Get vertical div to show sharing widget.
+ *
+ * @return string Vertical sharing div
+ */
+function simplified_open_social_share_vertical_sharing_div($item_summary,$item_image,$position1,$position2) {
+  $socialsharing_vertical_images = variable_get('simplified_open_social_share_vertical_images');
+  simplified_open_social_share_sharing_script();
+  $current_path = url($_GET['q'], array('absolute' => TRUE));
+  if ($socialsharing_vertical_images == '4' || $socialsharing_vertical_images == '5') {
+    return '<div id="open-social-share-vertical-container" data-share-url="' . $current_path . '" data-share-description="'. $item_summary.'" data-share-imageurl="'.$item_image.'" style="position:fixed;'.$position1.':0px;'.$position2.':0px;"></div>';
+  }
+  else {
+    return '<div id="open-social-counter-vertical-simplebox" data-share-url="' . $current_path . '" data-share-description="'. $item_summary.'" data-share-imageurl="'.$item_image.'" style="position:fixed;'.$position1.':0px;'.$position2.':0px;"></div>';
+  }
+}
+
+/**
+ * Get Sharing script to show sharing widget.
+ */
+function simplified_open_social_share_sharing_script() {   
+  
+    drupal_add_js(drupal_get_path('module', 'simplified_social_share') . '/js/opensocialshare_widget.js', array(
+      'type' => 'file',
+      'scope' => 'footer',
+      'weight' => 7,
+    ));
+    drupal_add_js('https://sharecdn.social9.com/v2/js/opensocialshare.js', array(
+      'type' => 'file',
+      'scope' => 'header',
+      'weight' => 7,
+    ));     
+    drupal_add_js('https://sharecdn.social9.com/v2/js/opensocialsharedefaulttheme.js', array(
+      'type' => 'file',
+      'scope' => 'header',
+      'weight' => 8,
+    ));
+   drupal_add_css('https://sharecdn.social9.com/v2/css/os-share-widget-style.css', array('type' => 'external'));
+}

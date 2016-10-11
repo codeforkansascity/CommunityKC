@@ -1,8 +1,13 @@
 <?php
 
 /**
-*  Implementation of hook_form_FORM_ID_alter
-*/
+ * @file
+ * Main file for Field Display Label module.
+ */
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
 function field_display_label_form_field_ui_field_edit_form_alter(&$form, $form_state, $form_id) {
   if (!isset($form['instance'])) {
     return;
@@ -17,15 +22,8 @@ function field_display_label_form_field_ui_field_edit_form_alter(&$form, $form_s
 }
 
 /**
-*  Implementation of hook_field_display_alter
-*/
-function field_display_label_theme_registry_alter(&$theme_registry) {
-  $theme_registry['field']['preprocess functions'][] = 'field_display_label_preprocess_field';
-}
-
-/**
-*  Preprocess function to replace the regular label with the display label
-*/
+ * Implements hook_preprocess_field().
+ */
 function field_display_label_preprocess_field(&$variables) {
   $field = field_info_instance($variables['element']['#entity_type'], $variables['element']['#field_name'], $variables['element']['#bundle']);
   if (isset($field['display_label']) && strlen(trim($field['display_label'])) > 0) {
@@ -35,11 +33,11 @@ function field_display_label_preprocess_field(&$variables) {
     else {
       $variables['label'] = check_plain($field['display_label']);
     }
-   }
+  }
 }
 
 /**
- * Implementation of hook_i18n_object_info().
+ * Implements hook_i18n_object_info().
  */
 function field_display_label_i18n_object_info_alter(&$info) {
   if (!isset($info['field_instance'])) {

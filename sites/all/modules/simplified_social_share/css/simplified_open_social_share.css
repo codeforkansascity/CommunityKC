@@ -1,0 +1,281 @@
+#simplified_open_social_share_show_veritcal_widget {
+  clear: both
+}
+
+#socialcounter_show_providers_list > div,
+#socialcounter_vertical_show_providers_list > div,
+#opensocialshare_providers_list > div,
+#opensocialshare_vetical_show_providers_list > div {
+  display: inline-block;
+  margin-right: 17px;
+  width: 252px;
+}
+
+#edit-opensocialshare-counter-show-providers-list > div {
+  display: inline-block;
+  margin-right: 17px;
+}
+
+#simplified-open-social-share_horizontal_images, #simplified-open-social-share_vertical_images, #show_horizontal_block {
+  display: block;
+  border: 1px solid #ccc;
+  padding: 10px;
+  border-radius: 5px;
+  padding : 14px;
+}
+
+ul#simplified_open_social_share_rearrange_providers > li, ul#opensocialshare_vertical_rearrange_providers > li {
+  float: left;
+  margin-left: 0;
+}
+
+.form-item.form-type-radio.form-item-simplified-social-share-counter-vertical-images,
+.form-item.form-type-radio.form-item-simplified-open-social-share-vertical-images {
+  display: inline;
+}
+
+.form-item .form-type-radio.form-item-simplified-social-share-registerpage-position, .form-item.form-type-radio.form-item-simplified-social-share-attach-login-form, .form-item.form-type-radio.form-item-simplified-social-share-commenting-enable, .form-item.form-type-radio.form-item-simplified-social-share-enable, .form-item.form-type-radio.form-item-simplified-social-share-enable-counter, .form-item.form-type-radio.form-item-simplified-social-share-enable-horizontal-share, .form-item.form-type-radio.form-item-simplified-social-share-enable-share, .form-item.form-type-radio.form-item-simplified-social-share-enable-user-registration, .form-item.form-type-radio.form-item-simplified-social-share-enable-vertical-share, .form-item.form-type-radio.form-item-simplified-social-share-interface-size, .form-item.form-type-radio.form-item-simplified-social-share-loginpage-position, .form-item.form-type-radio.form-item-simplified-social-share-send-user-credentials, .form-item.form-type-radio.form-item-simplified-social-share-skip-email-verification, .form-item.form-type-radio.form-item-simplified-social-share-update-profile {
+  display: inline;
+  margin-right: 17px;
+}
+
+.form-item.form-type-checkbox.form-item-simplified-social-share-counter-comments {
+  background-color: #eaf7fc;
+}
+
+.form-item.form-type-radios.form-item-opensocialshare-vertical-position {
+  clear: both;
+}
+
+.form-item.form-type-radio.form-item-simplified-open-social-share-horizontal-images label img {
+  vertical-align: middle;
+  margin-left: 12px;
+}
+
+.form-item.form-type-radios.form-item-opensocialshare-counter-vertical-position {
+  background-color: #eaf7fc;
+  border: 1px solid;
+  border-color: #c3effa;
+  border-radius: 7px;
+  padding: 10px;
+}
+
+.form-item.form-type-radio.form-item-simplified-open-social-share-vertical-images > .form-item.form-type-radio.form-item-simplified-open-social-share-vertical-images {
+  float: none;
+  margin-top: 113px;
+}
+
+#oss_tabs {
+  bottom: -1px;
+  font-size: 1.54em;
+  line-height: 1.54em;
+  margin: 0 0 -8px;
+}
+
+div#oss_tabs li {
+  display: inline;
+  list-style: none;
+  margin: 0 0 0 -3px;
+  padding: 0;
+}
+
+div#oss_tabs li a {
+  border: 1px solid #aaa;
+  background: #ccc;
+  -moz-border-radius: 8px 8px 0 0;
+  -webkit-border-top-left-radius: 8px;
+  -webkit-border-top-right-radius: 8px;
+  border-radius: 8px 8px 0 0;
+  color: #000;
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  margin: 0 5px 2px 0;
+  outline: 0;
+  padding: 0 14px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+div#oss_tabs li a.active, div#oss_tabs li a:hover {
+  color: #fff;
+  border: 1px solid #fff !important;
+  background: #666;
+}
+
+#socialcounter_vertical_show_providers_list,
+.form-item.form-type-radios.form-item-opensocialshare-vertical-show-pages {
+  clear: both;
+}
+
+div#simplified_open_social_share_vertical_images div {
+  float: left;
+  margin-right: 20px;
+}
+
+.form-item.form-type-radio.form-item-simplified-open-social-share-vertical-images label img {
+  vertical-align: middle;
+}
+
+.form-item.form-type-radio.form-item-simplified-open-social-share-vertical-images input {
+  display: block;
+  margin: 0 auto;
+  margin-bottom: 5px;
+}
+
+#edit-thanks-block {
+  background-color: #eaf7ff;
+  border: solid 1px;
+  border-color: rgb(195, 239, 250);
+  padding-bottom: 10px;
+  border-radius: 7px;
+  float: left;
+  width: 60%;
+  margin-top: 0px !important;
+  margin-right: 15px;
+}
+
+#edit-thanks-block span, #edit-update-block span {
+  text-transform: none;
+}
+
+#edit-update-block {
+  background-color: #ffffe0;
+  border: solid 1px;
+  border-color: rgb(195, 239, 250);
+  border-radius: 7px;
+  height: 62px;
+}
+
+#edit-share{
+  clear: both;
+}
+
+#sortable li, #verticalsortable li {
+    float: left !important;
+}
+/*
+.ossshare_iconsprite32 {
+    cursor: pointer;
+    height: 32px;
+    width: 32px;
+    margin: 4px;
+    padding: 0;
+    border: none;
+    background: url(../images/ossshare_iconsprite32.png) no-repeat scroll left top transparent;
+    -webkit-transition: all .3s ease;
+    -ms-transition: all .3s ease;
+    -moz-transition: all .3s ease;
+    transition: all .3s ease;
+    list-style-type: none;
+}
+.ossshare_iconsprite32::after {
+    content: "";
+}
+.ossshare_iconsprite32.ossshare_facebook {
+    background-position: -174px 0;
+}
+.ossshare_iconsprite32.ossshare_delicious {
+    background-position: 0 0
+}
+.ossshare_iconsprite32.ossshare_digg {
+    background-position: -34px 0
+}
+.ossshare_iconsprite32.ossshare_dotnetkicks {
+    background-position: -68px 0
+}
+.ossshare_iconsprite32.ossshare_email {
+    background-position: -102px 0
+}
+.ossshare_iconsprite32.ossshare_evenmore32 {
+    background-position: -138px 0
+}
+.ossshare_iconsprite32.ossshare_facebook {
+    background-position: -174px 0
+}
+.ossshare_iconsprite32.ossshare_google {
+    background-position: -208px 0
+}
+.ossshare_iconsprite32.ossshare_googleplus {
+    background-position: -242px 0
+}
+.ossshare_iconsprite32.ossshare_hyves {
+    background-position: -276px 0
+}
+.ossshare_iconsprite32.ossshare_linkedin {
+    background-position: -310px 0
+}
+.ossshare_iconsprite32.ossshare_live {
+    background-position: -344px 0
+}
+.ossshare_iconsprite32.ossshare_myspace {
+    background-position: -378px 0
+}
+.ossshare_iconsprite32.ossshare_pinterest {
+    background-position: -412px 0
+}
+.ossshare_iconsprite32.ossshare_print {
+    background-position: -446px 0
+}
+.ossshare_iconsprite32.ossshare_reddit {
+    background-position: -480px 0
+}
+.ossshare_iconsprite32.ossshare_tumbopenShare {
+    background-position: -576px 0
+}
+.ossshare_iconsprite32.ossshare_twitter {
+    background-position: -610px 0
+}
+.ossshare_iconsprite32.ossshare_viadeo {
+    background-position: -644px 0
+}
+.ossshare_iconsprite32.ossshare_vkontakte {
+    background-position: -678px 0
+}
+.ossshare_iconsprite32.ossshare_wordpress {
+    background-position: -712px 0
+}
+.ossshare_iconsprite32.ossshare_yahoo {
+    background-position: -746px 0
+}*/
+.lrshare_interfacehorizontal {
+    clear: both;
+    font-size: 14px;
+    padding: 10px 0;
+    text-align: center;
+    margin: 0px;
+    border: none;
+    color: #000000;
+    background: none;
+    font-family: Verdana, Arial, sans-serif;
+}
+
+.lrshare_interfacehorizontal .lrshare_rrcss {
+    float: none;
+    font-size: 100%;
+    text-transform: uppercase;
+    position: relative;
+    -webkit-font-smoothing: antialiased;
+}
+.lrshare_rrcss ul {
+    float: none;
+    letter-spacing: -0.25em;
+    padding-right: 55px;
+    position: relative;
+    z-index: 2;
+    margin-left: -2px;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+.lrshare_interfacehorizontal ul {
+    float: left;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: none;
+}
+.form-textarea-wrapper {
+    width : 456px !important;
+}

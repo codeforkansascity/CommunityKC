@@ -1,5 +1,9 @@
 /* Custom styles */
 
+.field-name-field-neighborhood  li {
+font-size:.9em;	
+}
+
 .view-empty {
 color:red;
 font-size:larger;
@@ -85,9 +89,9 @@ margin-left: 1%;
 .views-field-title {
  color:#2e3192;
 }
-#map-key td {
-font-size: 1.2em;
-color: #2e3192;	
+#map-key {
+font-size: .9em;
+color: #000000;	
 }
 
 .views-widget-filter-field_neighborhood_tid {
@@ -95,7 +99,8 @@ color: #2e3192;
 }
 
 #edit-search-block-form--2 {
-border:1px solid #ccc;	
+border:2px solid #ccc;	
+width:200px;
 }
 /* ------------------- Overall Specifications ------------- */
 
@@ -1012,8 +1017,6 @@ ul.links.inline li a {
 }
 #footer-wrapper .block {
   margin: 20px 0;
-  border: 1px solid #444;
-  border-color: rgba(255, 255, 255, 0.1);
   padding: 10px;
 }
 #footer-columns .block-menu,

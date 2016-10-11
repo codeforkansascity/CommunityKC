@@ -81,6 +81,8 @@ function custom_node_presave($node) {
 	}
 }
 
+# todo: testing
+
 /* Project node type functions 
 * notifications
 */
@@ -89,6 +91,7 @@ function _custom_project_node_presave($node) {
 	if (true || empty($node->nid)) {
 		# only run if this is a new node and has a neighborhood set
 		$neighborhoods = array();
+//		die(var_dump($node->field_neighborhood));
 		if (!empty($node->field_neighborhood)) {
 			foreach($node->field_neighborhood[LANGUAGE_NONE] as $delta=>$fld) {
 				$neighborhoods[] = $fld['tid'];
@@ -299,11 +302,11 @@ and
 (	ti_nh.tid in(:nh_tids)
 or
 	ti_pt.tid in(:pt_tids))";
+	// error is happening if project does not have a neighborhood.
 	$db = db_query($query_sql, array(':nh_vid' => $neighborhood_vid, ':pt_vid' => $project_type_vid, ':uid' => $uid,
 		':nh_tids'=>$neighborhoods, ':pt_tids'=>$project_types));
 	$results = array();
 	foreach($db as $record) {
-
 		$results[$record->uid]['neighborhoods'][$record->tid_nh] = $record->notification_prefs;
 		$results[$record->uid]['project_types'][$record->tid_pt] = $record->notification_prefs;
 	}	

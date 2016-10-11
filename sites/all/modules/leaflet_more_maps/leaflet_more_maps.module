@@ -17,7 +17,7 @@ function leaflet_more_maps_default_settings() {
     'fadeAnimation'      => TRUE,
     'layerControl'       => FALSE,
     'maxZoom'            => 19,
-    'minZoom'            => 0,
+    'minZoom'            => 12,
     'scrollWheelZoom'    => TRUE,
     'touchZoom'          => TRUE,
     'trackResize'        => TRUE,

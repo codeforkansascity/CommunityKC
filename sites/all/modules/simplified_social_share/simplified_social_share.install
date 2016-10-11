@@ -1,0 +1,61 @@
+<?php
+
+/**
+ * @file
+ * Provides uninstall function for the simplified_social_share module.
+ */
+
+/**
+ * Implements hook_uninstall().
+ */
+function simplified_social_share_uninstall() {
+  $deleted_keys = array(
+    'simplified_open_social_share_horizontal',
+    'simplified_open_social_share_selected_share_interface',
+    'simplified_open_social_share_enable_horizontal_share',
+    'simplified_open_social_share_enable_vertical_share',
+    'opensocialshare_label_string',
+    'simplified_open_social_share_horizontal_images',
+    'simplified_open_social_share_vertical_images',
+    'simplified_open_social_share_show_horizotal',
+    'socialcounter_rearrange_providers_list',
+    'opensocialshare_counter_show_providers_list',
+    'simplified_open_social_share_rearrange_providers_list',
+    'opensocialshare_show_providers_list',
+    'simplified_open_social_share_rearran_providers_list',   
+    'simplified_open_social_share_show_veritical',
+    'socialcounter_vertical_rearrange_providers_list',
+    'opensocialshare_counter_vertical_show_providers_list',
+    'opensocialshare_vertical_rearrange_providers_list',
+    'opensocialshare_vetical_show_providers_list',
+    'opensocialshare_vertical_rearrange_providers_list_div',
+    'opensocialshare_vertical_position',     
+    'opensocialshare_position_top',
+    'opensocialshare_position_bottom',   
+    'opensocialshare_show_pages',
+    'opensocialshare_show_exceptpages',
+    'opensocialshare_vertical_show_pages',
+    'opensocialshare_vertical_show_exceptpages',
+    'opensocialshare_email_message',
+    'opensocialshare_email_subject',
+    'opensocialshare_is_email_content_read_only',   
+    'opensocialshare_is_follow_bar_enabled',
+    'opensocialshare_is_shorten_url',
+    'opensocialshare_facebook_app_id',
+    'opensocialshare_is_total_share',
+    'opensocialshare_is_open_single_window',   
+    'opensocialshare_popup_window',   
+    'opensocialshare_popup_window_size_height',
+    'opensocialshare_popup_window_size_width',
+    'opensocialshare_theme',
+    'opensocialshare_twitter_mention',
+    'opensocialshare_twitter_hash_tags',
+    'opensocialshare_is_custom_shortner',
+    'opensocialshare_custom_options'
+  );
+  foreach ($deleted_keys as $key) {
+    variable_del($key);
+  }
+}
+
+
