@@ -46,7 +46,7 @@ function custom_schema() {
 				'not null' => FALSE,
 			),
 		),
-		'primary key' => array('custom_notify_email_queue'),
+		'primary key' => array('queue_id'),
 		'indexes' => array(
 			'custom_notify_email_queue_sent' => array('sent'),
 		),
@@ -103,7 +103,7 @@ function custom_install() {
 				'not null' => FALSE,
 			),
 		),
-		'primary key' => array('custom_notify_email_queue'),
+		'primary key' => array('queue_id'),
 		'indexes' => array(
 			'custom_notify_email_queue_sent' => array('sent'),
 		),
