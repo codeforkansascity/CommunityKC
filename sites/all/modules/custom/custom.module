@@ -256,7 +256,9 @@ function _custom_notification_query($neighborhoods, $project_types, $uid) {
 
 	$neighborhood_vid = 1;
 	$project_type_vid = 2;
-	$query_sql = "
+	if (count($neighborhoods) > 0 && count($project_types) > 0) {
+		# both neighborhoods and project types
+		$query_sql = "
 select 
 	-- user
 	u.uid, u.name, u.mail, prefs.field_project_notification_prefs_value as notification_prefs,
@@ -302,9 +304,57 @@ and
 (	ti_nh.tid in(:nh_tids)
 or
 	ti_pt.tid in(:pt_tids))";
-	// error is happening if project does not have a neighborhood.
-	$db = db_query($query_sql, array(':nh_vid' => $neighborhood_vid, ':pt_vid' => $project_type_vid, ':uid' => $uid,
-		':nh_tids'=>$neighborhoods, ':pt_tids'=>$project_types));
+		// error is happening if project does not have a neighborhood.
+		$db = db_query($query_sql, array(
+			':nh_vid' => $neighborhood_vid,
+			':pt_vid' => $project_type_vid,
+			':uid' => $uid,
+			':nh_tids' => $neighborhoods,
+			':pt_tids' => $project_types
+		));
+	}
+	elseif (count($project_types > 0) ) {
+		# just project types
+		$query_sql = "select 
+	-- user
+	u.uid, u.name, u.mail, prefs.field_project_notification_prefs_value as notification_prefs,
+    -- project node
+    n.nid, n.title, 
+    -- project type
+    ti_pt.tid as tid_pt, ttd_pt.name as project_type
+-- 	*
+from 
+	{node} n
+    inner join
+		{users} u
+			on u.uid = n.uid
+-- user notification prefs
+	inner join
+		{field_data_field_project_notification_prefs} prefs
+			on prefs.bundle = 'user' and prefs.entity_id = u.uid
+-- project type
+	inner join
+		{taxonomy_index} ti_pt
+			on ti_pt.nid = n.nid
+	inner join 
+		{taxonomy_term_data} ttd_pt
+			on ti_pt.tid = ttd_pt.tid and ttd_pt.vid = :pt_vid
+where
+	prefs.field_project_notification_prefs_value > 0 
+and
+	u.uid != :uid
+and
+	n.type = 'project'
+and 
+    n.status = 1
+and 
+	ti_pt.tid in(:pt_tids)";
+		$db = db_query($query_sql, array(
+			':pt_vid' => $project_type_vid,
+			':uid' => $uid,
+			':pt_tids' => $project_types
+		));
+	}
 	$results = array();
 	foreach($db as $record) {
 		$results[$record->uid]['neighborhoods'][$record->tid_nh] = $record->notification_prefs;
