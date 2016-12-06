@@ -1,4 +1,3 @@
-// $Id: README.txt,v 1.6 2010/03/06 16:06:33 jhodgdon Exp $
 
 GENERAL INFORMATION
 -------------------

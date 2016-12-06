@@ -221,7 +221,9 @@ Drupal.wysiwyg.plugins.media = {
 
     // The following 5 ifs are dedicated to IE7
     // If the style is null, it is because IE7 can't read values from itself
-    if (jQuery.browser.msie && jQuery.browser.version == '7.0') {
+    if ((jQuery.browser && jQuery.browser.msie && jQuery.browser.version == '7.0')
+       ||
+       (navigator.userAgent.match(/msie [7]/i) && !window.XMLHttpRequest)) {
       if (mediaAttributes.style === "null") {
         var imgHeight = imgNode.css('height');
         var imgWidth = imgNode.css('width');
