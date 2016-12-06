@@ -93,14 +93,16 @@ function _custom_project_node_presave($node) {
 	if (true || empty($node->nid)) {
 		# only run if this is a new node and has a neighborhood set
 		$neighborhoods = array();
-//		die(var_dump($node->field_neighborhood));
+
 		if (!empty($node->field_neighborhood)) {
+			echo "field_neighborhood - " . var_export($node->field_neighborhood,true) . "\n";
 			foreach($node->field_neighborhood[LANGUAGE_NONE] as $delta=>$fld) {
 				$neighborhoods[] = $fld['tid'];
+				echo var_export($neighborhoods,true) . "\n";
 			}
 		}
 		$project_types = array();
-		if (!empty($node->field_project_type)) { 
+		if (!empty($node->field_project_type)) {
 			foreach($node->field_project_type[LANGUAGE_NONE] as $delta=>$fld) {
 				$project_types[] = $fld['tid'];			
 			}
@@ -110,7 +112,7 @@ function _custom_project_node_presave($node) {
 		# test only
 		# data format:
 		#  uid / type / taxonomy id = pref type.
-		echo "saving node " . $node->nid . "\nneighborhoods: " . var_export($neighborhoods, true) . "\nproject types: " . var_export($project_types) . "\n";
+//		echo "saving node " . $node->nid . "\nneighborhoods: " . var_export($neighborhoods, true) . "\nproject types: " . var_export($project_types) . "\n";
 		$notifications = _custom_notification_query($neighborhoods, $project_types, $node->uid);
 		echo "notification " . $node->nid . " " . $node->uid . " " . count($notifications) ."\n";
 		//echo var_export($notifications,true) ."\n";
@@ -124,12 +126,16 @@ function _custom_project_node_presave($node) {
 			foreach ($matches as $taxonomy_type=>$records) {
 				$both_matches = 0; # if this gets to 2 then add to queue = true
 				foreach($records as $tid=>$pref) {
+
 		//			echo "$taxonomy_type\n";
 					# turn pref to bit array, function in helpers.
 					$prefs_bit = _custom_decimal_prefs_to_bit_array($pref);
+					echo '$tid=>$pref ' . "$tid" . '=>' . implode($prefs_bit) . "\n";
 					# same neighborhood
 		//			echo var_export($tid, true) . "\n" . var_export($prefs_bit,true) . "\n";
-					if ($taxonomy_type == "neighborhood" && array_key_exists($tid, $neighborhoods) ) {
+//					echo "finding $tid in " . var_export(array_keys($neighborhoods),TRUE);
+					if ($taxonomy_type == "neighborhoods" && array_key_exists($tid, $neighborhoods) ) {
+						echo "prefs bit 2: " . $prefs_bit[2] . "\n";
 						if ($prefs_bit[2] == "1") {
 							# same neighborhood
 							$add_to_queue = TRUE;
@@ -138,18 +144,21 @@ function _custom_project_node_presave($node) {
 						else {
 							if ($prefs_bit[0] == "1") {
 								$both_matches++;
+								echo "adding match\n";
 							}
 						}
 					}
 					# same project type
-					if ($taxonomy_type == "project_type" && array_key_exits($tid, $project_types) ) {
+					if ($taxonomy_type == "project_types" && array_key_exists($tid, $project_types) ) {
+						echo "prefs bit 1: " . $prefs_bit[1];
 						if ($prefs_bit[1] == "1") {
 							$add_to_queue = TRUE;
-							echo "add to queue p\n";
+							echo "add to queue project\n";
 						}
 						else {
 							if($prefs_bit[0] == "1") {
 								$both_matches++;
+								echo "adding match\n";
 							}
 						}
 					}
@@ -374,9 +383,6 @@ and
 		$results[$record->uid]['neighborhoods'][$record->tid_nh] = $record->notification_prefs;
 		$results[$record->uid]['project_types'][$record->tid_pt] = $record->notification_prefs;
 	}
-	echo "results:\n";
-	echo var_export($results, true);
-	echo "\n\n";
 	return $results;
 }
 
@@ -427,6 +433,6 @@ function _custom_resave_projects() {
 		$node = node_load($n['nid']);
 		echo "node " . $node->title . "\n";
 		node_save($node);
-		die();
+	//	die();
 	}
 }
