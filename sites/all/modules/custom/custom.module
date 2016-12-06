@@ -88,6 +88,8 @@ function custom_node_presave($node) {
 */
 function _custom_project_node_presave($node) {
 
+	// TODO: remove true so this only runs on new nodes before production
+	// TODO: tests are not resulting in any notifications
 	if (true || empty($node->nid)) {
 		# only run if this is a new node and has a neighborhood set
 		$neighborhoods = array();
@@ -106,7 +108,12 @@ function _custom_project_node_presave($node) {
 		# query
 		# users with field_project_notify_prefs
 		# test only
+		# data format:
+		#  uid / type / taxonomy id = pref type.
+		echo "saving node " . $node->nid . "\nneighborhoods: " . var_export($neighborhoods, true) . "\nproject types: " . var_export($project_types) . "\n";
 		$notifications = _custom_notification_query($neighborhoods, $project_types, $node->uid);
+		echo "notification " . $node->nid . " " . $node->uid . " " . count($notifications) ."\n";
+		//echo var_export($notifications,true) ."\n";
 		foreach ($notifications as $uid=>$matches) {
 			# loop through notifications
 			if ($uid == $node->uid) {
@@ -117,13 +124,16 @@ function _custom_project_node_presave($node) {
 			foreach ($matches as $taxonomy_type=>$records) {
 				$both_matches = 0; # if this gets to 2 then add to queue = true
 				foreach($records as $tid=>$pref) {
+		//			echo "$taxonomy_type\n";
 					# turn pref to bit array, function in helpers.
 					$prefs_bit = _custom_decimal_prefs_to_bit_array($pref);
 					# same neighborhood
+		//			echo var_export($tid, true) . "\n" . var_export($prefs_bit,true) . "\n";
 					if ($taxonomy_type == "neighborhood" && array_key_exists($tid, $neighborhoods) ) {
 						if ($prefs_bit[2] == "1") {
 							# same neighborhood
 							$add_to_queue = TRUE;
+							echo "add to queue same n\n";
 						}
 						else {
 							if ($prefs_bit[0] == "1") {
@@ -135,6 +145,7 @@ function _custom_project_node_presave($node) {
 					if ($taxonomy_type == "project_type" && array_key_exits($tid, $project_types) ) {
 						if ($prefs_bit[1] == "1") {
 							$add_to_queue = TRUE;
+							echo "add to queue p\n";
 						}
 						else {
 							if($prefs_bit[0] == "1") {
@@ -158,10 +169,12 @@ positions seem backwards because binary is right to left and string is left to r
 				}
 				if ($both_matches == 2) {
 					$add_to_queue = true;
+					echo "add to queue both matches\n";
 				}
 			}
 			if ($add_to_queue) {
 				// now add if needed.
+				echo "adding to queue \n";
 				_custom_enqueue_project_notification($node,$uid, $neighborhoods, $project_types);
 			}
 		}
@@ -356,11 +369,64 @@ and
 		));
 	}
 	$results = array();
+// uid / type / taxonomy id = pref type.
 	foreach($db as $record) {
 		$results[$record->uid]['neighborhoods'][$record->tid_nh] = $record->notification_prefs;
 		$results[$record->uid]['project_types'][$record->tid_pt] = $record->notification_prefs;
-	}	
+	}
+	echo "results:\n";
+	echo var_export($results, true);
+	echo "\n\n";
 	return $results;
 }
 
 /* end project node type functions */
+
+/* temp functions for testing */
+function _custom_rando_notifcation_settings() {
+	$users = db_select('users','u')
+			->fields('u', array('uid'))
+			->execute();
+	while($u = $users->fetch()) {
+	//	echo '$u["uid"]: ' . $u->uid . "\n";
+		if (_custom_user_is_author($u)) {
+			$notify_prefs = rand(0,7);
+			$user = user_load($u->uid);
+			$edit = (array)$user;
+			$edit['field_project_notification_prefs'][LANGUAGE_NONE][0]['value'] = $notify_prefs;
+			user_save($user, $edit);
+		//	echo "user " . $user->uid . " set to " . $notify_prefs . "\n";
+		}
+	}
+}
+
+function _custom_max_notification_settings() {
+	$users = db_select('users','u')
+		->fields('u', array('uid'))
+		->execute();
+	while($u = $users->fetch()) {
+	//	echo '$u["uid"]: ' . $u->uid . "\n";
+		if (_custom_user_is_author($u)) {
+			$notify_prefs = 7;
+			$user = user_load($u->uid);
+			$edit = (array)$user;
+			$edit['field_project_notification_prefs'][LANGUAGE_NONE][0]['value'] = $notify_prefs;
+			user_save($user, $edit);
+	//		echo "user " . $user->uid . " set to " . $notify_prefs . "\n";
+		}
+	}
+}
+
+function _custom_resave_projects() {
+	$nodes = db_select("node", 'n')
+		->fields('n', array('nid'))
+		->condition('type','project','=')
+		->condition('status',1,'=')
+		->execute();
+	while($n = $nodes->fetchAssoc()) {
+		$node = node_load($n['nid']);
+		echo "node " . $node->title . "\n";
+		node_save($node);
+		die();
+	}
+}
