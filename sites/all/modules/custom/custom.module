@@ -87,18 +87,15 @@ function custom_node_presave($node) {
 * notifications
 */
 function _custom_project_node_presave($node) {
-
-	// TODO: remove true so this only runs on new nodes before production
-	// TODO: tests are not resulting in any notifications
-	if (true || empty($node->nid)) {
+	if (empty($node->nid)) {
 		# only run if this is a new node and has a neighborhood set
 		$neighborhoods = array();
 
 		if (!empty($node->field_neighborhood)) {
-			echo "field_neighborhood - " . var_export($node->field_neighborhood,true) . "\n";
+//			echo "field_neighborhood - " . var_export($node->field_neighborhood,true) . "\n";
 			foreach($node->field_neighborhood[LANGUAGE_NONE] as $delta=>$fld) {
 				$neighborhoods[] = $fld['tid'];
-				echo var_export($neighborhoods,true) . "\n";
+//				echo var_export($neighborhoods,true) . "\n";
 			}
 		}
 		$project_types = array();
@@ -113,29 +110,32 @@ function _custom_project_node_presave($node) {
 		# data format:
 		#  uid / type / taxonomy id = pref type.
 //		echo "saving node " . $node->nid . "\nneighborhoods: " . var_export($neighborhoods, true) . "\nproject types: " . var_export($project_types) . "\n";
+		echo 'neighborhoods ' .  var_export($neighborhoods, true) . "\n";
+		echo 'project_types ' . var_export($project_types,true) . "\n";
 		$notifications = _custom_notification_query($neighborhoods, $project_types, $node->uid);
-		echo "notification " . $node->nid . " " . $node->uid . " " . count($notifications) ."\n";
+		echo var_export($notifications,true);// die();
+//		echo "notification " . $node->nid . " " . $node->uid . " " . count($notifications) ."\n";
 		//echo var_export($notifications,true) ."\n";
+		$match_count = 0;
 		foreach ($notifications as $uid=>$matches) {
+			$match_count++;
 			# loop through notifications
 			if ($uid == $node->uid) {
 				# skip if current user matches up.
+				echo "current user skip.";
 				continue;
 			}
 			$add_to_queue = false;
-			foreach ($matches as $taxonomy_type=>$records) {
+			foreach ($matches as $taxonomy_type=>$records) {;
 				$both_matches = 0; # if this gets to 2 then add to queue = true
 				foreach($records as $tid=>$pref) {
-
-		//			echo "$taxonomy_type\n";
 					# turn pref to bit array, function in helpers.
 					$prefs_bit = _custom_decimal_prefs_to_bit_array($pref);
-					echo '$tid=>$pref ' . "$tid" . '=>' . implode($prefs_bit) . "\n";
 					# same neighborhood
-		//			echo var_export($tid, true) . "\n" . var_export($prefs_bit,true) . "\n";
-//					echo "finding $tid in " . var_export(array_keys($neighborhoods),TRUE);
-					if ($taxonomy_type == "neighborhoods" && array_key_exists($tid, $neighborhoods) ) {
-						echo "prefs bit 2: " . $prefs_bit[2] . "\n";
+//					echo '$tid ' . var_export($tid, true) . "\n";
+//					echo '$neighborhoods ' . var_export($neighborhoods,true) . "\n";
+					if ($taxonomy_type == "neighborhoods" && in_array($tid, $neighborhoods) ) {
+//						echo '$prefs_bit[2] == 1: ' . ($prefs_bit[2] == 1) . "\n";
 						if ($prefs_bit[2] == "1") {
 							# same neighborhood
 							$add_to_queue = TRUE;
@@ -149,7 +149,7 @@ function _custom_project_node_presave($node) {
 						}
 					}
 					# same project type
-					if ($taxonomy_type == "project_types" && array_key_exists($tid, $project_types) ) {
+					if ($taxonomy_type == "project_types" && in_array($tid, $project_types) ) {
 						echo "prefs bit 1: " . $prefs_bit[1];
 						if ($prefs_bit[1] == "1") {
 							$add_to_queue = TRUE;
@@ -162,6 +162,22 @@ function _custom_project_node_presave($node) {
 							}
 						}
 					}
+				}
+				if ($both_matches == 2) {
+					$add_to_queue = true;
+					echo "add to queue both matches\n";
+				}
+			}
+			echo "checked $match_count matches.\n";
+			if ($add_to_queue) {
+				// now add if needed.
+				echo "adding to queue \n";
+				_custom_enqueue_project_notification($node,$uid, $neighborhoods, $project_types);
+			}
+		}
+	}
+}
+
 /* drush eval "var_dump(_custom_decimal_prefs_to_bit_array(5));"
 array(3) {
   [0]=>
@@ -172,23 +188,9 @@ array(3) {
   string(1) "1"
 }
 
-positions seem backwards because binary is right to left and string is left to right - so 0 is highest digit, etc. 
+positions seem backwards because binary is right to left and string is left to right - so 0 is highest digit, etc.
  [2]same neighborhood, [1] same type, [0] same type and neighborhood.
-		 */
-				}
-				if ($both_matches == 2) {
-					$add_to_queue = true;
-					echo "add to queue both matches\n";
-				}
-			}
-			if ($add_to_queue) {
-				// now add if needed.
-				echo "adding to queue \n";
-				_custom_enqueue_project_notification($node,$uid, $neighborhoods, $project_types);
-			}
-		}
-	}
-}
+ */
 
 function _custom_enqueue_project_notification($node, $uid, $neighborhoods, $project_types) {
 	$user = user_load($uid);
@@ -379,9 +381,15 @@ and
 	}
 	$results = array();
 // uid / type / taxonomy id = pref type.
+	echo "row count: " . $db->rowCount() . "\n";
 	foreach($db as $record) {
-		$results[$record->uid]['neighborhoods'][$record->tid_nh] = $record->notification_prefs;
-		$results[$record->uid]['project_types'][$record->tid_pt] = $record->notification_prefs;
+		 // echo "\nrecord\n" . var_export($record) . "\n";
+		if (property_exists($record, 'tid_nh')) {
+			 $results[$record->uid]['neighborhoods'][$record->tid_nh] = $record->notification_prefs;
+		}
+		elseif (property_exists($record, 'tid_pt')) {
+			$results[$record->uid]['project_types'][$record->tid_pt] = $record->notification_prefs;
+		}
 	}
 	return $results;
 }
@@ -411,14 +419,14 @@ function _custom_max_notification_settings() {
 		->fields('u', array('uid'))
 		->execute();
 	while($u = $users->fetch()) {
-	//	echo '$u["uid"]: ' . $u->uid . "\n";
+		//	echo '$u["uid"]: ' . $u->uid . "\n";
 		if (_custom_user_is_author($u)) {
 			$notify_prefs = 7;
 			$user = user_load($u->uid);
 			$edit = (array)$user;
 			$edit['field_project_notification_prefs'][LANGUAGE_NONE][0]['value'] = $notify_prefs;
 			user_save($user, $edit);
-	//		echo "user " . $user->uid . " set to " . $notify_prefs . "\n";
+			//		echo "user " . $user->uid . " set to " . $notify_prefs . "\n";
 		}
 	}
 }
@@ -428,10 +436,10 @@ function _custom_resave_projects() {
 		->fields('n', array('nid'))
 		->condition('type','project','=')
 		->condition('status',1,'=')
-		->execute();
+		->execute()	;
 	while($n = $nodes->fetchAssoc()) {
 		$node = node_load($n['nid']);
-		echo "node " . $node->title . "\n";
+		echo "node (" . $node->nid . ") " . $node->title . "\n";
 		node_save($node);
 	//	die();
 	}
