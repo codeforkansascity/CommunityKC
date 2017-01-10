@@ -92,10 +92,8 @@ function _custom_project_node_presave($node) {
 		$neighborhoods = array();
 
 		if (!empty($node->field_neighborhood)) {
-//			echo "field_neighborhood - " . var_export($node->field_neighborhood,true) . "\n";
 			foreach($node->field_neighborhood[LANGUAGE_NONE] as $delta=>$fld) {
 				$neighborhoods[] = $fld['tid'];
-//				echo var_export($neighborhoods,true) . "\n";
 			}
 		}
 		$project_types = array();
@@ -109,20 +107,13 @@ function _custom_project_node_presave($node) {
 		# test only
 		# data format:
 		#  uid / type / taxonomy id = pref type.
-//		echo "saving node " . $node->nid . "\nneighborhoods: " . var_export($neighborhoods, true) . "\nproject types: " . var_export($project_types) . "\n";
-		echo 'neighborhoods ' .  var_export($neighborhoods, true) . "\n";
-		echo 'project_types ' . var_export($project_types,true) . "\n";
 		$notifications = _custom_notification_query($neighborhoods, $project_types, $node->uid);
-		echo var_export($notifications,true);// die();
-//		echo "notification " . $node->nid . " " . $node->uid . " " . count($notifications) ."\n";
-		//echo var_export($notifications,true) ."\n";
 		$match_count = 0;
 		foreach ($notifications as $uid=>$matches) {
 			$match_count++;
 			# loop through notifications
 			if ($uid == $node->uid) {
 				# skip if current user matches up.
-				echo "current user skip.";
 				continue;
 			}
 			$add_to_queue = false;
@@ -132,46 +123,41 @@ function _custom_project_node_presave($node) {
 					# turn pref to bit array, function in helpers.
 					$prefs_bit = _custom_decimal_prefs_to_bit_array($pref);
 					# same neighborhood
-//					echo '$tid ' . var_export($tid, true) . "\n";
-//					echo '$neighborhoods ' . var_export($neighborhoods,true) . "\n";
 					if ($taxonomy_type == "neighborhoods" && in_array($tid, $neighborhoods) ) {
-//						echo '$prefs_bit[2] == 1: ' . ($prefs_bit[2] == 1) . "\n";
 						if ($prefs_bit[2] == "1") {
 							# same neighborhood
 							$add_to_queue = TRUE;
-							echo "add to queue same n\n";
+//							echo "add to queue same n\n";
 						}
 						else {
 							if ($prefs_bit[0] == "1") {
 								$both_matches++;
-								echo "adding match\n";
+//								echo "adding match\n";
 							}
 						}
 					}
 					# same project type
 					if ($taxonomy_type == "project_types" && in_array($tid, $project_types) ) {
-						echo "prefs bit 1: " . $prefs_bit[1];
 						if ($prefs_bit[1] == "1") {
 							$add_to_queue = TRUE;
-							echo "add to queue project\n";
+//							echo "add to queue project\n";
 						}
 						else {
 							if($prefs_bit[0] == "1") {
 								$both_matches++;
-								echo "adding match\n";
+//								echo "adding match\n";
 							}
 						}
 					}
 				}
 				if ($both_matches == 2) {
 					$add_to_queue = true;
-					echo "add to queue both matches\n";
+//					echo "add to queue both matches\n";
 				}
 			}
-			echo "checked $match_count matches.\n";
 			if ($add_to_queue) {
 				// now add if needed.
-				echo "adding to queue \n";
+//				echo "adding to queue \n";
 				_custom_enqueue_project_notification($node,$uid, $neighborhoods, $project_types);
 			}
 		}
@@ -439,7 +425,6 @@ function _custom_resave_projects() {
 		->execute()	;
 	while($n = $nodes->fetchAssoc()) {
 		$node = node_load($n['nid']);
-		echo "node (" . $node->nid . ") " . $node->title . "\n";
 		node_save($node);
 	//	die();
 	}
