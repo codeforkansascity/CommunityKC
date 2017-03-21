@@ -9,6 +9,16 @@ require_once('custom.helpers.inc');
  */
 function custom_menu() {
 	$items = array();
+	// geojson output
+	$items['projects/geojson'] = array(
+		'type' => MENU_CALLBACK,
+		'title' => 'GeoJson Map',
+		'page callback' => '_custom_page_geojson_map',
+		'description' => 'outputs project data in geojson',
+		'access callback' => TRUE,
+		'file' => 'custom.pages.inc',
+		'menu_name' => 'main',
+	);
   // Misc
   // one-time data run
   /*
