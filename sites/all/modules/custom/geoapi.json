@@ -1,0 +1,27 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -123lat,
+                    321long
+                ]
+            },
+            "properties": {
+                "title": "project name",
+                "address": "123 street name",
+                "city":  "Kansas City",
+                "state": "MO",
+                "Postal": "64111",
+                "Description": "this is the short project descritpion",
+                "Neighborhoods": ["1","2"],
+                "project_type": ["3","2","3"], // load the tid out of the taxonomy vocabulary
+                "marker_symbol": ["blue"]
+            }
+        }
+    /*  ... add each project as a new feature */
+    ],
+}
