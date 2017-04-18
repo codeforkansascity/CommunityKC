@@ -3,6 +3,8 @@
 require_once('custom.user.inc');
 require_once('custom.helpers.inc');
 
+require_once('class/GeoJsonService.php');
+
 /**
  * Implements hook_menu
  * @return array
