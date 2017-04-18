@@ -56,8 +56,8 @@ class GeoJsonService
 				'geometry' => [
 					'type' => 'Point',
 					'coordinates' => [
-						_custom_safe_get_field($project, 'field_geocoded_address', LANGUAGE_NONE, 0, 'lat'),
-						_custom_safe_get_field($project, 'field_geocoded_address', LANGUAGE_NONE, 0, 'lon'),
+						doubleval(_custom_safe_get_field($project, 'field_geocoded_address', LANGUAGE_NONE, 0, 'lon')),
+						doubleval(_custom_safe_get_field($project, 'field_geocoded_address', LANGUAGE_NONE, 0, 'lat')),
 					]
 				],
 				'properties' => $properties
