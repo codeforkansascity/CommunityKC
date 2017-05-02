@@ -7,6 +7,14 @@ class GeoJsonService
 	const NEIGHBORHOODS_TAXONOMY_ID = 1;
 	
 	private static $taxonomyMemoizationList = [];
+	private static $projectMarkerMap = [
+		460 => 'blue',	        // Resource
+		457 => 'orange',	    // Economic Development and Housing
+		461 => 'light-blue',	// Education, Arts, and Culture
+		458 => 'green',	        // Environment and Energy
+		459 => 'yellow',	    // Public Health and Safety
+		456 => 'red-brick',	    // Capacity Building
+	];
 	
 	public function __construct()
 	{
@@ -34,10 +42,18 @@ class GeoJsonService
 			}, $projectTypesRaw);
 			$projectTypes = $this->projectTypes($projectTypes);
 			
+			$projectTypeNames = [];
+			$projectTypeMarkers = [];
+			foreach ($projectTypes as $projectType) {
+				$projectTypeNames[] = $projectType['taxonomy']->name;
+				$projectTypeMarkers[] = self::$projectMarkerMap[$projectType['parent']->tid];
+			}
+			
 			$neighborhoods = array_map(function ($obj) {
 				return $obj['tid'];
 			}, $neighborhoodsRaw);
 			$neighborhoods = $this->neighborhoods($neighborhoods);
+			
 			
 			$properties = [
 				'title' => $project->title,
@@ -47,8 +63,8 @@ class GeoJsonService
 				'postal' => _custom_safe_get_field($project, 'field_address', LANGUAGE_NONE, 0, 'postal_code'),
 				'description' => _custom_safe_get_field($project, 'body', LANGUAGE_NONE, 0, 'value'),
 				'neighborhoods' => $neighborhoods,
-				'project_type' => $projectTypes,
-				'marker_symbol' => ['blue']
+				'project_type' => $projectTypeNames,
+				'marker_symbol' => $projectTypeMarkers
 			];
 			
 			$resultSet['features'][] = [
@@ -87,7 +103,15 @@ class GeoJsonService
 			return [];
 		
 		$this->setupTaxonomyMemoization(self::PROJECT_TYPES_TAXONOMY_ID, 'projectTypes', function ($taxonomy) {
-			return $taxonomy->name;
+			$parents = taxonomy_get_parents($taxonomy->tid);
+			$parent = null;
+			if (!empty($parents))
+				$parent = array_pop($parents);
+			
+			return [
+				'taxonomy' => $taxonomy,
+				'parent' => $parent
+			];
 		});
 		
 		return $this->buildList('projectTypes', $types);
@@ -123,7 +147,7 @@ class GeoJsonService
 			
 			if (empty($taxonomy))
 				continue;
-			
+					
 			$taxonomies[] = $taxonomy;
 		}
 		
