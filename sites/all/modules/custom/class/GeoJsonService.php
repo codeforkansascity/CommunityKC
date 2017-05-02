@@ -8,6 +8,7 @@ class GeoJsonService
 	
 	private static $taxonomyMemoizationList = [];
 	private static $projectMarkerMap = [
+		0   => 'gray',          // Gray color for project types without parents
 		460 => 'blue',	        // Resource
 		457 => 'orange',	    // Economic Development and Housing
 		461 => 'light-blue',	// Education, Arts, and Culture
@@ -46,7 +47,9 @@ class GeoJsonService
 			$projectTypeMarkers = [];
 			foreach ($projectTypes as $projectType) {
 				$projectTypeNames[] = $projectType['taxonomy']->name;
-				$projectTypeMarkers[] = self::$projectMarkerMap[$projectType['parent']->tid];
+				
+				$colorId = (is_null($projectType['parent'])) ? 0 : $projectType['parent']->tid;
+				$projectTypeMarkers[] = self::$projectMarkerMap[$colorId];
 			}
 			
 			$neighborhoods = array_map(function ($obj) {
@@ -106,7 +109,7 @@ class GeoJsonService
 			$parents = taxonomy_get_parents($taxonomy->tid);
 			$parent = null;
 			if (!empty($parents))
-				$parent = array_pop($parents);
+				$parent = array_shift($parents);
 			
 			return [
 				'taxonomy' => $taxonomy,
