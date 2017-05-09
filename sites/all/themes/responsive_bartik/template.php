@@ -169,3 +169,51 @@ function responsive_bartik_field__taxonomy_term_reference($variables)
 
   return $output;
 }
+
+
+function responseive_bartik_print_ui_format_link($vars) {
+$format = $vars['format'];
+
+  foreach (module_implements('print_link') as $module) {
+	  $function = $module . '_print_link';
+	  if (function_exists($function)) {
+		  $link = call_user_func_array($function, array());
+		
+		  if ($link['format'] == $format) {
+			  $link_class = variable_get('print_' . $link['format'] . '_link_class', $link['class']);
+			
+			  $new_window = FALSE;
+			  $func = $module . '_print_new_window_alter';
+			  if (function_exists($func)) {
+				  $func($new_window, $link['format']);
+			  }
+			
+			  $show_link = variable_get('print_' . $link['format'] . '_show_link', PRINT_UI_SHOW_LINK_DEFAULT);
+			  $link_text = filter_xss(variable_get('print_' . $link['format'] . '_link_text', $link['text']));
+			
+			  if ($show_link >= 2) {
+				  $img = drupal_get_path('module', $module) . '/icons/' . $link['icon'];
+				  switch ($show_link) {
+					  case 2:
+						  $text = theme('image', array('path' => $img, 'width' => '16px', 'height' => '16px', 'alt' => $link_text, 'title' => $link_text, 'attributes' => array('class' => array('print-icon'))));
+						  break;
+					  case 3:
+						  $text = theme('image', array('path' => $img, 'width' => '16px', 'height' => '16px', 'alt' => $link_text, 'title' => $link_text, 'attributes' => array('class' => array('print-icon', 'print-icon-margin')))) . $link_text;
+						  break;
+				  }
+				  $html = TRUE;
+			  }
+			  else {
+				  $text = $link_text;
+				  $html = FALSE;
+			  }
+			
+			  return array(
+				  'text' => $text,
+				  'html' => $html,
+				  'attributes' => _print_ui_fill_attributes($link['description'], strip_tags($link_class), $new_window),
+			  );
+		  }
+	  }
+  }
+}
