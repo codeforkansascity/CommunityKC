@@ -171,7 +171,7 @@ function responsive_bartik_field__taxonomy_term_reference($variables)
 }
 
 
-function responseive_bartik_print_ui_format_link($vars) {
+function responsive_bartik_print_ui_format_link($vars) {
 $format = $vars['format'];
 
   foreach (module_implements('print_link') as $module) {
@@ -192,7 +192,8 @@ $format = $vars['format'];
 			  $link_text = filter_xss(variable_get('print_' . $link['format'] . '_link_text', $link['text']));
 			
 			  if ($show_link >= 2) {
-				  $img = drupal_get_path('module', $module) . '/icons/' . $link['icon'];
+				  $link['icon'] = substr($link['icon'], 0, -strlen('.png'));
+				  $img = drupal_get_path('theme', variable_get('theme_default', NULL)) . "/images/{$link['icon']}.svg";
 				  switch ($show_link) {
 					  case 2:
 						  $text = theme('image', array('path' => $img, 'width' => '16px', 'height' => '16px', 'alt' => $link_text, 'title' => $link_text, 'attributes' => array('class' => array('print-icon'))));
