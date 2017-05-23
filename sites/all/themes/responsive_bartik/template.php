@@ -169,3 +169,68 @@ function responsive_bartik_field__taxonomy_term_reference($variables)
 
   return $output;
 }
+
+
+function responsive_bartik_print_ui_format_link($vars)
+{
+	$format = $vars['format'];
+	$imgWidthAndHeight = '24px';
+	
+	foreach (module_implements('print_link') as $module) {
+		$function = $module . '_print_link';
+		if (function_exists($function)) {
+			$link = call_user_func_array($function, array());
+			
+			if ($link['format'] == $format) {
+				$link_class = variable_get('print_' . $link['format'] . '_link_class', $link['class']);
+				
+				$new_window = false;
+				$func = $module . '_print_new_window_alter';
+				if (function_exists($func)) {
+					$func($new_window, $link['format']);
+				}
+				
+				$show_link = variable_get('print_' . $link['format'] . '_show_link', PRINT_UI_SHOW_LINK_DEFAULT);
+				$link_text = filter_xss(variable_get('print_' . $link['format'] . '_link_text', $link['text']));
+				
+				if ($show_link >= 2) {
+					$link['icon'] = substr($link['icon'], 0, -strlen('.png'));
+					$img = drupal_get_path('theme', variable_get('theme_default', null)) . "/images/{$link['icon']}.svg";
+					
+					switch ($show_link) {
+						case 2:
+							$text = theme('image', array(
+								'path'       => $img,
+								'width'      => $imgWidthAndHeight,
+								'height'     => $imgWidthAndHeight,
+								'alt'        => $link_text,
+								'title'      => $link_text,
+								'attributes' => array('class' => array('print-icon'))
+							));
+							break;
+						case 3:
+							$text = theme('image', array(
+									'path'       => $img,
+									'width'      => $imgWidthAndHeight,
+									'height'     => $imgWidthAndHeight,
+									'alt'        => $link_text,
+									'title'      => $link_text,
+									'attributes' => array('class' => array('print-icon', 'print-icon-margin'))
+								)) . $link_text;
+							break;
+					}
+					$html = true;
+				} else {
+					$text = $link_text;
+					$html = false;
+				}
+				
+				return array(
+					'text'       => $text,
+					'html'       => $html,
+					'attributes' => _print_ui_fill_attributes($link['description'], strip_tags($link_class), $new_window),
+				);
+			}
+		}
+	}
+}
