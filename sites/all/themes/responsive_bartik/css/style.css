@@ -1,13 +1,13 @@
 /* Custom styles */
 
 .field-name-field-neighborhood  li {
-font-size:.9em;	
+font-size:.9em;
 }
 
 .view-empty {
 color:red;
 font-size:larger;
-padding-top:5%;	
+padding-top:5%;
 }
 
 .toggle, .field-slideshow-controls {
@@ -32,21 +32,45 @@ padding-right:9px;
 .next {
 padding-left: 4px;
 }
-li.views-row {
-list-style-type:none;
-}
 
 #block-multiblock-2 {
 float:right;
 border-bottom:none;
 }
 
+li.views-row {
+list-style-type:none;
+  border-style: solid;
+  border-color: #d7d7d7ff;
+  border-radius: 5px;
+  border-width: 2px;
+  margin-bottom: 10px;
+
+}
+
+.views-field {
+  padding-left: 10px;
+}
+
+.views-field-field-organization-name{
+  padding-bottom: 10px;
+}
+
 .views-row-odd {
-padding:8px;
 background-color:#fafafa;
 }
 .address-block  li {
 list-style-type:none;
+}
+
+.views-field-title {
+ font-size:1.2em;
+ color:#2e3192;
+ padding-top: 5px;
+}
+
+.views-widget-filter-field_neighborhood_tid {
+
 }
 
 .filter-wrapper {
@@ -77,29 +101,19 @@ font-weight:600;
 .imgright {
 height: 500px;
 float:right;
-margin-left: 1%;	
+margin-left: 1%;
 }
 
 #secondary-menu-links a {
- font-size: 1.2em;   
-}
-.views-field-title {
- font-size:1.2em;
-}
-.views-field-title {
- color:#2e3192;
+ font-size: 1.2em;
 }
 #map-key {
 font-size: .9em;
-color: #000000;	
-}
-
-.views-widget-filter-field_neighborhood_tid {
-
+color: #000000;
 }
 
 #edit-search-block-form--2 {
-border:2px solid #ccc;	
+border:2px solid #ccc;
 width:200px;
 }
 /* ------------------- Overall Specifications ------------- */
@@ -287,7 +301,7 @@ img {
 }
 
 .views-field-title {
-  margin-top:25px;
+  /* margin-top:25px; */
 }
 
 views-row-even {
@@ -400,7 +414,7 @@ ul.menu li a {
   padding: 0 0 0.25em 15px; /* LTR */
 }
 .item-list ul li {
-  margin: 0;
+  margin: 6px;
   padding: 0.2em 0.5em 0 0; /* LTR */
 }
 ul.tips {
@@ -1804,14 +1818,14 @@ a#menu-toggle:after {
     display: none;
     height: auto;
   }
-  
+
   /* ----------------- Forms on Small Screens ------------- */
   input.form-text,
   input.form-tel,
-  input.form-email, 
+  input.form-email,
   input.form-url,
   input.form-search,
-  input.form-number, 
+  input.form-number,
   input.form-color,
   textarea.form-textarea,
   select.form-select {
