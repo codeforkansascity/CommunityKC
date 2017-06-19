@@ -1,7 +1,25 @@
-[![Stories in Ready](https://badge.waffle.io/codeforkansascity/CommunityKC.svg?label=ready&title=Cards%20Ready%20To%20Work%20On)](http://waffle.io/codeforkansascity/CommunityKC)
+# [CommunityKC](http://communitykc.org)
 
-# CommunityKC
-<p>NOTE: I am involved in this project, but the majority of the code is written by others. This is my local copy. Visualization and management of community-based projects</p>
-<p>Drupal site currently hosted at http://communitykc.org</p>
-<p>First phase of this project is located at https://github.com/codeforkansascity/civic-project-mapping. This version consolidates data into MySQL database with Drupal front end to allow for distributed maintenance of content, email notifications, etc.</p>
-<p>Project maintained by Code for KC, Community Capital Fund</p>
+Visualization and management of community-based projects.
+
+
+## Installation
+For detailed Drupal 7 installation requirements, click [here](https://www.drupal.org/docs/7/system-requirements/overview). 
+
+#### Requirements
+Our requirements reflect more recent versions of PHP, Apache, and MySQL opposed to the default Drupal requirements.
+
+* Drupal 7
+* PHP 5.5 & 5.6
+* PHP PDO 
+* MySQL 5.1+ 
+* Apache 2.4
+
+#### Configuration
+Follow the Drupal [Installation - Settings Guide](https://www.drupal.org/docs/7/installing-drupal-7/step-3-create-settingsphp-and-the-files-directory) for specific information about setting up the settings. We recommend the "Manual settings.php Detailed Instructions" approach to configuring the site.
+
+
+## About
+Join us on [Meetup.com](https://www.meetup.com/KCBrigade/) to meet the team, and participate as a contributor.
+
+Project maintained by Code for KC, Community Capital Fund
