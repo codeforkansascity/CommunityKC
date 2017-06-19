@@ -7,3 +7,4 @@ sites/*/private
 
 # IDE generated files, don't commit
 .idea
+.vscode
