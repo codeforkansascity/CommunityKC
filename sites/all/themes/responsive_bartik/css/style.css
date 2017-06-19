@@ -371,7 +371,7 @@ table ul.links li {
 .block ol,
 .block ul {
   margin: 0;
-  padding: 0 0 0.25em 1em; /* LTR */
+  padding: 0 0 0 0; /* LTR */
 }
 .contextual-region .contextual .contextual-links a {
   font-size: 0.923em;
@@ -410,13 +410,15 @@ ul.menu li a {
 
 .region-content ul,
 .region-content ol {
-  margin: 1em 0;
-  padding: 0 0 0.25em 15px; /* LTR */
+  margin: 0;
+  padding: 0; /* LTR */
 }
 .item-list ul li {
-  margin: 6px;
-  padding: 0.2em 0.5em 0 0; /* LTR */
+  margin: 0 0 10px 0;
+  padding: 5px; /* LTR */
+  box-sizing: border-box;
 }
+
 ul.tips {
   padding: 0 0 0 1.25em; /* LTR */
 }
@@ -491,7 +493,7 @@ h1#site-name {
   margin: 0;
   padding: 0;
 }
-.region-header .block ul {
+.region-header  {
   margin: 0;
   padding: 0;
 }
