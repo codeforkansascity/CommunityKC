@@ -4,6 +4,7 @@
 function _custom_page_geojson_map() {
 	drupal_add_http_header('Content-Type', 'application/json', false);
 	drupal_add_http_header('Access-Control-Allow-Origin', '*', false);
+
 	$cacheId = 'projects_geojson';
 	$geoData = cache_get($cacheId);
 	if ($geoData === false) {
@@ -12,6 +13,6 @@ function _custom_page_geojson_map() {
 	} else {
 		$geoData = $geoData->data;
 	}
-	
+
 	echo json_encode($geoData);
 }
