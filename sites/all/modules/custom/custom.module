@@ -4,6 +4,7 @@ require_once('custom.user.inc');
 require_once('custom.helpers.inc');
 
 require_once('class/GeoJsonService.php');
+require_once('class/PostContentEmailService.php');
 
 /**
  * Implements hook_menu
@@ -89,13 +90,13 @@ function custom_node_presave($node) {
 		case 'project':
 			# run the project node presave
 			_custom_project_node_presave($node);
-			break;			
+			break;
 	}
 }
 
 # todo: testing
 
-/* Project node type functions 
+/* Project node type functions
 * notifications
 */
 function _custom_project_node_presave($node) {
@@ -111,7 +112,7 @@ function _custom_project_node_presave($node) {
 		$project_types = array();
 		if (!empty($node->field_project_type)) {
 			foreach($node->field_project_type[LANGUAGE_NONE] as $delta=>$fld) {
-				$project_types[] = $fld['tid'];			
+				$project_types[] = $fld['tid'];
 			}
 		}
 		# query
@@ -207,18 +208,18 @@ function _custom_enqueue_project_notification($node, $uid, $neighborhoods, $proj
 	$queue->sent = null;
 	drupal_write_record( 'custom_notify_email_queue', $queue);
 }
-/* test/proof of concept code 
+/* test/proof of concept code
 result of below:
 uid = 1:
 array (
-  'neighborhoods' => 
+  'neighborhoods' =>
   array (
     4 => 3,
     5 => 0,
     6 => 1,
     14 => 7,
   ),
-  'project_types' => 
+  'project_types' =>
   array (
     3 => 2,
     91 => 5,
@@ -228,11 +229,11 @@ array (
 
 uid = 2:
 array (
-  'neighborhoods' => 
+  'neighborhoods' =>
   array (
     6 => 6,
   ),
-  'project_types' => 
+  'project_types' =>
   array (
     14 => 5,
     10 => 4,
@@ -252,7 +253,7 @@ function _custom_get_notification_test_array() {
 	$results[1]['project_types'][100] = 1;
 
 	$results[2]['neighborhoods'][6] = 6;
-	$results[2]['project_types'][14] = 5;	
+	$results[2]['project_types'][14] = 5;
 	$results[2]['project_types'][10] = 4;
 	return $results;
 }
@@ -440,4 +441,10 @@ function _custom_resave_projects() {
 		node_save($node);
 	//	die();
 	}
+}
+
+function custom_cron()
+{
+  $postContentEmailService = new PostContentEmailService();
+  $postContentEmailService->run();
 }
