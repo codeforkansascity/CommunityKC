@@ -1937,3 +1937,10 @@ a#menu-toggle:after {
   clip: rect(1px, 1px, 1px, 1px);
   left: 0;
 }
+
+
+/* ----------------- Add Project Form ---------------------- */
+.field-multiple-table thead tr field-label{
+  padding: 10px;
+  margin: 15px;
+}

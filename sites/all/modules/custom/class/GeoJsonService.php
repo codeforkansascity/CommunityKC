@@ -36,13 +36,13 @@ class GeoJsonService
 
 		foreach ($projects as $project) {
 
-      $projectTypes = [];
+			$projectTypes = [];
 			if (empty($project->field_project_type['und'])) {
-        $projectTypes = array_map(function ($obj) {
-          return $obj['tid'];
-        }, $project->field_project_type['und']);
-        $projectTypes = $this->projectTypes($projectTypes);
-      }
+				$projectTypes = array_map(function ($obj) {
+				return $obj['tid'];
+				}, $project->field_project_type['und']);
+				$projectTypes = $this->projectTypes($projectTypes);
+			}
 
 			$projectTypeNames = [];
 			$projectTypeMarkers = [];
@@ -55,13 +55,13 @@ class GeoJsonService
 
 			$projectTypeMarkers = array_values(array_unique($projectTypeMarkers));
 
-      $neighborhoods = [];
-      if (!empty($project->field_neighborhood['und'])) {
-        $neighborhoods = array_map(function ($obj) {
-          return $obj['tid'];
-        }, $project->field_neighborhood['und']);
-        $neighborhoods = $this->neighborhoods($neighborhoods);
-      }
+			$neighborhoods = [];
+			if (!empty($project->field_neighborhood['und'])) {
+				$neighborhoods = array_map(function ($obj) {
+				return $obj['tid'];
+				}, $project->field_neighborhood['und']);
+				$neighborhoods = $this->neighborhoods($neighborhoods);
+			}
 
 			$properties = [
 				'title' => $project->title,
