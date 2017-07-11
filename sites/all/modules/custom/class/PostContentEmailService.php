@@ -47,7 +47,7 @@ class PostContentEmailService
       $last_rev = $project->revision_timestamp;
       $test = 0;
 
-      // .. do code here
+      // Using above four vars, send email to myself.
     }
   }
 
