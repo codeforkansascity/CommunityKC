@@ -59,7 +59,6 @@ class PostContentEmailService
       $queue->sent = null;
       drupal_write_record( 'custom_notify_email_queue', $queue);
       */
-    }
     send_mail($list_all);
   }
 
