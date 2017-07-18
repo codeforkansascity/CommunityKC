@@ -53,7 +53,7 @@ function custom_schema() {
 	);
 	/*
 	$schema['custom_flat_user_project_types_and_neighborhoods'] = array(
-		
+
 	); */
  // turned off for now - jpg
  	return $schema;
@@ -112,3 +112,14 @@ function custom_install() {
 		db_create_table("custom_notify_email_queue", $custom_notify_email_queue);
 	}
 }
+
+/**
+ * Add missing custom_notify_email_queue table if it is missing
+ */
+function custom_update_0001() {
+  if (!db_table_exists("custom_notify_email_queue")) {
+    db_create_table("custom_notify_email_queue", drupal_get_schema('custom_notify_email_queue'));
+    echo "custom_notify_email_queue table created.\n";
+  }
+}
+
