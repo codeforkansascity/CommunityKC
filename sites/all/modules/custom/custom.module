@@ -171,7 +171,7 @@ function _custom_project_node_presave($node) {
 			if ($add_to_queue) {
 				// now add if needed.
 //				echo "adding to queue \n";
-				_custom_enqueue_project_notification($node,$uid, $neighborhoods, $project_types);
+				custom_enqueue_similar_project_notification($node,$uid, $neighborhoods, $project_types);
 			}
 		}
 	}
@@ -191,7 +191,7 @@ positions seem backwards because binary is right to left and string is left to r
  [2]same neighborhood, [1] same type, [0] same type and neighborhood.
  */
 
-function _custom_enqueue_project_notification($node, $uid, $neighborhoods, $project_types) {
+function custom_enqueue_similar_project_notification($node, $uid, $neighborhoods, $project_types) {
 	$user = user_load($uid);
 	$tokens = array(
 		'name' => $user->name,
@@ -489,4 +489,8 @@ function custom_drupal_mail($from = 'default_from', $to, $subject, $message) {
   else {
     return FALSE;
   }
+
+function custom_enqueue_stale_project_notification()
+{
+  // ... make args and do code ...
 }
