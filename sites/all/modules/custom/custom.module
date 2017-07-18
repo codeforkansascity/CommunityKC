@@ -282,17 +282,17 @@ function _custom_notification_query($neighborhoods, $project_types, $uid) {
 	if (count($neighborhoods) > 0 && count($project_types) > 0) {
 		# both neighborhoods and project types
 		$query_sql = "
-select 
+select
 	-- user
 	u.uid, u.name, u.mail, prefs.field_project_notification_prefs_value as notification_prefs,
     -- project node
-    n.nid, n.title, 
+    n.nid, n.title,
     -- neighborhood
-    ti_nh.tid as tid_nh, ttd_nh.name as neighborhood, 
+    ti_nh.tid as tid_nh, ttd_nh.name as neighborhood,
     -- project type
     ti_pt.tid as tid_pt, ttd_pt.name as project_type
 -- 	*
-from 
+from
 	{node} n
     inner join
 		{users} u
@@ -305,25 +305,25 @@ from
     inner join
 		{taxonomy_index} ti_nh
 			on ti_nh.nid = n.nid
-	inner join 
+	inner join
 		{taxonomy_term_data} ttd_nh
 			on ti_nh.tid = ttd_nh.tid and ttd_nh.vid = :nh_vid
 -- project type
 	inner join
 		{taxonomy_index} ti_pt
 			on ti_pt.nid = n.nid
-	inner join 
+	inner join
 		{taxonomy_term_data} ttd_pt
 			on ti_pt.tid = ttd_pt.tid and ttd_pt.vid = :pt_vid
 where
-	prefs.field_project_notification_prefs_value > 0 
+	prefs.field_project_notification_prefs_value > 0
 and
 	u.uid != :uid
 and
 	n.type = 'project'
-and 
+and
     n.status = 1
-and 
+and
 (	ti_nh.tid in(:nh_tids)
 or
 	ti_pt.tid in(:pt_tids))";
@@ -338,15 +338,15 @@ or
 	}
 	elseif (count($project_types > 0) ) {
 		# just project types
-		$query_sql = "select 
+		$query_sql = "select
 	-- user
 	u.uid, u.name, u.mail, prefs.field_project_notification_prefs_value as notification_prefs,
     -- project node
-    n.nid, n.title, 
+    n.nid, n.title,
     -- project type
     ti_pt.tid as tid_pt, ttd_pt.name as project_type
 -- 	*
-from 
+from
 	{node} n
     inner join
 		{users} u
@@ -359,18 +359,18 @@ from
 	inner join
 		{taxonomy_index} ti_pt
 			on ti_pt.nid = n.nid
-	inner join 
+	inner join
 		{taxonomy_term_data} ttd_pt
 			on ti_pt.tid = ttd_pt.tid and ttd_pt.vid = :pt_vid
 where
-	prefs.field_project_notification_prefs_value > 0 
+	prefs.field_project_notification_prefs_value > 0
 and
 	u.uid != :uid
 and
 	n.type = 'project'
-and 
+and
     n.status = 1
-and 
+and
 	ti_pt.tid in(:pt_tids)";
 		$db = db_query($query_sql, array(
 			':pt_vid' => $project_type_vid,
@@ -447,4 +447,46 @@ function custom_cron()
 {
   $postContentEmailService = new PostContentEmailService();
   $postContentEmailService->run();
+}
+
+
+function send_mail($content)
+{
+  $to = "test@localhost.com";
+  $subject = "Test Email";
+  $headers = "From postmaster@local";
+  $result = mail($to, $subject, $content.PHP_EOL, $headers);
+  if(result){
+    echo("Success!");
+  } else {
+    echo("Failure!");
+  }
+}
+
+function custom_drupal_mail($from = 'default_from', $to, $subject, $message) {
+  $my_module = 'custom';
+  $my_mail_token = microtime();
+  if ($from == 'default_from') {
+    // Change this to your own default 'from' email address.
+    $from = variable_get('system_mail', 'My Email Address <example@example.com>');
+  }
+  $message = array(
+    'id' => $my_module . '_' . $my_mail_token,
+    'to' => $to,
+    'subject' => $subject,
+    'body' => array($message),
+    'headers' => array(
+      'From' => $from,
+      'Sender' => $from,
+      'Return-Path' => $from,
+    ),
+  );
+  $system = drupal_mail_system($my_module, $my_mail_token);
+  $message = $system->format($message);
+  if ($system->mail($message)) {
+    return TRUE;
+  }
+  else {
+    return FALSE;
+  }
 }

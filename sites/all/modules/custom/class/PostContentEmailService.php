@@ -38,17 +38,29 @@ class PostContentEmailService
     $users = user_load_multiple($projectUserIds);
     $projects = node_load_multiple($projectNodeIds);
 
-
+    $list_all = "";
     foreach ($projects as $project) {
       $user = $users[(int)$project->uid];
       $email = $user->mail;
       $fullname = $user->field_full_name['und'][0]['value'];
       $project_name = $project->title;
       $last_rev = $project->revision_timestamp;
-      $test = 0;
 
-      // Using above four vars, send email to myself.
+      //Used only for testing
+      $list_all = $list_all."Email: ".$email." | Info: ".$fullname."'s ".$project_name.PHP_EOL;
+
+      //Queue up items - WIP
+      /*
+      $queue = new stdClass();
+      $queue->uid = $uid;
+      $queue->mail_type = 'custom_project_notification_email';
+      $queue->tokens = serialize($tokens);
+      $queue->created = REQUEST_TIME;
+      $queue->sent = null;
+      drupal_write_record( 'custom_notify_email_queue', $queue);
+      */
     }
+    send_mail($list_all);
   }
 
 }
