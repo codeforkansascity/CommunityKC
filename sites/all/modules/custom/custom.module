@@ -456,11 +456,14 @@ function send_mail($content)
   $subject = "Test Email";
   $headers = "From postmaster@local";
   $result = mail($to, $subject, $content.PHP_EOL, $headers);
+
+  /*
   if(result){
     echo("Success!");
   } else {
     echo("Failure!");
   }
+  */
 }
 
 function custom_drupal_mail($from = 'default_from', $to, $subject, $message) {
@@ -489,6 +492,17 @@ function custom_drupal_mail($from = 'default_from', $to, $subject, $message) {
   else {
     return FALSE;
   }
+}
+
+function update_enque($id)
+{
+  db_update('custom_notify_email_queue') // Table name no longer needs {}
+      ->fields(array(
+        'sent' => REQUEST_TIME,
+      ))
+      ->condition('queue_id', $id, '=')
+      ->execute();
+}
 
 function custom_enqueue_stale_project_notification()
 {

@@ -38,7 +38,7 @@ class PostContentEmailService
     $users = user_load_multiple($projectUserIds);
     $projects = node_load_multiple($projectNodeIds);
 
-    $list_all = "";
+
     foreach ($projects as $project) {
       $user = $users[(int)$project->uid];
       $email = $user->mail;
@@ -46,20 +46,36 @@ class PostContentEmailService
       $project_name = $project->title;
       $last_rev = $project->revision_timestamp;
 
-      //Used only for testing
-      $list_all = $list_all."Email: ".$email." | Info: ".$fullname."'s ".$project_name.PHP_EOL;
+      $token_array = array(
+        'user' => $user,
+        'email' => $email,
+        'fullname' => $fullname,
+        'project_name' => $project_name,
+        'last_rev' => $last_rev,
+      );
 
-      //Queue up items - WIP
-      /*
+      //Queue up items
+
       $queue = new stdClass();
-      $queue->uid = $uid;
+      $queue->uid = (int)$project->uid;
       $queue->mail_type = 'custom_project_notification_email';
-      $queue->tokens = serialize($tokens);
+      $queue->tokens = serialize($token_array);
       $queue->created = REQUEST_TIME;
       $queue->sent = null;
-      drupal_write_record( 'custom_notify_email_queue', $queue);
-      */
-    send_mail($list_all);
-  }
+      drupal_write_record( 'custom_notify_email_queue', $queue); // Move this out of the day
+    }
 
+    $email_query = "SELECT * FROM {custom_notify_email_queue} WHERE sent IS NULL LIMIT 10";
+    $records = db_query($email_query)->fetchAll();
+
+    foreach($records as $record){
+      //send email...
+      $tokens = unserialize($record->tokens);
+      $content = "Dear ".$tokens['fullname'].", your project, ".$tokens['project_name'].", was last updated ".date("m/d/Y", $tokens['last_rev']);
+      send_mail($content);
+
+      //update database
+      update_enque($record->queue_id);
+    }
+  }
 }
