@@ -466,45 +466,49 @@ function send_mail($content)
   */
 }
 
-function custom_drupal_mail($from = 'default_from', $to, $subject, $message) {
+function custom_drupal_mail($from, $to, $subject, $message) {
   $my_module = 'custom';
   $my_mail_token = microtime();
-  if ($from == 'default_from') {
-    // Change this to your own default 'from' email address.
-    $from = variable_get('system_mail', 'My Email Address <example@example.com>');
-  }
+
+  // Message is going to be overwritten
   $message = array(
     'id' => $my_module . '_' . $my_mail_token,
     'to' => $to,
     'subject' => $subject,
-    'body' => array($message),
+    'body' => array($message), // Maybe just $message?
     'headers' => array(
       'From' => $from,
       'Sender' => $from,
       'Return-Path' => $from,
     ),
   );
+
+  // It does magic
   $system = drupal_mail_system($my_module, $my_mail_token);
+
+  // Translate? Does something
   $message = $system->format($message);
-  if ($system->mail($message)) {
-    return TRUE;
-  }
-  else {
-    return FALSE;
-  }
+
+  // Send message
+  return $system->mail($message);
 }
 
-function update_enque($id)
+function update_node_enque($que_id)
 {
   db_update('custom_notify_email_queue') // Table name no longer needs {}
       ->fields(array(
         'sent' => REQUEST_TIME,
       ))
-      ->condition('queue_id', $id, '=')
+      ->condition('queue_id', $que_id, '=')
       ->execute();
 }
 
-function custom_enqueue_stale_project_notification()
+function update_node_ccf_node($nid)
 {
-  // ... make args and do code ...
+  db_update('ccf') // Table name no longer needs {}
+      ->fields(array(
+        'changed' => REQUEST_TIME,
+      ))
+      ->condition('nid', $nid, '=')
+      ->execute();
 }

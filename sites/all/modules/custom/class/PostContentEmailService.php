@@ -40,6 +40,7 @@ class PostContentEmailService
 
 
     foreach ($projects as $project) {
+      //_custom_sage_get_field
       $user = $users[(int)$project->uid];
       $email = $user->mail;
       $fullname = $user->field_full_name['und'][0]['value'];
@@ -50,6 +51,7 @@ class PostContentEmailService
         'user' => $user,
         'email' => $email,
         'fullname' => $fullname,
+        'project_nid' => $project->nid,
         'project_name' => $project_name,
         'last_rev' => $last_rev,
       );
@@ -59,7 +61,7 @@ class PostContentEmailService
       $queue = new stdClass();
       $queue->uid = (int)$project->uid;
       $queue->mail_type = 'custom_project_notification_email';
-      $queue->tokens = serialize($token_array);
+      $queue->tokens = json_encode($token_array);
       $queue->created = REQUEST_TIME;
       $queue->sent = null;
       drupal_write_record( 'custom_notify_email_queue', $queue); // Move this out of the day
@@ -70,12 +72,30 @@ class PostContentEmailService
 
     foreach($records as $record){
       //send email...
-      $tokens = unserialize($record->tokens);
-      $content = "Dear ".$tokens['fullname'].", your project, ".$tokens['project_name'].", was last updated ".date("m/d/Y", $tokens['last_rev']);
-      send_mail($content);
+      $tokens = json_decode($record->tokens);
+      $content = "Hi, ".$tokens->fullname.", your project, ".$tokens->project_name.", was last updated ".date("m/d/Y", $tokens->last_rev);
 
-      //update database
-      update_enque($record->queue_id);
+      $subject = "Custom Drupal Mail";
+      $to = "test@localhost.com";
+      // $to = $tokens->email
+      $from = "CommunityKC";
+      custom_drupal_mail($from, $to, $subject, $content);
+
+      //enque table
+      update_node_enque($record->queue_id);
+      //update ccf_node's rev date to today
+      //update_node_ccf_node($tokens->project_nid);
+
     }
+
+    $root_dir = DRUPAL_ROOT;
+    $template_path = $root_dir."/sites/all/modules/custom/email_templates/SixMonthProjectEmail.html";
+    //$template = file_get_contents("C:/xampp/htdocs/CommunityKC/sites/all/modules/custom/email_templates/SixMonthProjectEmail.html");
+    $template = file_get_contents($template_path);
+    $replace = t($template, array('!project_name' => $tokens->project_name));
+
   }
 }
+
+
+
