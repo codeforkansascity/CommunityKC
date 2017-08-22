@@ -470,6 +470,8 @@ function custom_drupal_mail($from, $to, $subject, $message) {
   $my_module = 'custom';
   $my_mail_token = microtime();
 
+  $original = $message;
+
   // Message is going to be overwritten
   $message = array(
     'id' => $my_module . '_' . $my_mail_token,
@@ -480,6 +482,8 @@ function custom_drupal_mail($from, $to, $subject, $message) {
       'From' => $from,
       'Sender' => $from,
       'Return-Path' => $from,
+      'MIME-Version' => '1.0',
+      'Content-type' => 'text/html; charset=iso-8859-1',
     ),
   );
 
@@ -491,6 +495,7 @@ function custom_drupal_mail($from, $to, $subject, $message) {
 
   // Send message
   return $system->mail($message);
+  // return $system->mail($to, $subject, $original, "From postmaster@local");
 }
 
 function update_node_enque($que_id)

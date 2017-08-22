@@ -73,12 +73,19 @@ class PostContentEmailService
     foreach($records as $record){
       //send email...
       $tokens = json_decode($record->tokens);
-      $content = "Hi, ".$tokens->fullname.", your project, ".$tokens->project_name.", was last updated ".date("m/d/Y", $tokens->last_rev);
+      //$content = "Hi, ".$tokens->fullname.", your project, ".$tokens->project_name.", was last updated ".date("m/d/Y", $tokens->last_rev);
 
       $subject = "Custom Drupal Mail";
       $to = "test@localhost.com";
       // $to = $tokens->email
       $from = "CommunityKC";
+
+      $root_dir = DRUPAL_ROOT;
+      $template_path = $root_dir."/sites/all/modules/custom/email_templates/SixMonthProjectEmail.html";
+
+      $template = file_get_contents($template_path);
+      $content = t($template, array('!project_name' => $tokens->project_name));
+
       custom_drupal_mail($from, $to, $subject, $content);
 
       //enque table
@@ -88,12 +95,42 @@ class PostContentEmailService
 
     }
 
-    $root_dir = DRUPAL_ROOT;
-    $template_path = $root_dir."/sites/all/modules/custom/email_templates/SixMonthProjectEmail.html";
-    //$template = file_get_contents("C:/xampp/htdocs/CommunityKC/sites/all/modules/custom/email_templates/SixMonthProjectEmail.html");
-    $template = file_get_contents($template_path);
-    $replace = t($template, array('!project_name' => $tokens->project_name));
 
+    /*
+    // Multiple recipients
+
+    // Subject
+    $subject = 'Birthday Reminders for August';
+
+    // Message
+    $message = '
+    <html>
+    <head>
+      <title>Birthday Reminders for August</title>
+    </head>
+    <body>
+      <p>Here are the birthdays upcoming in August!</p>
+      <table>
+        <tr>
+          <th>Person</th><th>Day</th><th>Month</th><th>Year</th>
+        </tr>
+        <tr>
+          <td>Johny</td><td>10th</td><td>August</td><td>1970</td>
+        </tr>
+        <tr>
+          <td>Sally</td><td>17th</td><td>August</td><td>1973</td>
+        </tr>
+      </table>
+    </body>
+    </html>
+    ';
+    $headers = "From postmaster@local\r\n";
+    $headers .= "MIME-Version: 1.0\r\n";
+    $headers .= "Content-Type: text/html; charset=ISO-8859-1\r\n";
+    // Mail it
+    $result = mail($to, $subject, $message, $headers);
+    echo $result;
+    */
   }
 }
 
