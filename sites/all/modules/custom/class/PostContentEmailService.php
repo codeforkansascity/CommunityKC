@@ -11,6 +11,7 @@ class PostContentEmailService
 
   public function run()
   {
+    variable_set('mail_system', array('default-system' => 'HTMLMailSystem'));
     $sql_query = "SELECT
                     n.nid,
                     n.uid
@@ -94,43 +95,6 @@ class PostContentEmailService
       //update_node_ccf_node($tokens->project_nid);
 
     }
-
-
-    /*
-    // Multiple recipients
-
-    // Subject
-    $subject = 'Birthday Reminders for August';
-
-    // Message
-    $message = '
-    <html>
-    <head>
-      <title>Birthday Reminders for August</title>
-    </head>
-    <body>
-      <p>Here are the birthdays upcoming in August!</p>
-      <table>
-        <tr>
-          <th>Person</th><th>Day</th><th>Month</th><th>Year</th>
-        </tr>
-        <tr>
-          <td>Johny</td><td>10th</td><td>August</td><td>1970</td>
-        </tr>
-        <tr>
-          <td>Sally</td><td>17th</td><td>August</td><td>1973</td>
-        </tr>
-      </table>
-    </body>
-    </html>
-    ';
-    $headers = "From postmaster@local\r\n";
-    $headers .= "MIME-Version: 1.0\r\n";
-    $headers .= "Content-Type: text/html; charset=ISO-8859-1\r\n";
-    // Mail it
-    $result = mail($to, $subject, $message, $headers);
-    echo $result;
-    */
   }
 }
 

@@ -3,6 +3,8 @@
 require_once('custom.user.inc');
 require_once('custom.helpers.inc');
 
+require_once('class/HTMLMailSystem.php');
+
 require_once('class/GeoJsonService.php');
 require_once('class/PostContentEmailService.php');
 
@@ -477,7 +479,7 @@ function custom_drupal_mail($from, $to, $subject, $message) {
     'id' => $my_module . '_' . $my_mail_token,
     'to' => $to,
     'subject' => $subject,
-    'body' => array($message), // Maybe just $message?
+    'body' => array($message),
     'headers' => array(
       'From' => $from,
       'Sender' => $from,
