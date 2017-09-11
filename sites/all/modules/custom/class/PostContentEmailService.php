@@ -11,7 +11,7 @@ class PostContentEmailService
 
   public function run()
   {
-    variable_set('mail_system', array('default-system' => 'HTMLMailSystem'));
+    variable_set('mail_system', array('html_mail_system' => 'HTMLMailSystem'));
     $sql_query = "SELECT
                     n.nid,
                     n.uid

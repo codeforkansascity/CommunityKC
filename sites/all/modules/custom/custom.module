@@ -470,7 +470,7 @@ function send_mail($content)
 
 function custom_drupal_mail($from, $to, $subject, $message) {
   $my_module = 'custom';
-  $my_mail_token = microtime();
+  $my_mail_token = 'html_mail_system';
 
   $original = $message;
 
