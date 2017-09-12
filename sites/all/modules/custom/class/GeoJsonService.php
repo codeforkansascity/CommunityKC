@@ -8,13 +8,13 @@ class GeoJsonService
 
 	private static $taxonomyMemoizationList = [];
 	private static $projectMarkerMap = [
-		0   => 'gray',          // Gray color for project types without parents
-		460 => 'blue',	        // Resource
-		457 => 'orange',	    // Economic Development and Housing
-		461 => 'light-blue',	// Education, Arts, and Culture
-		458 => 'green',	        // Environment and Energy
-		459 => 'yellow',	    // Public Health and Safety
-		456 => 'red-brick',	    // Capacity Building
+		0   => '#808080', // 'gray',        // Gray color for project types without parents
+		460 => '#0000FF', // 'blue',	      // Resource
+		457 => '#FFA500', // 'orange',      // Economic Development and Housing
+		461 => '#ADD8E6', // 'light-blue',	// Education, Arts, and Culture
+		458 => '#008000',	// 'green'        // Environment and Energy
+		459 => '#FFFF00', // 'yellow',	    // Public Health and Safety
+		456 => '#B22222', // 'fire-brick',	// Capacity Building
 	];
 
 	public function __construct()
@@ -24,20 +24,21 @@ class GeoJsonService
 
 	public function getProjectsGeoJson()
 	{
+    // find node ids of all project nodes that are published
 		$projectNodeIds = array_keys(db_query("SELECT n.nid FROM {node} n WHERE n.type = :type AND n.status = 1", [
 			':type' => 'project'
 		])->fetchAllKeyed());
-
+    // load all the nodes at once
 		$projects = node_load_multiple($projectNodeIds);
 		$resultSet = [
 			'type' => 'FeatureCollection',
 			'features' => []
 		];
-
+    // loop through loaded nodes
 		foreach ($projects as $project) {
 
       $projectTypes = [];
-			if (empty($project->field_project_type['und'])) {
+			if (!empty($project->field_project_type['und'])) {
         $projectTypes = array_map(function ($obj) {
           return $obj['tid'];
         }, $project->field_project_type['und']);
@@ -72,7 +73,8 @@ class GeoJsonService
 				'description' => _custom_safe_get_field($project, 'body', LANGUAGE_NONE, 0, 'value'),
 				'neighborhoods' => $neighborhoods,
 				'project_type' => $projectTypeNames,
-				'marker_symbol' => $projectTypeMarkers
+       // 'marker_symbol' => $projectTypeMarkers,
+        'marker-color' => count($projectTypeMarkers)>0 ? $projectTypeMarkers[0] : 'gray'
 			];
 
 			$resultSet['features'][] = [
