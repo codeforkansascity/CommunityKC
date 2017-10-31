@@ -65,6 +65,7 @@ class GeoJsonService
       }
 
 			$properties = [
+        'nid' => $project->nid,
 				'title' => $project->title,
 				'address' => _custom_safe_get_field($project, 'field_address', LANGUAGE_NONE, 0, 'thoroughfare'),
 				'city' => _custom_safe_get_field($project, 'field_address', LANGUAGE_NONE, 0, 'locality'),
