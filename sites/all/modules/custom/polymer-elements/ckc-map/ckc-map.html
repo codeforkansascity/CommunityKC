@@ -1,0 +1,158 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="external-scripts.html">
+<dom-module id="ckc-map">
+  <template>
+      <style>
+        #mapContainer{ width: 800px; height: 600px;}
+      </style>
+
+      <link rel="stylesheet" href="//api.tiles.mapbox.com/mapbox.js/v2.2.3/mapbox.css">
+      <link rel="stylesheet" href="//api.tiles.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/MarkerCluster.css">
+      <link rel="stylesheet" href="//api.tiles.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/MarkerCluster.Default.css">
+      <link rel="stylesheet" href="//api.tiles.mapbox.com/mapbox.js/plugins/leaflet-locatecontrol/v0.43.0/L.Control.Locate.mapbox.css">
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+    <div id="mapContainer"></div>
+  </template>
+
+  <script>
+/**
+  * `ckc-map`
+  * CommunityKC.org map element
+  *
+  * @customElement
+  * @polymer
+  * @demo demo/index.html
+  */
+class CkcMap extends Polymer.Element {
+  static get is() { return 'ckc-map'; }
+  static get properties() {
+    return {
+      tileSet: {
+        type: String,
+        value: 'mapbox.streets',
+        notify: true
+      },
+      map: {
+        type: Object
+      }
+    };
+  }
+  ready() {
+    super.ready();
+    var parent = this;
+    /* this.$.mapStyle.addEventListener('change', function(e){
+      console.log('changed', parent.$.mapStyle.value);
+      if (parent.$.mapStyle.value!=parent.tileSet) {
+        parent.map.remove();
+        parent.tileSet = parent.$.mapStyle.value;
+        parent._initializeMap();
+      }
+    }); */
+    this._initializeMap();
+  }
+
+  _handleMapStylChanged(e) {
+    if (this.$.mapStyle.value!=this.tileSet) {
+      this.map.remove();
+      this.tileSet = this.$.mapStyle.value;
+      this._initializeMap();
+    }
+  }
+
+  _initializeMap() {
+    L.mapbox.accessToken = "pk.eyJ1IjoiY3RyYWx0ZGVsIiwiYSI6ImNqMjZzNWF5ejAxM2czMnBja3R0MGF4ZHYifQ.b1VwKXqiiKwu7ElTGroVJA";
+
+    var mapboxOSM = L.tileLayer("https://{s}.tiles.mapbox.com/v4/" + this.tileSet + "/{z}/{x}/{y}.png?access_token="+L.mapbox.accessToken, {
+      maxZoom: 19,
+      subdomains: ["a", "b", "c", "d"],
+      attribution: 'Basemap <a href="https://www.mapbox.com/about/maps/" target="_blank">© Mapbox © OpenStreetMap</a>'
+    });
+    var mapboxSat = L.tileLayer("https://{s}.tiles.mapbox.com/v4/mapbox.streets-satellite/{z}/{x}/{y}.png?access_token="+L.mapbox.accessToken, {
+      maxZoom: 19,
+      subdomains: ["a", "b", "c", "d"],
+      attribution: 'Basemap <a href="https://www.mapbox.com/about/maps/" target="_blank">© Mapbox © OpenStreetMap</a>'
+    });
+
+    var baseLayers = {
+      "Street Map": mapboxOSM,
+      "Aerial Imagery": mapboxSat
+    };
+    var map = L.map(this.$.mapContainer, {
+      zoom: 10,
+      layers: [mapboxOSM]
+    });
+    map.attributionControl.setPrefix("");
+
+    var markerClusters = new L.MarkerClusterGroup({
+      spiderfyOnMaxZoom: true,
+      showCoverageOnHover: false,
+      zoomToBoundsOnClick: true,
+      maxClusterRadius: 10
+    });
+
+    var featureLayer = L.mapbox.featureLayer();
+    featureLayer.once("ready", function(e) {
+      map.fitBounds(this.getBounds(), { maxZoom: 17});
+    });
+    featureLayer.on("ready", function(e) {
+      // markerClusters.clearLayers().addLayer(featureLayer);
+      // map.addLayer(markerClusters);
+      // https://www.mapbox.com/mapbox.js/example/v1.0.0/markercluster-custom-marker-icons/
+      var clusterGroup = new L.MarkerClusterGroup({
+        iconCreateFunction: function(cluster) {
+          var count = cluster.getChildCount();
+          var symbol = count > 99 ? 'marker' : count;
+          return L.mapbox.marker.icon({
+            // show the number of markers in the cluster on the icon.
+            'marker-symbol': symbol,
+            'marker-color': '#2e3192'
+          });
+        }
+      });
+      e.target.eachLayer(function(layer) {
+        clusterGroup.addLayer(layer);
+      });
+      map.addLayer(clusterGroup);
+    });
+    // https://www.mapbox.com/mapbox.js/example/v1.0.0/markers-with-image-slideshow/
+    featureLayer.on('layeradd', (e) => {
+      var marker = e.layer;
+      var feature = marker.feature;
+      var popupContent =  '<div id="' + feature.properties.id + '" class="popup">' +
+                        '<h2><a href="/node/"' + feature.properties.nid + '">' + feature.properties.title + '</a></h2>' +
+                        '<div class="description">' + feature.properties.description + '</div>';
+      if (feature.properties.project_type && feature.properties.project_type.length > 0) {
+        popupContent += '<br /><div class="proj-type">Project Type: ';
+        for(var t = 0;t<feature.properties.project_type.length;t++) {
+          if (t > 0) { popupContent += ', '}
+          popupContent += '<a href="/project-type/' + this.slugify(feature.properties.project_type[t]) + '">'
+           + feature.properties.project_type[t] + '</a>';
+        }
+      }
+      popupContent += '</div>';
+      marker.bindPopup(popupContent, {
+        closeButton: true,
+        minWidth: 320
+      });
+    });
+    featureLayer.loadURL('http://local.communitykc.org/projects/geojson/');
+    this.map = map;
+  }
+
+  slugify(text) {
+    return text.toString().toLowerCase()
+      .replace(/\s+/g, '-')           // Replace spaces with -
+      .replace(/[^\w\-]+/g, '')       // Remove all non-word chars
+      .replace(/\-\-+/g, '-')         // Replace multiple - with single -
+      .replace(/^-+/, '')             // Trim - from start of text
+      .replace(/-+$/, '');            // Trim - from end of text
+  }
+}
+
+window.customElements.define(CkcMap.is, CkcMap);
+  </script>
+</dom-module>

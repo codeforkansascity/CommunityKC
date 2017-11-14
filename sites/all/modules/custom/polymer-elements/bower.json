@@ -1,0 +1,11 @@
+{
+  "name": "ckc-polymer-elements",
+  "description": "Polymer element collection for community kc",
+  "dependencies": {
+    "polymer": "Polymer/polymer#^2.2.0",
+    "webcomponentsjs": "^1.0.17"
+  },
+  "resolutions": {
+    "polymer": "^2.2.0"
+  }
+}
