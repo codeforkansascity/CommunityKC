@@ -73,26 +73,3 @@ function _custom_page_newmap_js() {
   );
   return $page;
 }
-
-function _custom_page_newmap() {
-  $element = array(
-    '#tag' => 'script', // The #tag is the html tag -
-    '#attributes' => array( // Set up an array of attributes inside the tag
-      'src' => '/sites/all/modules/custom/polymer-elements/bower_components/webcomponentsjs/webcomponents-lite.js',
-    ),
-  );
-  drupal_add_html_head($element, 'webcomponents-lite');
-  $ckc = array(
-    '#tag' => 'link',
-    '#attributes' => array(
-      'rel' => 'import',
-      'href' => '/sites/all/modules/custom/polymer-elements/ckc-map/ckc-map.html'
-    ),
-  );
-  drupal_add_html_head($ckc, 'ckc-map');
-  $page = array();
-  $page['markup'] = array(
-    '#markup' => '<ckc-map></ckc-map>'
-  );
-  return $page;
-}

@@ -31,16 +31,6 @@ function custom_menu() {
     'access callback' => TRUE,
     'file' => 'custom.pages.inc'
   );
-  $items['newmap'] = array(
-		'type' => MENU_CALLBACK,
-		'title' => 'New Map',
-		'description' => 'New map display',
-//		'position' => 'left',
-//		'weight' => -10,
-		'page callback' => '_custom_page_newmap',
-    'access callback' => TRUE,
-    'file' => 'custom.pages.inc',
-	);
   // Misc
   // one-time data run
   /*
