@@ -25,9 +25,11 @@ class GeoJsonService
 	public function getProjectsGeoJson()
 	{
     // find node ids of all project nodes that are published
-		$projectNodeIds = array_keys(db_query("SELECT n.nid FROM {node} n WHERE n.type = :type AND n.status = 1", [
+
+		$projectNodeIds = db_query("SELECT n.nid FROM {node} n WHERE n.type = :type AND n.status = 1", [
 			':type' => 'project'
-		])->fetchAllKeyed());
+    ])->fetchCol(0);
+
     // load all the nodes at once
 		$projects = node_load_multiple($projectNodeIds);
 		$resultSet = [
