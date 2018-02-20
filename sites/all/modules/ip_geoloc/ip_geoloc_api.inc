@@ -10,7 +10,7 @@
 // Note: secure http was chosen, as plain http may cause warnings popping up in
 // environments using certificates. Alternatively headless may work?
 // Size 5k.
-define('IP_GEOLOC_GOOGLE_MAPS', 'https://maps.googleapis.com/maps/api/js');
+define('IP_GEOLOC_GOOGLE_MAPS', ip_geoloc_build_google_api_url());
 define('IP_GEOLOC_GOOGLE_MAPS_SERVER', 'https://maps.googleapis.com/maps/api/geocode/json');
 
 /**

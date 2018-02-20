@@ -183,7 +183,7 @@
           // Black.
           var textColor = "000000";
           // Note: cannot use https: here...
-          var pinImage = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=" + pinChar + "|" + pinColor + "|" + textColor,
+          var pinImage = new google.maps.MarkerImage("//chart.apis.google.com/chart?chst=d_map_pin_letter&chld=" + pinChar + "|" + pinColor + "|" + textColor,
             new google.maps.Size(21, 34), new google.maps.Point(0, 0), new google.maps.Point(10, 34));
           specialMarker = new google.maps.Marker({
             map: maps[m],

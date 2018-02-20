@@ -47,7 +47,7 @@ class ip_geoloc_plugin_style_openlayers extends views_plugin_style {
       '#description' => t('The OpenLayers map used to place the view locations on. You can configure map and markers <a href="!url">here</a>.', array(
         '!url' => url('admin/structure/openlayers/maps'),
       )),
-      '#options' => openlayers_map_options(),
+      '#options' => openlayers_map_options(), // removed in OpenLayers3
       '#default_value' => isset($this->options['map']) ? $this->options['map'] : variable_get('openlayers_default_map', 'default'),
     );
 

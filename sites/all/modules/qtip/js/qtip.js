@@ -5,7 +5,7 @@
         var instances = $.parseJSON(settings.instances);
         var debug = $.parseJSON(settings.qtipDebug);
 
-        $('.qtip-link', context).each(function() { // Call .each() so we can access $(this) in the settings/config
+        $('.qtip-link:not(.qtip-processed)', context).each(function() { // Call .each() so we can access $(this) in the settings/config
           // Check for a sibling .qtip-tooltip containing the tooltip information, otherwise (for forms)
           // go to the element's parent and look for .qtip-tooltip container as a sibling of the parent
           if ($(this, context).next('.qtip-tooltip').length) {
@@ -45,6 +45,9 @@
 
           // Add instance class to the container to aid in styling
           $(this).addClass('qtip-instance-' + instance);
+
+          // Add processed class to not process again on AJAX calls.
+          $(this).addClass('qtip-processed');
         });
       });
     }

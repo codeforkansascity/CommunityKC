@@ -5,6 +5,15 @@ This documentation concentrates on the installation and configuration of the
 IP Geolocation Views & Maps (IPGV&M) module. For an overall introduction see
 http://drupal.org/project/ip_geoloc.
 
+IMPORTANT:
+---------
+The Google Maps API, which include geolocation services, requires either a
+Google API Key or a Google Client ID. If you are using Leaflet maps you may
+still need a key when you use geolocation services also.
+Obtain a free API Key or Client ID here:
+https://developers.google.com/maps/documentation/javascript/get-api-key
+
+
 CONFIGURATION OF VIEW-BASED MAPS
 ================================
 Read this if you are using IPGV&M primarily for its Views mapping interface. If
@@ -15,9 +24,9 @@ Download and enable IPGV&M like any other module. Then visit its configuration
 page, .../admin/config/system/ip_geoloc.
 If you intend to use IPGV&M's built-in interface to Google Maps, untick all
 "Data collection option" boxes.
-If you intend to use IPGV&M with the OpenLayers or Leaflet modules and also wish
-to show and center on the visitor's HTML5 retrieved location, then you have two
-options:
+If you intend to use IPGV&M with the OpenLayers (v2) or Leaflet modules and also
+wish to show and center on the visitor's HTML5 retrieved location, then you have
+two options:
 a) tick the first "Data collection option" and select applicable roles below it
 b) enable the "Set my location" block, so visitors can center the map using
 their HTML5 location, or, using the same block type, a city or partial address,
@@ -196,6 +205,7 @@ When all's ok, you won't see any errors in the Status Report, i.e.
 
 OPENLAYERS TIPS
 ===============
+Use http://drupal.org/project/openlayers version 7.x-2.0 or 7.x-2.x.
 Of the modules in the OpenLayers package you only need to enable OpenLayers and
 OpenLayers UI. In fact, you could even disable OpenLayers UI when you're done
 configuring your maps.

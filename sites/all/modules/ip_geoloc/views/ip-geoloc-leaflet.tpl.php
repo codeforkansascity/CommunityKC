@@ -18,5 +18,5 @@
   $style = (drupal_substr($height, 0, 6) == '<none>') ? '' : ' style="height:' . check_plain($height) .'"';
 ?>
 <div class="ip-geoloc-map leaflet-view <?php echo $marker_set; ?>">
-  <div id="<?php echo "$map_id\"$style"; ?>></div>
+  <div id="<?php echo $map_id; ?>" <?php echo $style; ?>></div>
 </div>
