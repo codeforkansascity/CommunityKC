@@ -1,11 +1,12 @@
 name = MultiBlock
 description = Allows the creation of multiple instances of blocks
 core = 7.x
-dependencies[] = block
+dependencies[] = drupal:block
+dependencies[] = drupal:system (>=7.40)
 
-; Information added by Drupal.org packaging script on 2015-08-13
-version = "7.x-1.4"
+; Information added by Drupal.org packaging script on 2017-01-09
+version = "7.x-1.5"
 core = "7.x"
 project = "multiblock"
-datestamp = "1439461663"
+datestamp = "1483973949"
 

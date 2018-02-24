@@ -4,6 +4,10 @@
  * Implements hook_form_FORM_ID_alter().
  */
 function qtip_field_form_field_ui_field_edit_form_alter(&$form, &$form_state) {
+  if (!_qtip_is_supported_field($form['#field']['type'], $form['#instance']['widget']['type'])) {
+    return;
+  }
+
   $settings = isset($form['#instance']['qtip']) ? $form['#instance']['qtip'] : array('text' => 'none', 'instance' => qtip_fetch_default_instance());
 
   $form['instance']['qtip'] = array(
@@ -90,16 +94,21 @@ function qtip_field_form_field_ui_field_edit_form_alter(&$form, &$form_state) {
  * Implements hook_field_widget_form_alter().
  */
 function qtip_field_field_widget_form_alter(&$element, &$form_state, $context) {
+  if (!_qtip_is_supported_field($context['field']['type'], $context['instance']['widget']['type'])) {
+    return;
+  }
+
   if (isset($context['instance']['qtip']) && $context['instance']['qtip']['text'] != 'none') {
     // Get type of field
     $field_type = $context['field']['type'];
     switch ($field_type) {
       case 'text':
+      case 'number_decimal':
         $local_element =& $element['value'];
         break;
-      case 'image':
-        $local_element =& $element[0];
-        break;
+      // case 'image':
+      //   $local_element =& $element[0];
+      //   break;
       default:
         $local_element =& $element;
         break;
@@ -180,4 +189,54 @@ function qtip_field_preprocess_field(&$variables) {
     ));
     $variables['label'] = $variables['label'] . $qtip;
   }
+}
+
+/**
+ * Helper function to only show qTip information on currently supported fields.
+ */
+function qtip_supported_fields() {
+  return array(
+    'text' => array(),
+    'text_long' => array(),
+    'text_with_summary' => array(),
+    // 'image' => array(),
+    'list_boolean' => array(),
+    'list_text' => array(
+      'options_select',
+    ),
+    'list_float' => array(
+      'options_select',
+    ),
+    'list_integer' => array(
+      'options_select',
+    ),
+    'taxonomy_term_reference' => array(
+      'taxonomy_autocomplete',
+      'options_select',
+      'autocomplete_deluxe_taxonomy',
+    ),
+    'number_decimal' => array(),
+    'number_integer' => array(),
+  );
+}
+
+/**
+ * Check to see whether a field type and it's widget type is supported.
+ */
+function _qtip_is_supported_field($form_type, $widget_type) {
+   // Only display qTip settings for fields that are currently supported.
+  $supported_fields = qtip_supported_fields();
+  if (array_key_exists($form_type, $supported_fields)) {
+    $supported_type = $supported_fields[$form_type];
+
+    // If $supported_type is empty then all widgets for the type are supported.
+    if (!empty($supported_type) && !in_array($widget_type, $supported_type)) {
+      // The current field type and it's widget are not supported.
+      return FALSE;
+    }
+
+    return TRUE;
+  }
+
+  return FALSE;
 }

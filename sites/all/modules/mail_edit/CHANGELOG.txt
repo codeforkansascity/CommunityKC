@@ -5,6 +5,14 @@ CHANGELOG.txt for Mail Editor for Drupal 7
 mail_edit 7.x-1.x-dev:
 
 
+mail_edit 7.x-1.2 (2017-04-10):
+  Enhancement:
+   - Add a dummy test to accommodate the testbot.
+  Bug fixed:
+   - #2185909 by GaëlG: Remove newline character introduced by _drupal_wrap_mail_line().
+   - #2533318 by Eluchel: Typo in Dynamic Text Information.
+
+
 mail_edit 7.x-1.1 (2015-07-05):
   Bug fixed:
     - #2165875 by miiimooo: Fix the mail_edit_load() API function.
@@ -17,7 +25,6 @@ mail_edit 7.x-1.1 (2015-07-05):
     - Minor code refactoring, no functional changes.
     - #2456719 by DamienMcKenna: Change token tree to use the new dialog.
     - Fix Coder issues (no functional changes).
-
 
 mail_edit 7.x-1.0 (2012-06-21):
   Bug fixed:

@@ -112,6 +112,28 @@ function ip_geoloc_requirements($phase) {
       '!url_fsymbols' => url('http://text-symbols.com'),
     ));
   }
+
+  switch (variable_get('ip_geoloc_auth_method', 0)) {
+    case 1:
+      $key_provided = variable_get('ip_geoloc_apikey', FALSE);
+      break;
+
+    case 2:
+      $key_provided = variable_get('ip_geoloc_client_id', FALSE);
+      break;
+
+    default:
+  }
+  if (empty($key_provided)) {
+    $requirements['ip_geoloc_map'] = array(
+      'title' => 'IP Geolocation Views & Maps',
+      'severity' => REQUIREMENT_WARNING,
+      'value' => t('No Google Maps API Key or Client ID. Keyless access to Google Maps is no longer supported and may impact rendering of maps. Obtain and enter an API Key or Client ID <a href="!url">here</a>.', array(
+        '!url' => url('admin/config/system/ip_geoloc')
+      )),
+    );
+  }
+
   return $requirements;
 }
 

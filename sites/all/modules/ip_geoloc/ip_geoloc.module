@@ -3,7 +3,7 @@
 /**
  * @file
  * IPGV&M is a mapping engine for Views that contain locations of entities
- * and/or visitors. Google Maps, Leaflet and OpenLayers maps are all supported.
+ * and/or visitors. Google Maps, Leaflet and OpenLayers2 maps are all supported.
  * and available through this module.
  * Using a number of optional sources IPGV&M also retrieves and stores
  * geographical and street address information of your site visitors, based on
@@ -976,4 +976,48 @@ function ip_geoloc_statistics_api() {
     'path' => drupal_get_path('module', 'ip_geoloc') . '/plugins',
     'file' => 'ip_geoloc.statistics.inc',
   );
+}
+
+/**
+ * Builds the javascript maps api url based on authentication method.
+ *
+ * Patch from https://www.drupal.org/node/2776209
+ */
+function ip_geoloc_build_google_api_url() {
+
+  $google_api_url = 'https://maps.googleapis.com/maps/api/js';
+
+  // Append query parameters for the Google Maps url.
+  // See https://developers.google.com/maps/documentation/javascript/versions
+  $query = array();
+
+  switch (variable_get('ip_geoloc_auth_method', 0)) {
+    case 1:
+      $key = trim(variable_get('ip_geoloc_apikey', ''));
+      if (!empty($key)) {
+        $query['key'] = $key;
+      }
+      break;
+
+    case 2:
+      $client_id = trim(variable_get('ip_geoloc_client_id', ''));
+      if (!empty($client_id)) {
+        $query['client'] = $client_id;
+        $signature = trim(variable_get('ip_geoloc_signature', ''));
+        if (!empty($signature)) {
+          $query['signature'] = $signature;
+        }
+      }
+      break;
+
+    default:
+  }
+
+  // Add query params to API url.
+  if (!empty($query)) {
+    // Include version number as it's required for Premium plans.
+    $query['v'] = '3.26';
+    $google_api_url .= '?' . drupal_http_build_query($query);
+  }
+  return $google_api_url;
 }

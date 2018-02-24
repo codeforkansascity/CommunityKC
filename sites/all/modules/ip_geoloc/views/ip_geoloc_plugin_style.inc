@@ -642,7 +642,9 @@ function ip_geoloc_plugin_style_extract_locations($views_plugin_style, $enable_b
 
   foreach ($latitudes as $latitude) {
     if (isset($view->field[$latitude])) {
-      $loc_field_names[] = $view->field[$latitude]->definition['field_name'];
+    //$loc_field_names[] = $view->field[$latitude]->definition['field_name'];
+      // Search API [#2603450]
+      $loc_field_names[] = $view->field[$latitude]->field;
       $loc_field_aliases[] = $view->field[$latitude]->field_alias;
       // Example: $loc_field_name == 'field_geo'; $loc_field_alias == 'nid';
     }
@@ -686,8 +688,24 @@ function ip_geoloc_plugin_style_extract_locations($views_plugin_style, $enable_b
 
         $base = _ip_geoloc_plugin_style_get_base1($row, $loc_field_name, $loc_field_alias);
         $location = new stdClass();
-
+        $is_location = FALSE;
         if (_ip_geoloc_plugin_style_extract_lat_lng($location, $row, $latitude, $longitude, $base)) {
+          $is_location = TRUE;
+        }
+        // Search API support [#2603450]
+        else if (isset($row->_entity_properties)) {
+          $longitude_alias = $view->field[$longitude]->field_alias;
+          if (isset($row->_entity_properties[$loc_field_alias])) {
+            $location->latitude = $row->_entity_properties[$loc_field_alias];
+          }
+          if (isset($row->_entity_properties[$longitude_alias])) {
+            $location->longitude = $row->_entity_properties[$longitude_alias];
+          }
+          if (isset($location->latitude) && isset($location->longitude)) {
+            $is_location = TRUE;
+          }
+        }
+        if ($is_location) {
           // Remaining row values go into the balloon.
           if ($enable_balloons && !empty($views_plugin_style->rendered_fields[$i])) {
             $location->balloon_text = $views_plugin_style->rendered_fields[$i][$group_field];
@@ -730,8 +748,25 @@ function ip_geoloc_plugin_style_extract_locations($views_plugin_style, $enable_b
 
           $base = _ip_geoloc_plugin_style_get_base1($row, $loc_field_name, $loc_field_alias);
           $location = new stdClass();
+          $is_location = FALSE;
 
           if (_ip_geoloc_plugin_style_extract_lat_lng($location, $row, $latitude, $longitude, $base)) {
+            $is_location = TRUE;
+          }
+          // Search API support [#2603450]
+          else if (isset($row->_entity_properties)) {
+            $longitude_alias = $view->field[$longitude]->field_alias;
+            if (isset($row->_entity_properties[$loc_field_alias])) {
+              $location->latitude  = $row->_entity_properties[$loc_field_alias];
+            }
+            if (isset($row->_entity_properties[$longitude_alias])) {
+              $location->longitude  = $row->_entity_properties[$longitude_alias];
+            }
+            if (isset($location->latitude) && isset($location->longitude)) {
+              $is_location = TRUE;
+            }
+          }
+          if ($is_location) {
             // Remaining row values go into the balloon.
             if ($enable_balloons && !empty($views_plugin_style->rendered_fields[$i])) {
               $location->balloon_text = implode($separator, $views_plugin_style->rendered_fields[$i]);
@@ -1156,7 +1191,11 @@ function _ip_geoloc_plugin_style_decorate(&$location, $row, $tooltip_field, $tag
     $tag = $tag_field->theme($row);
     $location->marker_tag = _ip_geoloc_plugin_style_add_label_and_styling($tag_field, $tag);
   }
-  if (isset($row->nid)) {
+  if (isset($row->id)) {
+    // CiviCRM [#2549825]
+    $location->id = $row->id;
+  }
+  elseif (isset($row->nid)) {
     $location->id = $row->nid;
   }
   elseif (isset($row->tid)) {

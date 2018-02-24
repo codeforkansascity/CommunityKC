@@ -12,6 +12,69 @@ function ip_geoloc_admin_configure() {
 
   global $base_url;
 
+  $form['ip_geoloc_google_auth'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Authentication of maps and geolocation services'),
+    '#description' => t('The <a target="_blank" href="!url1">Google Maps API</a>, which include geolocation services, requires either a Google API Key or a Google Client ID. <br/>If you are using <a target="_blank" href="!url2">Leaflet maps</a> you may still need a Google API Key or Client ID when you use this module\'s geolocation services also.', array(
+      '!url1' => url('https://developers.google.com/maps/documentation/javascript/get-api-key'),
+      '!url2' => url('http://leafletjs.com'),
+    )),
+  );
+
+  $form['ip_geoloc_google_auth']['ip_geoloc_auth_method'] = array(
+    '#type' => 'select',
+    '#title' => t('Select Google API Authentication Method'),
+    '#description' => t('Google API Authentication Method'),
+    '#default_value' => variable_get('ip_geoloc_auth_method', 1),
+    '#options' => array(
+      1 => t('API Key'),
+      2 => t('Client ID'),
+    ),
+  );
+
+  $form['ip_geoloc_google_auth']['ip_geoloc_apikey'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Google Maps API Key'),
+    '#description' => t('Obtain a Google Maps Javascript API key <a href="!url">here</a>.', array(
+      '!url' => url('https://developers.google.com/maps/documentation/javascript/get-api-key'),
+    )),
+    '#default_value' => variable_get('ip_geoloc_apikey', ''),
+    '#required' => FALSE,
+    '#states' => array(
+      'visible' => array(
+        ':input[name="ip_geoloc_auth_method"]' => array('value' => 1),
+      ),
+    ),
+  );
+
+  $form['ip_geoloc_google_auth']['ip_geoloc_client_id'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Google Client ID'),
+    '#description' => t('For more information, visit <a href="!url">this page</a>.', array(
+      '!url' => url('https://developers.google.com/maps/documentation/javascript/get-api-key#client-id'),
+     )),
+    '#default_value' => variable_get('ip_geoloc_client_id', ''),
+    '#required' => FALSE,
+    '#states' => array(
+      'visible' => array(
+         ':input[name="ip_geoloc_auth_method"]' => array('value' => 2),
+      ),
+    ),
+  );
+
+  $form['ip_geoloc_google_auth']['ip_geoloc_signature'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Google Signature'),
+    '#description' => t('May not be required. Check the Google documentation.'),
+    '#default_value' => variable_get('ip_geoloc_signature', ''),
+    '#required' => FALSE,
+    '#states' => array(
+      'visible' => array(
+        ':input[name="ip_geoloc_auth_method"]' => array('value' => 2),
+      ),
+    ),
+  );
+
   $form['markers'] = array(
     '#type' => 'fieldset',
     '#collapsible' => TRUE,

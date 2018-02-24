@@ -23,7 +23,7 @@ function ip_geoloc_context_registry() {
   return array(
     'reactions' => array(
       'locate_visitor' => array(
-        'title' => t('Locate visitor using GPS/Wifi<br/> (if page changed)'),
+        'title' => t('Locate visitor using GPS/Wifi (if page changed)'),
         'plugin' => 'ip_geoloc_context_reaction_locate_visitor',
       ),
     ),

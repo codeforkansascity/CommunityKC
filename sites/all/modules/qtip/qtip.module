@@ -1,8 +1,8 @@
 <?php
 
 // Constants
-define('QTIP_RECOMMENDED_CDN_VERSION', '2.2.1');
-define('QTIP_RECOMMENDED_IMAGESLOADED_VERSION', '3.1.6');
+define('QTIP_RECOMMENDED_CDN_VERSION', '3.0.3');
+define('QTIP_RECOMMENDED_IMAGESLOADED_VERSION', '4.1.0');
 define('QTIP_PAGES_VISIBILITY_NOTLISTED', 0);
 define('QTIP_PAGES_VISIBILITY_LISTED', 1);
 define('QTIP_MINIMUM_JQUERY_VERSION', '1.6.4');
@@ -28,6 +28,7 @@ function qtip_init() {
   $settings = _qtip_fetch_default_settings();
   $pages = $settings['qtip_pages_list'];
   $visibility = $settings['qtip_pages_visibility'];
+  $current_path = current_path();
 
   // Default to loading the library
   $page_match = TRUE;
@@ -57,7 +58,7 @@ function qtip_init() {
   }
 
   // if user is on admin/config/user-interface/qtip always load the tooltips so that the examples work as expected
-  if ($page_match || current_path() == 'admin/config/user-interface/qtip') {
+  if ($page_match || $current_path == 'admin/config/user-interface/qtip') {
     // If the admin choose to use a CDN
     if ($settings['qtip_cdn'] != 'none') {
       switch ($settings['qtip_cdn']) {
@@ -101,6 +102,9 @@ function qtip_init() {
     drupal_add_js(array('instances' => qtip_clean_settings_multiple($instances)), 'setting');
 
     drupal_add_js(array('qtipDebug' => drupal_json_encode(qtip_fetch_debug_settings())), 'setting');
+  }
+  elseif (drupal_match_path($current_path, 'admin/config/user-interface/qtip/manage*')) {
+    drupal_add_css(drupal_get_path('module', 'qtip') . '/css/qtip.admin.css');
   }
 }
 
@@ -220,11 +224,11 @@ function qtip_js_alter(&$javascript) {
     // We set the minimum jQuery version required for qTip because 1.4.4 that ships with Drupal core is not compatible
     switch (variable_get('qtip_jquery_cdn', 'google')) {
       case 'microsoft':
-        $jquery_path = '//ajax.aspnetcdn.com/ajax/jquery/jquery-' . variable_get('qtip_jquery_version', QTIP_MINIMUM_JQUERY_VERSION) . '.min.js';
+        $jquery_path = 'https://ajax.aspnetcdn.com/ajax/jquery/jquery-' . variable_get('qtip_jquery_version', QTIP_MINIMUM_JQUERY_VERSION) . '.min.js';
         break;
       case 'google':
       default:
-        $jquery_path = '//ajax.googleapis.com/ajax/libs/jquery/' . variable_get('qtip_jquery_version', QTIP_MINIMUM_JQUERY_VERSION) . '/jquery.min.js';
+        $jquery_path = 'https://ajax.googleapis.com/ajax/libs/jquery/' . variable_get('qtip_jquery_version', QTIP_MINIMUM_JQUERY_VERSION) . '/jquery.min.js';
     }
 
     // We duplicate the important information from Drupal core
@@ -422,6 +426,72 @@ function qtip_ctools_plugin_api($module, $api) {
       'path'    => drupal_get_path('module', 'qtip') . '/exports',
     );
   }
+}
+
+/**
+ * Implements hook_qtip_default_qtips().
+ */
+function qtip_qtip_default_qtips() {
+  $qtip = new stdClass();
+  $qtip->disabled = FALSE; /* Edit this to true to make a default qtip disabled initially */
+  $qtip->api_version = 1.0;
+  $qtip->machine_name = 'default';
+  $qtip->name = 'Default';
+  $qtip->settings = array(
+    'content' => array(
+      'button' => 0,
+    ),
+    'style' => array(
+      'tip' => array(
+        'width' => '6',
+        'height' => '6',
+        'border' => '',
+        'corner_position' => '',
+        'mimic' => '',
+        'offset' => '',
+        'corner' => 0,
+      ),
+      'classes' => '',
+      'classes_custom' => '',
+      'shadow' => 0,
+      'rounded_corners' => 0,
+    ),
+    'position' => array(
+      'at' => 'bottom right',
+      'my' => '',
+      'viewport' => 0,
+      'target' => 0,
+      'adjust' => array(
+        'method' => '',
+      ),
+    ),
+    'show' => array(
+      'event' => array(
+        'mouseenter' => 'mouseenter',
+        'focus' => 0,
+        'click' => 0,
+      ),
+      'solo' => 0,
+      'ready' => 0,
+    ),
+    'hide' => array(
+      'event' => array(
+        'mouseleave' => 'mouseleave',
+        'unfocus' => 0,
+        'blur' => 0,
+        'click' => 0,
+      ),
+      'fixed' => 0,
+      'delay' => '',
+      'inactive' => '',
+    ),
+    'miscellaneous' => array(
+      'button_title_text' => '',
+    ),
+  );
+  $qtips['default'] = $qtip;
+
+  return $qtips;
 }
 
 /**
@@ -764,7 +834,7 @@ function qtip_fetch_default_instance($field_default = NULL) {
     return $field_default;
   }
 
-  return variable_get('qtip_default_instance', '');
+  return variable_get('qtip_default_instance', 'default');
 }
 
 /**
@@ -843,7 +913,7 @@ function _qtip_fetch_default_settings($settings = NULL) {
       'qtip_jquery_version' => variable_get('qtip_jquery_version', QTIP_MINIMUM_JQUERY_VERSION),
 
       /* Miscellaneous options */
-      'qtip_default_instance' => variable_get('qtip_default_instance', ''),
+      'qtip_default_instance' => variable_get('qtip_default_instance', 'default'),
 
       /* Debug options */
       'qtip_debug_leave_tooltip_elements' => variable_get('qtip_debug_leave_tooltip_elements', 0),

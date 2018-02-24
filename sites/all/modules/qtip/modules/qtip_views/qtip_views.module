@@ -256,7 +256,7 @@ function theme_qtip_views_label_tooltip(&$variables) {
   $element .= theme('qtip_views_tooltip', array(
     'view'     => $variables['view'],
     'text'     => $variables['tooltip'],
-    'instance' => $variables['instance'],
+    'instance' => $variables['instance'] ? $variables['instance'] : qtip_fetch_default_instance(),
   ));
 
   return $element;

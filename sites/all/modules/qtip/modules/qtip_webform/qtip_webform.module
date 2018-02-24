@@ -6,18 +6,28 @@ function qtip_webform_form_alter(&$form, &$form_state, $form_id) {
 
     if (isset($settings['components'])) {
       foreach ($settings['components'] as $key => $value) {
-        switch ($value['text']) {
-          case 'description':
-            $form['submitted'][$key]['#attributes']['class'][] = 'qtip-webform-description';
-            break;
+        if (isset($form['submitted'])) {
+          $new_path = &$form['submitted'];
 
-          case 'custom':
-            $form['submitted'][$key]['#attributes']['class'][] = 'qtip-webform-custom-text';
-            $form['submitted'][$key]['#attributes']['data-qtip-webform-text'] = $value['custom_text'];
-            break;
+          if ($key_internal = qtip_webform_key_get_parents($key, $form['submitted'])) {
+            foreach ($key_internal as $item) {
+              $new_path = &$new_path[$item];
+            }
+          }
 
-          default:
-            break;
+          switch ($value['text']) {
+           case 'description':
+             $new_path[$key]['#attributes']['class'][] = 'qtip-webform-description';
+             break;
+
+           case 'custom':
+             $new_path[$key]['#attributes']['class'][] = 'qtip-webform-custom-text';
+             $new_path[$key]['#attributes']['data-qtip-webform-text'] = $value['custom_text'];
+             break;
+
+           default:
+             break;
+          }
         }
       }
     }
@@ -170,4 +180,26 @@ function qtip_webform_webform_configure_form_submit(&$form, &$form_state) {
   $settings['configure'] = $qtip_webform;
 
   variable_set('qtip_webform_node_' . $form_state['values']['nid'], $settings);
+}
+
+/**
+ * Function to fetch a given key's parents.
+ */
+function qtip_webform_key_get_parents($subject, $array) {
+  foreach ($array as $key => $value) {
+    if (substr($key, 0, 1) !== '#' && is_array($value)) {
+      if (in_array($subject, array_keys($value))) {
+       return array($key);
+      }
+      else {
+        $chain = qtip_webform_key_get_parents($subject, $value);
+
+        if (!is_null($chain)) {
+         return array_merge(array($key), $chain);
+        }
+      }
+    }
+  }
+
+  return NULL;
 }

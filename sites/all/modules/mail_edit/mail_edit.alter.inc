@@ -93,7 +93,8 @@ function _mail_edit_mail_alter(array &$message) {
     $options['callback'] = 'user_mail_tokens';
   }
   $subject = mail_edit_format($template['subject'], $data, $options);
-  $message['subject'] = trim(drupal_html_to_text($subject));
+  // #2185909: Remove newline character introduced by _drupal_wrap_mail_line().
+  $message['subject'] = str_replace(array("\n"), '', trim(drupal_html_to_text($subject)));
   $context = (isset($message['params']['context']['mail_edit']) ? $message['params']['context']['mail_edit'] : NULL);
   $body = mail_edit_format($template['body'], $data, $options, $context);
   // Remove trailing spaces because these may be interpreted as soft line

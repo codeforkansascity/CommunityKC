@@ -96,7 +96,9 @@ function qtip_settings_form() {
     '#title' => t('qTip version'),
     '#description' => t('Select the verion of qTip to use.'),
     '#options' => array(
-      '2.2.1' => '2.2.1 (recommended)',
+      '3.0.3' => '3.0.3 (recommended)',
+      '3.0.2' => '3.0.2',
+      '2.2.1' => '2.2.1',
       '2.2.0' => '2.2.0',
     ),
     '#default_value' => $settings['qtip_cdn_version'],
@@ -124,7 +126,7 @@ function qtip_settings_form() {
   );
   $form['cdn']['cdn_settings']['qtip_cdn_imagesloaded'] = array(
     '#type'          => 'checkbox',
-    '#title'         => t('Load !link for better image handling', array('!link' => l('imagesLoaded library', 'http://desandro.github.io/imagesloaded/DynamicMigration', array('target' => '_blank')))),
+    '#title'         => t('Load !link for better image handling', array('!link' => l('imagesLoaded library', 'http://imagesloaded.desandro.com/', array('target' => '_blank')))),
     '#description'   => t('If you plan on using qTip with complex content that contains images, enable this option for smooth positioning.'),
     '#default_value' => $settings['qtip_cdn_imagesloaded'],
     '#states'        => array(
@@ -195,7 +197,7 @@ function qtip_settings_form() {
 
   /* MISCELLANEOUS SECTION */
   $form['miscellaneous']['qtip_default_instance'] = qtip_fetch_instances_field($settings['qtip_default_instance']);
-  $form['miscellaneous']['qtip_default_instance']['#options'][''] = t('- None -');
+  unset($form['miscellaneous']['qtip_default_instance']['#options']['']);
   $form['miscellaneous']['qtip_default_instance']['#title'] = t('Default instance');
   $form['miscellaneous']['qtip_default_instance']['#description'] = t('Choose the default !link to use throughout the site.', array('!link' => l(t('qTip instance'), 'admin/config/user-interface/qTip')));
 

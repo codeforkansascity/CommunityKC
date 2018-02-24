@@ -517,7 +517,7 @@ function mail_edit_template_subform($template) {
                   '</dl>' .
                   '</div>' .
                   '<p>' . t('The replacement texts can contain line breaks and tokens, and they support four levels of nesting.') . '</p>' .
-                  '<p>' . t("As an extension to Dupal's token system, !Mail_Editor adds support for spaces and newlines inside the separator string of !join tokens.", array('!Mail_Editor' => 'Mail Editor', '!join' => '[*:join:?]')) . '</p>',
+                  '<p>' . t("As an extension to Drupal's token system, !Mail_Editor adds support for spaces and newlines inside the separator string of !join tokens.", array('!Mail_Editor' => 'Mail Editor', '!join' => '[*:join:?]')) . '</p>',
   );
   return $form;
 }
