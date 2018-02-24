@@ -50,10 +50,39 @@ function _custom_page_newmap_js() {
     '/sites/all/modules/custom/js/ckc-map.js',
     array('type' => 'file')
   );
+
+  drupal_add_js("misc/autocomplete.js");
+  drupal_add_js("misc/ahah.js");
+
   $page = array();
   $page['markup'] = array(
-    '#markup' => ' <div id="mapContainer" style="height: 600px; width: 100%; display: block"></div>
-    <script type="text/javascript">custom_js_initializeMap();</script>'
+    '#markup' => '
+    <div class="view-header">
+      <div class="toggle"><a href="list">Go to List View</a></div>
+    </div>
+    <div class="view-filters">
+      <div>
+      <form id="custom_map_form" method="POST" action="" onsubmit="custom_js_initializeMap(this);console.log(\'onsubmit ran\');return false;">
+        <div class="views-exposed-form">
+          <div class="views-exposed-widgets clearfix">
+            <div class="views-exposed-widget" style="z-index:100">
+              <label>Neighborhood Name</label> <input id="edit-field-neighborhood-tid" type="text" class="form-text form-autocomplete" autocomplete="OFF" size="60" maxlength="128" name="neighborhood">
+              <input class="autocomplete" type="hidden" id="edit-field-neighborhood-tid-autocomplete"
+              value="/admin/views/ajax/autocomplete/taxonomy/1" disabled="disabled" />
+            </div>
+            <div class="views-exposed-widget">
+              <label>Project Type</label> <select id="project_type" name="project_type" ><option value="">- Any</select>
+            </div>
+            <div class="views-exposed-widget">
+              <input type="button" onclick="this.form.submit()" value="submit" class="form-submit" />
+            </div>
+          </div>
+        </div>
+        </form>
+      </div>
+    </div>
+    <div id="mapContainer" class="view-content" style="height: 600px; width: 100%; display: block"></div>
+    <script type="text/javascript">custom_js_loadProjectTypes(); custom_js_initializeMap(jQuery(\'#custom_map_form\')[0]);</script>'
   );
   return $page;
 }

@@ -2,6 +2,8 @@
 /* include file imports */
 require_once('custom.user.inc');
 require_once('custom.helpers.inc');
+require_once('custom.services.inc');
+require_once('custom.resources.inc');
 
 require_once('class/GeoJsonService.php');
 
@@ -31,6 +33,7 @@ function custom_menu() {
     'access callback' => TRUE,
     'file' => 'custom.pages.inc'
   );
+
   // Misc
   // one-time data run
   /*
@@ -129,7 +132,7 @@ function _custom_project_node_presave($node) {
 		# test only
 		# data format:
 		#  uid / type / taxonomy id = pref type.
-		$notifications = _custom_notification_query($neighborhoods, $project_types, $node->uid);
+		// $notifications = _custom_notification_query($neighborhoods, $project_types, $node->uid);
 		$match_count = 0;
 		foreach ($notifications as $uid=>$matches) {
 			$match_count++;
@@ -450,4 +453,22 @@ function _custom_resave_projects() {
 		node_save($node);
 	//	die();
 	}
+}
+
+
+# Services
+/**
+ * Implements hook_ctools_plugin_api()
+ * needed to tell ctools we are using the Services module API and allow hook_default_services_endpoint to work
+ */
+function custom_ctools_plugin_api($owner, $api)
+{
+	if ($owner == 'services' && $api == 'services') {
+		return array(
+			'version' => 3,
+			'file' => 'custom.services.inc',
+			'path' => drupal_get_path('module', 'custom')
+		);
+	}
+	return array();
 }

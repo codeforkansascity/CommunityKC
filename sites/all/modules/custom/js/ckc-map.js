@@ -9,7 +9,24 @@ function custom_js_slugify(text) {
   .replace(/-+$/, '');            // Trim - from end of text
 }
 
+function custom_js_loadProjectTypes() {
+  jQuery.ajax({
+    url: '/api/v1/project_type',
+    contentType: 'application/json; charset=UTF-8',
+    context: document.body,
+    method: 'GET'
+  }).done(function (response) {
+    for(var r=0;r<response.length;r++) {
+      jQuery('#project_type').append(jQuery('<option>', { value: response[r].tid, text: response[r].name}));
+      for(var c=0;c<response[r].children.length; c++) {
+        jQuery('#project_type').append(jQuery('<option>', { value: response[r].children[c].tid, text: '- ' + response[r].children[c].name}));
+      }
+    }
+  });
+}
+
 function custom_js_initializeMap() {
+      var apiUrl = '/api/v1/project'
   L.mapbox.accessToken = "pk.eyJ1IjoiY3RyYWx0ZGVsIiwiYSI6ImNqMjZzNWF5ejAxM2czMnBja3R0MGF4ZHYifQ.b1VwKXqiiKwu7ElTGroVJA";
       var tileSet =  'mapbox.streets';
       var mapboxOSM = L.tileLayer("https://{s}.tiles.mapbox.com/v4/" + tileSet + "/{z}/{x}/{y}.png?access_token="+L.mapbox.accessToken, {
@@ -68,8 +85,8 @@ function custom_js_initializeMap() {
       featureLayer.on('layeradd', (e) => {
         var marker = e.layer;
         var feature = marker.feature;
-        var popupContent =  '<div id="' + feature.properties.id + '" class="popup">' +
-                          '<h2><a href="/node/"' + feature.properties.nid + '">' + feature.properties.title + '</a></h2>' +
+        var popupContent =  '<div id="div-' + feature.properties.nid + '" class="popup">' +
+                          '<h2><a href="/node/' + feature.properties.nid + '">' + feature.properties.title + '</a></h2>' +
                           '<div class="description">' + feature.properties.description + '</div>';
         if (feature.properties.project_type && feature.properties.project_type.length > 0) {
           popupContent += '<br /><div class="proj-type">Project Type: ';
@@ -85,6 +102,8 @@ function custom_js_initializeMap() {
           minWidth: 320
         });
       });
-      featureLayer.loadURL('/projects/geojson/');
+      featureLayer.loadURL(apiUrl);
       //return map;
+
 }
+
