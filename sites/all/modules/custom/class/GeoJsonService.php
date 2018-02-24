@@ -22,7 +22,7 @@ class GeoJsonService
 
 	}
 
-	public function getProjectsGeoJson()
+	public function getProjectsGeoJson($includeUngeocoded = FALSE)
 	{
     // find node ids of all project nodes that are published
 
@@ -38,7 +38,8 @@ class GeoJsonService
 		];
     // loop through loaded nodes
 		foreach ($projects as $project) {
-
+			if (!$includeUngeocoded && !$this->projectHasGeocode($project))
+			{continue;}
       $projectTypes = [];
 			if (!empty($project->field_project_type['und'])) {
         $projectTypes = array_map(function ($obj) {
@@ -166,4 +167,14 @@ class GeoJsonService
 
 		return $taxonomies;
 	}
+	
+	/*
+	* Determines if the geocode coords are 0,0 and returns false, otherwise true
+	*/
+	private function projectHasGeocode($project) { 
+		$longitude = _custom_safe_get_field($project, 'field_geocoded_address', LANGUAGE_NONE, 0, 'lon');
+		$latitude = _custom_safe_get_field($project, 'field_geocoded_address', LANGUAGE_NONE, 0, 'lat');
+		return !($longitude == 0 || $latitude == 0);
+	}
+
 }
