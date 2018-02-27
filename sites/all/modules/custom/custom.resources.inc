@@ -17,7 +17,22 @@ function custom_services_resources() {
     'operations' => array(
       'index' => array(
         'access callback' => '_custom_api_access',
-        'args' => array(), // todo: add args
+        'args' => array(
+          array(
+            'name' => 'neighborhood',
+            'optional' => TRUE,
+            'type' => 'int',
+            'description' => 'neighborhood tid',
+            'source' => array('param' => 'neighborhood'),
+          ),
+          array(
+            'name' => 'type',
+            'optional' => TRUE,
+            'type' => 'int',
+            'description' => 'project type tid',
+            'source' => array('param' => 'project_type'),
+          ),
+        ), // todo: add args
         'file' => array(
           'type' => 'inc',
           'module' => 'custom',

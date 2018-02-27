@@ -102,8 +102,28 @@ function custom_js_initializeMap() {
           minWidth: 320
         });
       });
-      featureLayer.loadURL(apiUrl);
+      featureLayer.loadURL(custom_js_build_api_url(apiUrl));
       //return map;
 
 }
-
+// adds params to api url
+function custom_js_build_api_url(apiUrl) {
+  var pt_val = custom_js_get_project_type_value();
+  var nh_val = custom_js_get_neighborhood_value();
+  var hasParams = pt_val || nh_val;
+  var params = '';
+  if (hasParams) {
+    params = '?';
+    params += pt_val ? 'project_type=' + pt_val + '&' : '' ;
+    params += nh_val ? 'neighborhood=' + nh_val + '&' : '' ;
+  }
+  return apiUrl + params;
+}
+function custom_js_get_project_type_value() {
+  var pt_val = jQuery('#project_type').val();
+  return pt_val;
+}
+function custom_js_get_neighborhood_value() {
+  var nh_val = jQuery('#edit-field-neighborhood-tid').val();
+  return nh_val;
+}

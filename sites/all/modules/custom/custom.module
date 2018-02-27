@@ -25,7 +25,7 @@ function custom_menu() {
   );
   $items['jsmap'] = array(
     'type' => MENU_NORMAL_ITEM,
-    'title' => 'New Map JS Only',
+    'title' => '',
     'description' => 'New map display with only js dependencies',
     'position' => 'left',
     'weight' => -20,

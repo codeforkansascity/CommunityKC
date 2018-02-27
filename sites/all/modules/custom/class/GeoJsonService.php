@@ -22,13 +22,13 @@ class GeoJsonService
 
 	}
 
-	public function getProjectsGeoJson($includeUngeocoded = FALSE)
+	public function getProjectsGeoJson($includeUngeocoded = FALSE, $project_tid = 0, $neighborhood_tid = 0)
 	{
     // find node ids of all project nodes that are published
-
-		$projectNodeIds = db_query("SELECT n.nid FROM {node} n WHERE n.type = :type AND n.status = 1", [
-			':type' => 'project'
-    ])->fetchCol(0);
+	//	$projectNodeIds = db_query("SELECT n.nid FROM {node} n WHERE n.type = :type AND n.status = 1", [
+	//		':type' => 'project'
+	//])->fetchCol(0);
+	$projectNodeIds = $this->projectNodeSearch($project_tid, $neighborhood_tid);
 
     // load all the nodes at once
 		$projects = node_load_multiple($projectNodeIds);
@@ -47,7 +47,6 @@ class GeoJsonService
         }, $project->field_project_type['und']);
         $projectTypes = $this->projectTypes($projectTypes);
       }
-
 			$projectTypeNames = [];
 			$projectTypeMarkers = [];
 			foreach ($projectTypes as $projectType) {
@@ -167,14 +166,65 @@ class GeoJsonService
 
 		return $taxonomies;
 	}
-	
+
 	/*
 	* Determines if the geocode coords are 0,0 and returns false, otherwise true
 	*/
-	private function projectHasGeocode($project) { 
+	private function projectHasGeocode($project) {
 		$longitude = _custom_safe_get_field($project, 'field_geocoded_address', LANGUAGE_NONE, 0, 'lon');
 		$latitude = _custom_safe_get_field($project, 'field_geocoded_address', LANGUAGE_NONE, 0, 'lat');
 		return !($longitude == 0 || $latitude == 0);
 	}
 
+	/**
+	 * Builds db query and searches for a list of node ids to return
+	 * project type and neighborhood default to 0 for all
+	 * Returns array of node ids
+	 */
+	private function projectNodeSearch($project_type, $neighborhood) {
+		if (!$project_type && !$neighborhood) {
+			// search result returns all
+			return db_query("SELECT n.nid FROM {node} n WHERE n.type = :type AND n.status = 1", [
+				':type' => 'project'
+				])->fetchCol(0);
+		}
+		elseif ($project_type && $neighborhood) {
+			// searching on both params
+			$q = 'SELECT n.nid FROM {node} n
+				INNER JOIN {field_data_field_neighborhood} nh on nh.entity_id = n.nid
+				INNER JOIN {field_data_field_project_type} pt on pt.entity_id = n.nid
+				WHERE n.type = :type AND n.status = 1
+				AND nh.field_neighborhood_tid = :nh
+				AND pt.field_project_type_tid = :pt';
+			return db_query($q, [
+				':type' => 'project',
+				':nh' => $neighborhood,
+				':pt' => $project_type
+			])->fetchCol(0);
+		}
+		elseif ($project_type) {
+			// project type only
+			$q = 'SELECT n.nid FROM {node} n
+				INNER JOIN {field_data_field_neighborhood} nh on nh.entity_id = n.nid
+				INNER JOIN {field_data_field_project_type} pt on pt.entity_id = n.nid
+				WHERE n.type = :type AND n.status = 1
+				AND pt.field_project_type_tid = :pt';
+			return db_query($q, [
+				':type' => 'project',
+				':pt' => $project_type
+			])->fetchCol(0);
+		}
+		elseif ($neighborhood) {
+			// neighborhood only
+			$q = 'SELECT n.nid FROM {node} n
+				INNER JOIN {field_data_field_neighborhood} nh on nh.entity_id = n.nid
+				INNER JOIN {field_data_field_project_type} pt on pt.entity_id = n.nid
+				WHERE n.type = :type AND n.status = 1
+				AND nh.field_neighborhood_tid = :nh';
+			return db_query($q, [
+				':type' => 'project',
+				':nh' => $neighborhood
+			])->fetchCol(0);
+		}
+	}
 }

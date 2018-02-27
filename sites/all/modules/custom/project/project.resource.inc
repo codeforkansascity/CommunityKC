@@ -1,10 +1,10 @@
 <?php
 
-function custom_project_resource_index() {
+function custom_project_resource_index($neighborhood = 0, $project_type = 0) {
   $cacheId = 'projects_geojson';
 	$geoData = cache_get($cacheId);
 	if ($geoData === false) {
-		$geoData = (new GeoJsonService())->getProjectsGeoJson();
+		$geoData = (new GeoJsonService())->getProjectsGeoJson(FALSE, $project_type, $neighborhood);
 		cache_set($cacheId, $geoData, 'cache', CACHE_TEMPORARY);
 	} else {
 		$geoData = $geoData->data;

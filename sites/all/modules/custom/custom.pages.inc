@@ -62,7 +62,7 @@ function _custom_page_newmap_js() {
     </div>
     <div class="view-filters">
       <div>
-      <form id="custom_map_form" method="POST" action="" onsubmit="custom_js_initializeMap(this);console.log(\'onsubmit ran\');return false;">
+      <form id="custom_map_form" method="POST" action="" onsubmit="custom_js_initializeMap(this);return false;">
         <div class="views-exposed-form">
           <div class="views-exposed-widgets clearfix">
             <div class="views-exposed-widget" style="z-index:100">
@@ -74,7 +74,7 @@ function _custom_page_newmap_js() {
               <label>Project Type</label> <select id="project_type" name="project_type" ><option value="">- Any</select>
             </div>
             <div class="views-exposed-widget">
-              <input type="button" onclick="this.form.submit()" value="submit" class="form-submit" />
+              <input type="button" onclick="custom_js_initializeMap(this);return false;" value="submit" class="form-submit" />
             </div>
           </div>
         </div>
