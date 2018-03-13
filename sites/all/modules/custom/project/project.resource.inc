@@ -1,7 +1,12 @@
 <?php
 
 function custom_project_resource_index($neighborhood = 0, $project_type = 0) {
-  $cacheId = 'projects_geojson';
+  /* // making sure we're getting params passed
+    watchdog('custom', 'custom_project_resource_index called !neighborhood, !project_type ', array(
+    '!neighborhood' => $neighborhood,
+    '!project_type' => $project_type
+  ), WATCHDOG_DEBUG); */
+  $cacheId = custom_project_get_cache_key($neighborhood, $project_type);
 	$geoData = cache_get($cacheId);
 	if ($geoData === false) {
 		$geoData = (new GeoJsonService())->getProjectsGeoJson(FALSE, $project_type, $neighborhood);
@@ -10,6 +15,20 @@ function custom_project_resource_index($neighborhood = 0, $project_type = 0) {
 		$geoData = $geoData->data;
 	}
 	return $geoData;
+}
+
+/**
+ * Makes a cache key for a neighborhood and project tpye combination.
+ */
+function custom_project_get_cache_key($nh, $pt) {
+  $key = 'projects_geojson';
+  if ($nh) {
+    $key .= 'n'. $nh;
+  }
+  if ($pt) {
+    $key .= 'p' . $pt;
+  }
+  return $key;
 }
 
 function custom_project_type_resource_index() {

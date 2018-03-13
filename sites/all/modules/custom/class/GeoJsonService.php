@@ -22,13 +22,14 @@ class GeoJsonService
 
 	}
 
-	public function getProjectsGeoJson($includeUngeocoded = FALSE, $project_tid = 0, $neighborhood_tid = 0)
+	public function getProjectsGeoJson($includeUngeocoded = FALSE, $project_tid = 0, $neighborhood = '')
 	{
     // find node ids of all project nodes that are published
 	//	$projectNodeIds = db_query("SELECT n.nid FROM {node} n WHERE n.type = :type AND n.status = 1", [
 	//		':type' => 'project'
-	//])->fetchCol(0);
-	$projectNodeIds = $this->projectNodeSearch($project_tid, $neighborhood_tid);
+  //])->fetchCol(0);
+
+	$projectNodeIds = $this->projectNodeSearch($project_tid, $neighborhood);
 
     // load all the nodes at once
 		$projects = node_load_multiple($projectNodeIds);
@@ -176,19 +177,31 @@ class GeoJsonService
 		return !($longitude == 0 || $latitude == 0);
 	}
 
+  private function findNeighborhoodTid($neighborhood) {
+    $term = taxonomy_get_term_by_name($neighborhood, 'neighborhood');
+    if ($term) {
+      return array_keys($term)[0];
+    }
+    return FALSE;
+  }
+
 	/**
 	 * Builds db query and searches for a list of node ids to return
 	 * project type and neighborhood default to 0 for all
 	 * Returns array of node ids
 	 */
 	private function projectNodeSearch($project_type, $neighborhood) {
+    $n_tid = FALSE;
+    if ($neighborhood) {
+      $n_tid = $this->findNeighborhoodTid($neighborhood);
+    }
 		if (!$project_type && !$neighborhood) {
 			// search result returns all
 			return db_query("SELECT n.nid FROM {node} n WHERE n.type = :type AND n.status = 1", [
 				':type' => 'project'
 				])->fetchCol(0);
 		}
-		elseif ($project_type && $neighborhood) {
+		elseif ($project_type && $n_tid) {
 			// searching on both params
 			$q = 'SELECT n.nid FROM {node} n
 				INNER JOIN {field_data_field_neighborhood} nh on nh.entity_id = n.nid
@@ -198,7 +211,7 @@ class GeoJsonService
 				AND pt.field_project_type_tid = :pt';
 			return db_query($q, [
 				':type' => 'project',
-				':nh' => $neighborhood,
+				':nh' => $n_tid,
 				':pt' => $project_type
 			])->fetchCol(0);
 		}
@@ -214,7 +227,7 @@ class GeoJsonService
 				':pt' => $project_type
 			])->fetchCol(0);
 		}
-		elseif ($neighborhood) {
+		elseif ($n_tid) {
 			// neighborhood only
 			$q = 'SELECT n.nid FROM {node} n
 				INNER JOIN {field_data_field_neighborhood} nh on nh.entity_id = n.nid
@@ -223,7 +236,7 @@ class GeoJsonService
 				AND nh.field_neighborhood_tid = :nh';
 			return db_query($q, [
 				':type' => 'project',
-				':nh' => $neighborhood
+				':nh' => $n_tid
 			])->fetchCol(0);
 		}
 	}

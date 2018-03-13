@@ -25,6 +25,20 @@ function custom_js_loadProjectTypes() {
   });
 }
 
+function custom_js_resetMapContainer(mapContainer) {
+  var mapContainer = document.querySelector('#mapContainer');
+  var containerParent = mapContainer.parentNode;
+  // clear out the map container
+  containerParent.removeChild(mapContainer);
+  var newContainer = document.createElement('div');
+  newContainer.id = 'mapContainer';
+  newContainer.setAttribute('class','view-content');
+  newContainer.style.height= '600px';
+  newContainer.style.width = '100%';
+  newContainer.style.display = 'block';
+  containerParent.appendChild(newContainer);
+}
+
 function custom_js_initializeMap() {
       var apiUrl = '/api/v1/project'
   L.mapbox.accessToken = "pk.eyJ1IjoiY3RyYWx0ZGVsIiwiYSI6ImNqMjZzNWF5ejAxM2czMnBja3R0MGF4ZHYifQ.b1VwKXqiiKwu7ElTGroVJA";
@@ -44,6 +58,12 @@ function custom_js_initializeMap() {
         "Street Map": mapboxOSM,
         "Aerial Imagery": mapboxSat
       };
+      var mapContainer = document.querySelector('#mapContainer');
+      if (mapContainer.getAttribute('class').indexOf('leaflet') > -1) {
+        // reset container if we already find the leaflet classes on the container div
+        custom_js_resetMapContainer(mapContainer);
+      }
+
       var map = L.map(document.querySelector('#mapContainer'), {
         zoom: 10,
         layers: [mapboxOSM]
@@ -115,8 +135,9 @@ function custom_js_build_api_url(apiUrl) {
   if (hasParams) {
     params = '?';
     params += pt_val ? 'project_type=' + pt_val + '&' : '' ;
-    params += nh_val ? 'neighborhood=' + nh_val + '&' : '' ;
+    params += nh_val ? 'neighborhood=' + encodeURIComponent(nh_val) + '&' : '' ;
   }
+  //console.log('api url params: ', apiUrl + params);
   return apiUrl + params;
 }
 function custom_js_get_project_type_value() {

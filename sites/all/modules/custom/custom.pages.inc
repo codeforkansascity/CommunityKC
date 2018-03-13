@@ -62,7 +62,7 @@ function _custom_page_newmap_js() {
     </div>
     <div class="view-filters">
       <div>
-      <form id="custom_map_form" method="POST" action="" onsubmit="custom_js_initializeMap(this);return false;">
+      <form id="custom_map_form" method="POST" action="" onsubmit="custom_js_initializeMap();return false;">
         <div class="views-exposed-form">
           <div class="views-exposed-widgets clearfix">
             <div class="views-exposed-widget" style="z-index:100">
@@ -82,7 +82,7 @@ function _custom_page_newmap_js() {
       </div>
     </div>
     <div id="mapContainer" class="view-content" style="height: 600px; width: 100%; display: block"></div>
-    <script type="text/javascript">custom_js_loadProjectTypes(); custom_js_initializeMap(jQuery(\'#custom_map_form\')[0]);</script>'
+    <script type="text/javascript">custom_js_loadProjectTypes(); custom_js_initializeMap();</script>'
   );
   return $page;
 }
