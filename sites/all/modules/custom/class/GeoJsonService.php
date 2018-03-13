@@ -93,7 +93,16 @@ class GeoJsonService
 				'properties' => $properties
 			];
 		}
-
+    if (count($resultSet['features']) === 0) {
+      $resultSet['features'][] = [
+        'type' => 'Feature',
+        'geometry' => [
+          'type' => 'Point',
+          'coordinates' => [doubleval(-94.578567), doubleval(39.099727)]
+        ],
+        'properties' => ['title' => 'No results found', 'description' => 'Try a different neighborhood and/or project type combination'],
+      ];
+    }
 		return $resultSet;
 	}
 
