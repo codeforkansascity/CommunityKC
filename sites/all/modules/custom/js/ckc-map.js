@@ -105,8 +105,9 @@ function custom_js_initializeMap() {
       featureLayer.on('layeradd', (e) => {
         var marker = e.layer;
         var feature = marker.feature;
+        var titleLink = feature.properties.nid ? '/node/'+feature.properties.nid : '/';
         var popupContent =  '<div id="div-' + feature.properties.nid + '" class="popup">' +
-                          '<h2><a href="/node/' + feature.properties.nid + '">' + feature.properties.title + '</a></h2>' +
+                          '<h2><a href="' + titleLink + '">' + feature.properties.title + '</a></h2>' +
                           '<div class="description">' + feature.properties.description + '</div>';
         if (feature.properties.project_type && feature.properties.project_type.length > 0) {
           popupContent += '<br /><div class="proj-type">Project Type: ';

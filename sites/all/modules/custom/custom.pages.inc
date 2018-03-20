@@ -30,6 +30,10 @@ function _custom_page_newmap_js() {
     '//api.tiles.mapbox.com/mapbox.js/plugins/leaflet-locatecontrol/v0.43.0/L.Control.Locate.mapbox.css',
     array('type' => 'external')
   );
+  drupal_add_css(
+    '/sites/all/modules/custom/css/ckc-map.css',
+    array('type' => 'file')
+  );
   drupal_add_js(
     '//api.tiles.mapbox.com/mapbox.js/v2.2.3/mapbox.js',
     array('type' => 'external')

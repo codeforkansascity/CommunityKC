@@ -32,7 +32,7 @@ function custom_services_resources() {
             'description' => 'project type tid',
             'source' => array('param' => 'project_type'),
           ),
-        ), // todo: add args
+        ),
         'file' => array(
           'type' => 'inc',
           'module' => 'custom',
