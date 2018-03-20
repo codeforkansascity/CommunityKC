@@ -23,7 +23,7 @@ function custom_menu() {
 		'file' => 'custom.pages.inc',
 		'menu_name' => 'main',
   );
-  $items['jsmap'] = array(
+  $items['map'] = array(
     'type' => MENU_NORMAL_ITEM,
     'title' => '',
     'description' => 'New map display with only js dependencies',
