@@ -1,0 +1,90 @@
+<?php
+
+class MenuHelperTestCase extends DrupalWebTestCase {
+  protected $profile = 'testing';
+
+  public static function getInfo() {
+    return array(
+      'name' => 'MenuHelper',
+      'description' => 'Tests for the MenuHelper class.',
+      'group' => 'Helper',
+    );
+  }
+
+  public function setUp() {
+    parent::setUp(array('helper', 'menu'));
+
+    menu_save(array('menu_name' => 'helper', 'title' => '', 'description' => ''));
+    menu_delete_links('main-menu');
+
+    $path = array(
+      'source' => 'source',
+      'alias' => 'alias',
+    );
+    path_save($path);
+    $path = array(
+      'source' => 'admin',
+      'alias' => 'administration',
+    );
+    path_save($path);
+  }
+
+  public function testCreateLinks() {
+    $links = array(
+      array(
+        'link_path' => '<front>',
+        'link_title' => 'Home',
+      ),
+      array(
+        'link_path' => 'alias',
+        'link_title' => 'Parent',
+        'children' => array(
+          array(
+            'link_title' => 'Child',
+            'children' => array(
+              array(
+                'link_path' => 'http://www.example.com/',
+                'link_title' => 'Subchild',
+              ),
+            ),
+          ),
+        ),
+      ),
+      array(
+        'link_path' => 'administration',
+        'link_title' => 'Admin',
+        'menu_name' => 'main-menu',
+      ),
+    );
+    MenuHelper::createLinks($links, array('menu_name' => 'helper', 'link_path' => '<front>'));
+
+    $loaded_links = menu_load_links('helper');
+    $this->assertEqual(count($loaded_links), 4);
+
+    $this->assertEqual($loaded_links[0]['link_path'], '<front>');
+    $this->assertEqual($loaded_links[0]['link_title'], 'Home');
+    $this->assertEqual($loaded_links[0]['has_children'], FALSE);
+
+    $this->assertEqual($loaded_links[1]['link_path'], 'source');
+    $this->assertEqual($loaded_links[1]['link_title'], 'Parent');
+    $this->assertEqual($loaded_links[1]['has_children'], TRUE);
+
+    $this->assertEqual($loaded_links[2]['link_path'], '<front>');
+    $this->assertEqual($loaded_links[2]['link_title'], 'Child');
+    $this->assertEqual($loaded_links[2]['plid'], $loaded_links[1]['mlid']);
+    $this->assertEqual($loaded_links[2]['has_children'], TRUE);
+
+    $this->assertEqual($loaded_links[3]['link_path'], 'http://www.example.com/');
+    $this->assertEqual($loaded_links[3]['link_title'], 'Subchild');
+    $this->assertEqual($loaded_links[3]['plid'], $loaded_links[2]['mlid']);
+    $this->assertEqual($loaded_links[3]['has_children'], FALSE);
+
+    $loaded_links = menu_load_links('main-menu');
+    $this->assertEqual(count($loaded_links), 1);
+
+    $this->assertEqual($loaded_links[0]['link_path'], 'admin');
+    $this->assertEqual($loaded_links[0]['link_title'], 'Admin');
+    $this->assertEqual($loaded_links[0]['has_children'], FALSE);
+  }
+
+}

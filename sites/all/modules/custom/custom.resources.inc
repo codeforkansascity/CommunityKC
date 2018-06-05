@@ -40,6 +40,24 @@ function custom_services_resources() {
         ),
         'callback' => 'custom_project_resource_index'
       ),
+      'retrieve' => array(
+        'access callback' => '_custom_api_access',
+        'args' => array(
+          array(
+            'name' => 'project_id',
+            'optional' => FALSE,
+            'type' => 'int',
+            'description' => 'Node id of project',
+            'source' => array('path' => 0),
+          ),
+        ),
+        'file' => array(
+          'type' => 'inc',
+          'module' => 'custom',
+          'name' => 'project/project.resource'
+        ),
+        'callback' => 'custom_project_resource_retrieve'
+      ),
     ),
   );
   $resources['neighborhood'] = array(

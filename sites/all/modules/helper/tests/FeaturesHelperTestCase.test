@@ -1,0 +1,41 @@
+<?php
+
+class FeaturesHelperTestCase extends DrupalWebTestCase {
+  protected $profile = 'testing';
+
+  public static function getInfo() {
+    return array(
+      'name' => 'FeaturesHelper',
+      'description' => 'Tests for the FeaturesHelper class.',
+      'group' => 'Helper',
+      'dependencies' => array('features'),
+    );
+  }
+
+  public function setUp() {
+    parent::setUp(array('helper', 'features', 'features_test'));
+    variable_set('features_rebuild_on_flush', FALSE);
+  }
+
+  public function testRevert() {
+    $instance = field_info_instance('node', 'field_features_test', 'features_test');
+    $original_name = $instance['label'];
+    $override_name = 'Overridden';
+    $this->assertNotEqual($original_name, $override_name);
+
+    $instance['label'] = 'Overridden';
+    field_update_instance($instance);
+    FeaturesHelper::revert(array('features_test'));
+    $instance = field_info_instance('node', 'field_features_test', 'features_test');
+    $this->assertIdentical($original_name, $instance['label']);
+
+    $instance['label'] = 'Overridden';
+    field_update_instance($instance);
+    FeaturesHelper::revertAll(FALSE, array('features_test'));
+    $instance = field_info_instance('node', 'field_features_test', 'features_test');
+    $this->assertIdentical($override_name, $instance['label']);
+    FeaturesHelper::revertAll();
+    $instance = field_info_instance('node', 'field_features_test', 'features_test');
+    $this->assertIdentical($original_name, $instance['label']);
+  }
+}

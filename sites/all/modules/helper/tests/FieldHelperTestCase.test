@@ -1,0 +1,161 @@
+<?php
+
+class FieldHelperTestCase extends DrupalWebTestCase {
+  protected $profile = 'testing';
+
+  public static function getInfo() {
+    return array(
+      'name' => 'FieldHelper',
+      'description' => 'Tests for the FieldHelper class.',
+      'group' => 'Helper',
+    );
+  }
+
+  public function setUp() {
+    parent::setUp(array('helper', 'file', 'image', 'taxonomy', 'entityreference'));
+
+    $this->createField('text');
+    $this->createField('file');
+    $this->createField('image');
+
+    $vocabulary = new stdClass();
+    $vocabulary->name = $this->randomName();
+    $vocabulary->machine_name = drupal_strtolower($vocabulary->name);
+    taxonomy_vocabulary_save($vocabulary);
+    $this->createField('taxonomy_term_reference', array(
+      'settings' => array(
+        'allowed values' => array(
+          array(
+            'vocabulary' => $vocabulary->machine_name,
+          ),
+        ),
+      ),
+    ));
+
+    $this->createField('entityreference', array(
+      'field_name' => 'field_entity_node',
+    ));
+    $this->createField('entityreference', array(
+      'field_name' => 'field_entity_taxonomy',
+      'settings' => array(
+        'target_type' => 'taxonomy_term',
+      ),
+    ));
+  }
+
+  protected function createField($type, array $extra = array()) {
+    $field = array('field_name' => 'field_' . $type, 'type' => $type);
+    $field = drupal_array_merge_deep($field, $extra);
+    return field_create_field($field);
+  }
+
+  public function testValues() {
+    $contentType = $this->drupalCreateContentType();
+
+    field_create_instance(array(
+      'field_name' => 'field_text',
+      'entity_type' => 'node',
+      'bundle' => $contentType->type,
+      'label' => $this->randomName(),
+    ));
+
+    $node = new stdClass();
+    $node->type = $contentType->type;
+    $node->language = LANGUAGE_NONE;
+    $node->field_text = array(
+      LANGUAGE_NONE => array(
+        0 => array('value' => 'und-value0'),
+      ),
+      'en' => array(
+        0 => array('value' => 'value0'),
+        1 => array('value' => 'value1', 'format' => 'filter1'),
+        2 => array('value' => 'value2', 'format' => 'filter2', 'nested' => array('subkey' => 'sub2', 0 => 'sub22')),
+      ),
+      'invalid' => array(
+        0 => array('value' => 'invalid-value0'),
+      ),
+    );
+    $value = $node->field_text['en'];
+
+    // Test FieldHelper::getValues().
+    $this->assertIdentical(FieldHelper::getValues('node', $node, 'field_text'), $value);
+    $this->assertIdentical(FieldHelper::getValues('node', $node, 'field_text', 'value'), array(0 => 'value0', 1 => 'value1', 2 => 'value2'));
+    $this->assertIdentical(FieldHelper::getValues('node', $node, 'field_text', array('format')), array(1 => 'filter1', 2 => 'filter2'));
+    $this->assertIdentical(FieldHelper::getValues('node', $node, 'field_text', 'nested'), array(2 => $value[2]['nested']));
+    $this->assertIdentical(FieldHelper::getValues('node', $node, 'field_text', array('nested', 'subkey')), array(2 => 'sub2'));
+    $this->assertIdentical(FieldHelper::getValues('node', $node, 'field_text', array('nested', 0)), array(2 => 'sub22'));
+    $this->assertIdentical(FieldHelper::getValues('node', $node, 'field_text', array('nested', 'invalid')), array());
+    $this->assertIdentical(FieldHelper::getValues('node', $node, 'field_text', 'invalid'), array());
+    $this->assertIdentical(FieldHelper::getValues('node', $node, 'invalid'), array());
+
+    // Test FieldHelper::getValue().
+    $this->assertIdentical(FieldHelper::getValue('node', $node, 'field_text'), $value[0]);
+    $this->assertIdentical(FieldHelper::getValue('node', $node, 'field_text', NULL, 1), $value[1]);
+    $this->assertIdentical(FieldHelper::getValue('node', $node, 'field_text', NULL, 2), $value[2]);
+    $this->assertIdentical(FieldHelper::getValue('node', $node, 'field_text', NULL, 3), NULL);
+    $this->assertIdentical(FieldHelper::getValue('node', $node, 'field_text', 'value'), $value[0]['value']);
+    $this->assertIdentical(FieldHelper::getValue('node', $node, 'field_text', 'value', 1), $value[1]['value']);
+    $this->assertIdentical(FieldHelper::getValue('node', $node, 'field_text', 'value', 2), $value[2]['value']);
+    $this->assertIdentical(FieldHelper::getValue('node', $node, 'field_text', 'value', 3), NULL);
+    $this->assertIdentical(FieldHelper::getValue('node', $node, 'field_text', array('format')), NULL);
+    $this->assertIdentical(FieldHelper::getValue('node', $node, 'field_text', array('format'), 1), $value[1]['format']);
+    $this->assertIdentical(FieldHelper::getValue('node', $node, 'field_text', array('format'), 2), $value[2]['format']);
+    $this->assertIdentical(FieldHelper::getValue('node', $node, 'field_text', array('format'), 3), NULL);
+    $this->assertIdentical(FieldHelper::getValue('node', $node, 'field_text', 'nested'), NULL);
+    $this->assertIdentical(FieldHelper::getValue('node', $node, 'field_text', 'nested', 1), NULL);
+    $this->assertIdentical(FieldHelper::getValue('node', $node, 'field_text', 'nested', 2), $value[2]['nested']);
+    $this->assertIdentical(FieldHelper::getValue('node', $node, 'field_text', 'nested', 3), NULL);
+    $this->assertIdentical(FieldHelper::getValue('node', $node, 'field_text', array('nested', 'subkey')), NULL);
+    $this->assertIdentical(FieldHelper::getValue('node', $node, 'field_text', array('nested', 'subkey'), 1), NULL);
+    $this->assertIdentical(FieldHelper::getValue('node', $node, 'field_text', array('nested', 'subkey'), 2), 'sub2');
+    $this->assertIdentical(FieldHelper::getValue('node', $node, 'field_text', array('nested', 'subkey'), 3), NULL);
+    $this->assertIdentical(FieldHelper::getValue('node', $node, 'field_text', array('nested', 0), 2), 'sub22');
+    $this->assertIdentical(FieldHelper::getValue('node', $node, 'field_text', array('nested', 'invalid'), 2), NULL);
+    $this->assertIdentical(FieldHelper::getValue('node', $node, 'invalid'), NULL);
+
+    // Test FieldHelper::hasDelta().
+    $this->assertTrue(FieldHelper::hasDelta('node', $node, 'field_text', 0));
+    $this->assertFalse(FieldHelper::hasDelta('node', $node, 'field_text', 3));
+    $this->assertFalse(FieldHelper::hasDelta('node', $node, 'field_text', 'invalid_delta'));
+    $this->assertFalse(FieldHelper::hasDelta('node', $node, 'invalid', 0));
+  }
+
+  public function testGetFieldsByType() {
+    $this->assertIdentical(FieldHelper::getFieldsByType('invalid'), array());
+    $this->assertIdentical(FieldHelper::getFieldsByType('file'), array('field_file'));
+    $this->assertIdentical(FieldHelper::getFieldsByType('image'), array('field_image'));
+    $this->assertIdentical(FieldHelper::getFieldsByType('entityreference'), array('field_entity_node', 'field_entity_taxonomy'));
+
+    field_delete_field('field_entity_taxonomy');
+    $this->assertIdentical(FieldHelper::getFieldsByType('entityreference'), array('field_entity_node'));
+  }
+
+  /**
+   * Tests FieldHelper::getEntityReferencingFields() and FieldHelper::getEntityReferencingFieldColumns().
+   */
+  public function testGetReferencingFields() {
+    $this->assertIdentical(count(FieldHelper::getEntityReferencingFields()), 5);
+    $this->assertIdentical(FieldHelper::getEntityReferencingFieldColumns('field_file'), array(
+      'fid' => 'file',
+    ));
+    $this->assertIdentical(FieldHelper::getEntityReferencingFieldColumns('field_image'), array(
+      'fid' => 'file',
+    ));
+    $this->assertIdentical(FieldHelper::getEntityReferencingFieldColumns('field_taxonomy_term_reference'), array(
+      'tid' => 'taxonomy_term',
+    ));
+    $this->assertIdentical(FieldHelper::getEntityReferencingFieldColumns('field_entity_node'), array(
+      'target_id' => 'node',
+    ));
+    $this->assertIdentical(FieldHelper::getEntityReferencingFieldColumns('field_entity_taxonomy'), array(
+      'target_id' => 'taxonomy_term',
+    ));
+
+    field_delete_field('field_entity_taxonomy');
+    field_delete_field('field_entity_node');
+    $this->assertIdentical(count(FieldHelper::getEntityReferencingFields()), 3);
+    $this->assertFalse(FieldHelper::getEntityReferencingFieldColumns('field_entity_node'));
+    $this->assertFalse(FieldHelper::getEntityReferencingFieldColumns('field_entity_taxonomy'));
+  }
+
+}

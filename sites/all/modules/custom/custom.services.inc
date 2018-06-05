@@ -40,7 +40,8 @@ function custom_default_services_endpoint()
   $endpoint->resources = array(
     'project' => array(
       'operations' => array(
-        'index' => array('enabled' => '1'), // geojson project list
+        'index' => array('enabled' => '1', 'description' => 'Get GEOJson formatted data for projects by neighborhood and type or for all projects'), // geojson project list
+        'retrieve' => array('enabled' => '1', 'description' => 'Get data for individual project') // project display
       ),
     ),
     'neighborhood' => array(

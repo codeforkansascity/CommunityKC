@@ -1,0 +1,31 @@
+<?php
+
+require_once __DIR__ . '/../lib/UtilHelper.php';
+
+class UtilHelperTestCase extends DrupalUnitTestCase {
+
+  public static function getInfo() {
+    return array(
+      'name' => 'UtilHelper',
+      'description' => 'Tests for the UtilHelper class.',
+      'group' => 'Helper',
+    );
+  }
+
+  public static function doNothing() {
+    // Do nothing.
+  }
+
+  function testRegisterUniqueShutdownFunction() {
+    $callbacks_before = drupal_register_shutdown_function();
+    UtilHelper::registerUniqueShutdownFunction(array('UtilHelperTestCase', 'doNothing'));
+    UtilHelper::registerUniqueShutdownFunction(array('UtilHelperTestCase', 'doNothing'), 1);
+    UtilHelper::registerUniqueShutdownFunction(array('UtilHelperTestCase', 'doNothing'), 1);
+    UtilHelper::registerUniqueShutdownFunction(array('UtilHelperTestCase', 'doNothing'), '1');
+    UtilHelper::registerUniqueShutdownFunction(array('UtilHelperTestCase', 'doNothing'), '1');
+    UtilHelper::registerUniqueShutdownFunction(array('UtilHelperTestCase', 'doNothing'), TRUE);
+    $callbacks_after = drupal_register_shutdown_function();
+    $this->assertIdentical(count($callbacks_after) - count($callbacks_before), 4);
+  }
+
+}

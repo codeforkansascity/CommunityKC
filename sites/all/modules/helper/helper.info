@@ -1,0 +1,36 @@
+name = Helper
+description = Provides helper APIs for working with Drupal.
+core = 7.x
+php = 5.3
+files[] = lib/ArrayHelper.php
+files[] = lib/CacheHelper.php
+files[] = lib/DeliveryHelper.php
+files[] = lib/EntityHelper.php
+files[] = lib/FeaturesHelper.php
+files[] = lib/FieldHelper.php
+files[] = lib/FieldChangeHelper.php
+files[] = lib/HttpHelper.php
+files[] = lib/MenuHelper.php
+files[] = lib/ProfileHelper.php
+files[] = lib/RenderHelper.php
+files[] = lib/UtilHelper.php
+files[] = lib/XmlHelper.php
+files[] = includes/HelperDebugMailLog.php
+files[] = views/views_handler_field_helper_entity_operation_links.inc
+files[] = tests/ArrayHelperTest.test
+files[] = tests/FeaturesHelperTestCase.test
+files[] = tests/FieldHelperTestCase.test
+files[] = tests/MenuHelperTestCase.test
+files[] = tests/UtilHelperTestCase.test
+files[] = tests/XmlHelperTestCase.test
+dependencies[] = entity
+test_dependencies[] = entityreference
+test_dependencies[] = redirect
+test_dependencies[] = features
+
+; Information added by Drupal.org packaging script on 2016-03-01
+version = "7.x-1.9"
+core = "7.x"
+project = "helper"
+datestamp = "1456872383"
+

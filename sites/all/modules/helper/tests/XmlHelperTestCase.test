@@ -1,0 +1,206 @@
+<?php
+
+require_once __DIR__ . '/../lib/ArrayHelper.php';
+require_once __DIR__ . '/../lib/XmlHelper.php';
+
+class XmlHelperTestCase extends DrupalUnitTestCase {
+
+  public static function getInfo() {
+    return array(
+      'name' => 'XmlHelper',
+      'description' => 'Tests for the XmlHelper class.',
+      'group' => 'Helper',
+    );
+  }
+
+  public function assertParseElements($xml, $expected, array $options = array()) {
+    $array = XmlHelper::parseElements($xml, $options);
+    $this->assertIdentical($array, $expected, format_string('Calling XmlHelper::parseElements(@input)<br/>Returned: <pre>@output</pre><br/>Expected: <pre>@expected</pre>', array('@input' => $xml, '@output' => print_r($array, TRUE), '@expected' => print_r($expected, TRUE))));
+    $this->assertFormatXml($array, $xml);
+  }
+
+  public function assertFormatXml($array, $expected) {
+    $xml = format_xml_elements($array);
+    // Apply some cleanup formatting to the XML to assure it matches correctly.
+    $xml = preg_replace(array('~<([^/> ]+)\s+/>~', '~\s+<~', '~>\s+~', '~><~'), array('<$1></$1>', '<', ">", ">\n<"), $xml);
+    $expected = preg_replace(array('~<([^/> ]+)\s+/>~', '~\s+<~', '~>\s+~', '~><~'), array('<$1></$1>', '<', ">", ">\n<"), $expected);
+    $this->assertIdentical($xml, $expected, format_string('Calling format_xml_elements(@input)<br/>Returned: <pre>@output</pre><br/>Expected: <pre>@expected</pre>', array('@input' => print_r($array, TRUE), '@output' => $xml, '@expected' => $expected)));
+  }
+
+  public function testXmlParsing() {
+    $data = <<<END
+<element1></element1>
+END;
+    $this->assertParseElements(
+      $data,
+      array(
+        'element1' => '',
+      )
+    );
+    $this->assertParseElements(
+      $data,
+      array(
+        array(
+          'key' => 'element1',
+          'value' => '',
+        ),
+      ),
+      array('simplify' => FALSE)
+    );
+
+    $data = <<<END
+<root>
+<element1 order="first">element1-value</element1>
+<element2>element2-value</element2>
+</root>
+END;
+    $this->assertParseElements(
+      $data,
+      array(
+        'root' => array(
+          array(
+            'key' => 'element1',
+            'attributes' => array('order' => 'first'),
+            'value' => 'element1-value',
+          ),
+          'element2' => 'element2-value',
+        ),
+      )
+    );
+    $this->assertParseElements(
+      $data,
+      array(
+        array(
+          'key' => 'root',
+          'value' => array(
+            array(
+              'key' => 'element1',
+              'attributes' => array('order' => 'first'),
+              'value' => 'element1-value',
+            ),
+            array(
+              'key' => 'element2',
+              'value' => 'element2-value',
+            ),
+          ),
+        ),
+      ),
+      array('simplify' => FALSE)
+    );
+
+    $data = <<<END
+<root xmlns:Test="test">
+<element1>element1value</element1>
+<element2><![CDATA[ <p><em>element2value</em></p> ]]></element2>
+<element2 type="edge-case">
+  <sub1 Test:key="7" key="value"> sub1value </sub1>
+  <sub2><![CDATA[ ]]></sub2>
+  <sub3>
+  </sub3>
+  <sub4 />
+</element2>
+<element3>
+  <sub1>sub1value</sub1>
+  <sub2>sub2value</sub2>
+  <sub3><![CDATA[sub3value]]></sub3>
+</element3>
+</root>
+END;
+    /*$result = XmlHelper::parseElements($data);
+    $this->assertIdentical($result, array(
+      'root' => array(
+        'attributes' => array(
+          'xmlns:Test' => 'test',
+        ),
+        'value' => array(
+          'element1' => 'element1value',
+          1 => array(
+            'key' => 'element2',
+            'value' => '<p><em>element2value</em></p>',
+          ),
+          2 => array(
+            'key' => 'element2',
+            'attributes' => array('type' => 'edge-case'),
+            'value' => array(
+              'sub1' => array(
+                'attributes' => array('key' => 'value', 'Test:key' => '7'),
+                'value' => 'sub1value',
+              ),
+              'sub2' => '',
+              'sub3' => '',
+              'sub4' => '',
+            ),
+          ),
+          'element3' => array(
+            'value' => array(
+              'sub1' => 'sub1value',
+              'sub2' => 'sub2value',
+              'sub3' => 'sub3value',
+            ),
+          ),
+        ),
+      ),
+    ));
+
+    $result = XmlHelper::parseElements($data, array('simplify' => FALSE));
+    $this->assertIdentical($result, array(
+      0 => array(
+        'name' => 'root',
+        'attributes' => array('xmlns:Test' => 'test'),
+        'value' => array(
+          0 => array(
+            'name' => 'element1',
+            'value' => 'element1value',
+          ),
+          1 => array(
+            'name' => 'element2',
+            'value' => '<p><em>element2value</em></p>',
+          ),
+          2 => array(
+            'name' => 'element2',
+            'attributes' => array('type' => 'edge-case'),
+            'value' => array(
+              0 => array(
+                'name' => 'sub1',
+                'attributes' => array('key' => 'value', 'Test:key' => '7'),
+                'value' => 'sub1value',
+              ),
+              1 => array(
+                'name' => 'sub2',
+                'value' => '',
+              ),
+              2 => array(
+                'name' => 'sub3',
+                'value' => '',
+              ),
+              3 => array(
+                'name' => 'sub4',
+                'value' => '',
+              ),
+            ),
+          ),
+          3 => array(
+            'name' => 'element3',
+            'value' => array(
+              0 => array(
+                'name' => 'sub1',
+                'value' => 'sub1value',
+              ),
+              1 => array(
+                'name' => 'sub2',
+                'value' => 'sub2value',
+              ),
+              2 => array(
+                'name' => 'sub3',
+                'value' => 'sub3value',
+              ),
+            ),
+          ),
+        ),
+      ),
+    ));*/
+
+  }
+
+
+}

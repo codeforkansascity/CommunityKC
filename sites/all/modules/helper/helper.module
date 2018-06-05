@@ -1,0 +1,353 @@
+<?php
+
+/**
+ * Implements hook_menu().
+ */
+function helper_menu() {
+  $items['admin/config/system/helper'] = array(
+    'title' => 'Helpers',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('helper_settings_form'),
+    'access arguments' => array('administer site configuration'),
+    'file' => 'helper.admin.inc',
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_library().
+ */
+function helper_library() {
+  $path = drupal_get_path('module', 'helper');
+
+  $libraries['drupal.formatInterval'] = array(
+    'title' => 'Drupal.formatInterval() helper',
+    'version' => '',
+    'js' => array(
+      $path . '/js/Drupal.formatInterval.min.js' => array(
+        'group' => JS_LIBRARY,
+        'weight' => 1,
+      ),
+    ),
+  );
+
+  return $libraries;
+}
+
+/**
+ * Implements hook_hook_info_alter().
+ */
+function helper_hook_info_alter(&$info) {
+  module_load_include('inc', 'helper', 'helper.hook');
+  $groups = _helper_hook_info_groups();
+  foreach ($groups as $group => $hooks) {
+    $info += array_fill_keys($hooks, array('group' => $group));
+  }
+}
+
+/**
+ * Implements hook_helper_tweak_info().
+ */
+function helper_helper_tweak_info() {
+  $info['local_action_destination'] = array(
+    'label' => t('Add destination query string to local actions.'),
+  );
+  $info['node_delete_tab'] = array(
+    'label' => t('Expose Delete on nodes as a tab.'),
+    'enabled' => FALSE,
+  );
+  $info['login_destination'] = array(
+    'label' => t('Add destination query strings to login/register links for anonymous users.'),
+  );
+  if (module_exists('comment')) {
+    $info['node_comment_unpublished_count'] = array(
+      'label' => t('Display unpublished comment count in node links.'),
+    );
+    $info['comment_hide_disabled_subject'] = array(
+      'label' => t('Hide comment subjects if they are disabled.'),
+    );
+  }
+  if (module_exists('honeypot')) {
+    $info['honeypot_block_anonymous_ips'] = array(
+      'label' => t('Block anonymous IP addresses when failing a honeypot form.'),
+      'enabled' => FALSE,
+    );
+  }
+
+  return $info;
+}
+
+function helper_is_tweak_enabled($tweak) {
+  $tweaks = helper_get_tweaks();
+  return !empty($tweaks[$tweak]['enabled']);
+}
+
+function helper_get_tweaks() {
+  $tweaks = &drupal_static(__FUNCTION__);
+
+  if (!isset($tweaks)) {
+    $tweaks = module_invoke_all('helper_tweak_info');
+    drupal_alter('helper_tweak_info', $tweaks);
+
+    $status = variable_get('helper_tweaks', array());
+    foreach ($tweaks as $tweak => $info) {
+      if (isset($status[$tweak])) {
+        $tweaks[$tweak]['enabled'] = (bool) $status[$tweak];
+      }
+      else {
+        $tweaks[$tweak] += array('enabled' => TRUE);
+      }
+    }
+  }
+
+  return $tweaks;
+}
+
+/**
+ * Implements hook_menu_alter().
+ */
+function helper_menu_alter(array &$items) {
+  if (helper_is_tweak_enabled('node_delete_tab')) {
+    // Make the delete page for nodes show up as a tab.
+    $items['node/%node/delete']['context'] = MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE;
+  }
+}
+
+/**
+ * Implements hook_entity_info_alter().
+ */
+function helper_entity_info_alter(array &$info) {
+  if ($info['user']['uri callback'] == 'user_uri') {
+    $info['user']['uri callback'] = 'helper_entity_user_uri';
+  }
+}
+
+/**
+ * Implements callback_entity_info_uri().
+ *
+ * A duplicate of user_uri() that does not output a link for anonymous users.
+ */
+function helper_entity_user_uri($user) {
+  if (!empty($user->uid)) {
+    return array('path' => 'user/' . $user->uid);
+  }
+}
+
+/**
+ * Implements hook_flush_caches().
+ */
+function helper_flush_caches() {
+  if (extension_loaded('apc')) {
+    apc_clear_cache();
+    apc_clear_cache('user');
+    apc_clear_cache('opcode');
+  }
+}
+
+/**
+ * Implements hook_preprocess_HOOK().
+ *
+ * Add destination query string to local action links to take you back to
+ * the page where you clicked the location action when done.
+ */
+function helper_preprocess_menu_local_action(&$variables) {
+  if (helper_is_tweak_enabled('local_action_destination')) {
+    $link = &$variables['element']['#link'];
+    if (isset($link['href'])) {
+
+      // Some local actions need to be whitelisted as having a redirect causes bugs.
+      switch ($link['href']) {
+        case 'admin/appearance/install':
+        case 'admin/modules/install':
+        case 'admin/reports/updates/install':
+        case 'admin/structure/views/add':
+        case 'admin/structure/flags/add':
+        case 'admin/structure/multifield/add':
+        case 'admin/config/media/theplatform/accounts/add':
+          return;
+      }
+
+      $link += array('localized_options' => array());
+      $link['localized_options'] += array('query' => array());
+      $link['localized_options']['query'] += drupal_get_destination();
+    }
+  }
+}
+
+/**
+ * Implements hook_ajax_render_alter().
+ */
+function helper_ajax_render_alter() {
+  // Ensure a proper AJAX header is always provided.
+  // @see https://www.drupal.org/node/1710710
+  if (is_null(drupal_get_http_header('Content-Type'))) {
+    drupal_add_http_header('Content-Type', 'application/json; charset=utf-8');
+  }
+}
+
+/**
+ * Implements hook_url_outbound_alter().
+ *
+ * Rewrite links to the login/register pages to include the current page so
+ * the user is redirected back to their original page.
+ */
+function helper_url_outbound_alter(&$path, &$options, $original_path) {
+  $paths = &drupal_static(__FUNCTION__);
+
+  if (!isset($paths)) {
+    $paths = array();
+    if (!helper_is_tweak_enabled('login_destination')) {
+      $paths = FALSE;
+    }
+    elseif (user_is_anonymous()) {
+      // These only should get destinations if the user is anonymous.
+      $paths = array('user', 'user/login', 'user/register', 'user/password');
+    }
+    if (!empty($paths)) {
+      $paths = array_flip($paths);
+    }
+  }
+
+  if (!empty($paths) && isset($paths[$path]) && !isset($options['query']['destination'])) {
+    // Only add destination if we already have a destination path, or the
+    // current path does not match the paths we want to add this too.
+    if (isset($_GET['destination']) || !isset($paths[$_GET['q']])) {
+      $options['query'] += drupal_get_destination();
+    }
+  }
+}
+
+/**
+ * Implements hook_registry_files_alter().
+ */
+function helper_registry_files_alter(&$files, $modules) {
+  foreach ($modules as $module) {
+    // If the selenium module is avaiable, but disabled, it causes fatal errors
+    // when trying to access the Testing UI.
+    if (!$module->status && $module->name == 'selenium') {
+      $dir = $module->dir;
+      $files[$dir . '/drupal_selenium_web_test_case.php'] = array(
+        'module' => 'selenium',
+        'weight' => 0,
+      );
+    }
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * Fix any uses of #states in field formatter settings output in Views UI.
+ *
+ * @see http://drupal.org/node/1387832
+ * @see http://drupal.org/node/1985406
+ */
+function helper_form_views_ui_config_item_form_alter(&$form, &$form_state) {
+  if (!empty($form['options']['settings']) && !empty($form_state['handler']) && $form_state['handler'] instanceof views_handler_field_field) {
+    $search = 'fields[' . $form_state['handler']->field_info['field_name'] . '][settings_edit_form]';
+    RenderHelper::rewriteStatesSelector($form['options']['settings'], $search, 'options');
+  }
+}
+
+/**
+ * Implements hook_preprocess_comment().
+ */
+function helper_preprocess_comment(&$variables) {
+  $node = $variables['elements']['#node'];
+  if (!variable_get('comment_subject_field_' . $node->type, 1) && helper_is_tweak_enabled('comment_hide_disabled_subject')) {
+    $variables['title_attributes_array']['class'][] = 'element-invisible';
+  }
+}
+
+/**
+ * Implements hook_field_widget_WIDGET_TYPE_form_alter().
+ */
+function helper_field_widget_options_select_form_alter(&$element, &$form_state, $context) {
+  // If the user has entered in a specific key/value pair for empty, then
+  // override the _none option with the user-provided one.
+  if (isset($element['#options']['']) && $element['#properties']['empty_option'] == 'option_none') {
+    $element['#options']['_none'] = $element['#options'][''];
+    unset($element['#options']['']);
+  }
+}
+
+/**
+ * Implements hook_honeypot_reject().
+ *
+ * Automatically block the IP addresses of anonymous honeypot failures.
+ * @see https://drupal.org/comment/8579275#comment-8579275
+ * @see https://drupal.org/sandbox/pwetosaurus/2148397
+ */
+function helper_honeypot_reject($form_id, $uid, $type) {
+  if (empty($uid) && helper_is_tweak_enabled('honeypot_block_anonymous_ips')) {
+    $limit = variable_get('helper_honeybot_block_anonymous_ip_threshold', 2);
+    if (!flood_is_allowed('honeypot', $limit)) {
+      system_block_ip_action();
+    }
+  }
+}
+
+/**
+ * Implements hook_cron().
+ */
+function helper_cron() {
+  // Remove deleted *and inactive* fields since field_purge_batch() will not.
+  module_load_include('inc', 'helper', 'helper.field');
+  _helper_purge_inactive_deleted_fields();
+}
+
+/**
+ * Implements hook_modules_uninstalled().
+ */
+function helper_modules_uninstalled(array $modules) {
+  // Find fields owned by the uninstalled modules and force delete them.
+  module_load_include('inc', 'helper', 'helper.field');
+  $fields = field_read_fields(array('module' => array($modules)), array('include_inactive' => 1));
+  foreach ($fields as $field) {
+    _helper_field_delete_field($field);
+    watchdog('helper', 'Deleted inactive field @field_name since the @module module was uninstalled.', array('@field_name' => $field['field_name'], '@module' => $field['module']));
+  }
+
+  // Remove deleted *and inactive* fields since field_purge_batch() will not.
+  _helper_purge_inactive_deleted_fields();
+}
+
+/**
+ * An allowed_values_function callback to fetch list field values from modules.
+ */
+function helper_get_field_allowed_values($field, $instance, $entity_type, $entity, &$cacheable) {
+  $hook = $field['field_name'] . '_allowed_values';
+  $context = array(
+    'field' => $field,
+    'instance' => $instance,
+    'entity_type' => $entity_type,
+    'entity' => $entity,
+    'cacheable' => &$cacheable,
+  );
+  $options = module_invoke_all($hook, $context);
+  drupal_alter($hook, $options, $context);
+  return $options;
+}
+
+/**
+ * Implements hook_element_info_alter().
+ */
+function helper_element_info_alter(&$info) {
+  foreach ($info as $type => $type_info) {
+    if (isset($type_info['#process']) && in_array('form_process_autocomplete', $type_info['#process'])) {
+      $info[$type]['#process'][] = 'helper_process_autocomplete_submit';
+    }
+  }
+}
+
+/**
+ * Process function to add auto-submit functionality to autocomplete elements.
+ */
+function helper_process_autocomplete_submit($element) {
+  if (!empty($element['#autocomplete_submit'])) {
+    $element['#attributes']['class'][] = 'form-autocomplete-submit';
+    $element['#attached']['js'][] = drupal_get_path('module', 'helper') . '/js/autocomplete-submit.js';
+  }
+  return $element;
+}
