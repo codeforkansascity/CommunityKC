@@ -9,6 +9,22 @@ function media_browser($selected = NULL) {
   $output['#attached']['library'][] = array('media', 'media_browser_page');
 
   $params = drupal_get_query_parameters();
+
+  // Filter out everything except a whitelist of known safe options.
+  // Backported http://cgit.drupalcode.org/media/commit/?id=86cefbb
+  // To mitigate https://www.drupal.org/forum/newsletters/security-advisories-for-contributed-projects/2017-05-10/media-moderately-critical.
+  $safe_options = array(
+    'activePlugins',
+    'fid',
+    'id',
+    'multiselect',
+    'options',
+    'plugins',
+    'render',
+    'types',
+  );
+  $params = array_intersect_key($params, array_flip($safe_options));
+
   array_walk_recursive($params, '_media_recursive_check_plain');
   $params = media_set_browser_params($params);
 

@@ -13,21 +13,54 @@ function social_login_widget_get_js_library($subdomain, $https_enabled = FALSE) 
 }
 
 /**
+ * Checks if the current connection is being made over https.
+ */
+function social_login_widget_is_https_on () {
+
+    if (isset ($_SERVER) && is_array ($_SERVER)) {
+
+        if (! empty ($_SERVER ['SERVER_PORT'])) {
+            if (trim ($_SERVER ['SERVER_PORT']) == '443') {
+                return true;
+            }
+        }
+
+        if (! empty ($_SERVER ['HTTP_X_FORWARDED_PROTO'])) {
+            if (strtolower (trim ($_SERVER ['HTTP_X_FORWARDED_PROTO'])) == 'https') {
+                return true;
+            }
+        }
+
+        if (! empty ($_SERVER ['HTTPS'])) {
+            if (stristr($_SERVER['HTTPS'], 'off') === false) {
+                return true;
+            }
+        }
+
+    }
+
+    return false;
+}
+
+/**
  * Builds the code for the social network buttons and returns it as string.
  */
 function social_login_widget_get_js_plugin($plugin_type, $subdomain, $providers, $containerid, $user_token = '') {
-  global $is_https, $base_url;
+  global $base_url;
+
+  // Use https?
+  $use_https = social_login_widget_is_https_on ();
 
   // Check required settings.
   if (!empty($containerid) AND !empty($subdomain)) {
 
-  	// We cannot redirect to a page build using Ajax. 
+  	// We cannot redirect to a page build using Ajax.
   	if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
   		$origin = $base_url;
   	} else {
-  		$origin = social_login_get_current_url($is_https);
+  		$origin = social_login_get_current_url($use_https);
   	}
-  	
+
     // Build the callback uri.
     $callback_uri = url('social_login/callback', array('absolute' => TRUE, 'query' => array ('origin' => $origin)));
 
@@ -35,16 +68,17 @@ function social_login_widget_get_js_plugin($plugin_type, $subdomain, $providers,
     $js = array();
     $js[] = "var _oneall = _oneall || [];";
     $js[] = "_oneall.push(['". $plugin_type ."', 'set_providers', ['". implode("','", $providers) . "']]);";
-    $js[] = "_oneall.push(['". $plugin_type ."', 'set_callback_uri', '". $callback_uri ."']);";  
-    
+    $js[] = "_oneall.push(['". $plugin_type ."', 'set_callback_uri', '". $callback_uri ."']);";
+
+    // Additional data for Social Link.
     if ($plugin_type == 'social_link') {
       $js[] = "_oneall.push(['". $plugin_type ."', 'set_force_re_authentication', true]);";
-      
+
       if ( ! empty ($user_token)) {
         $js[] = "_oneall.push(['". $plugin_type ."', 'set_user_token', '". $user_token ."']);";
       }
     }
-    
+
     $js[] = "_oneall.push(['". $plugin_type ."', 'do_render_ui', '". $containerid ."']);";
     $js[] = "<!-- OneAll.com / Social Login for Drupal -->";
     $js = implode("\n", $js);
@@ -112,12 +146,12 @@ function social_login_widget_block_info() {
  * Implements hook_block_view().
  */
 function social_login_widget_block_view($delta = '') {
-  global $is_https, $user;
+  global $user;
 
   $block = array();
   if ($delta == 'social_login_widget') {
 
-    // Read Settings.
+    // Read settings.
     $settings = social_login_widget_get_settings();
 
     // Hide the block for logged in users.
@@ -125,17 +159,20 @@ function social_login_widget_block_view($delta = '') {
       // Container to add the buttons to.
       $containerid = 'social_login_providers_' . rand(99999, 9999999);
 
-      //Get Javscript Library
-      $js_library = social_login_widget_get_js_library($settings['api_subdomain'], $is_https);
-      
-      //Get inline Javascript.
+      // Use https?
+      $use_https = social_login_widget_is_https_on ();
+
+      // Get Javscript Library.
+      $js_library = social_login_widget_get_js_library($settings['api_subdomain'], $use_https);
+
+      // Get inline Javascript.
       $js_inline = social_login_widget_get_js_plugin('social_login', $settings['api_subdomain'], $settings['enabled_providers'], $containerid);
 
-      // Setup Block.
+      // Setup block.
       $block['subject'] = t('Login with your Social Network account.');
       $block['content']['#markup'] = theme('social_login_widget_provider_container_block', array('containerid' => $containerid));
 
-      // Attached cacheable Javascript
+      // Attached cacheable Javascript.
       $block['content']['#attached']['js'] = array(
         $js_library => array('type' => 'external'),
         $js_inline => array('type' => 'inline', 'scope' => 'footer'),
@@ -185,8 +222,6 @@ function social_login_widget_form_user_login_block_alter(&$form, &$form_state) {
  */
 function social_login_widget_show_providers(&$form, &$form_state, $target) {
 
-  global $is_https;
-
   // Read Settings.
   $settings = social_login_widget_get_settings();
 
@@ -208,7 +243,7 @@ function social_login_widget_show_providers(&$form, &$form_state, $target) {
       // Do not show if disabled by admin.
       if ($settings['side_panel_icons'] <> 'disable') {
         $widget_enabled = TRUE;
-        $title = $settings['side_panel_caption'];
+        $title = t($settings['side_panel_caption']);
         $position = ($settings['side_panel_icons'] == 'below' ? 100 : (-100));
       }
       break;
@@ -222,7 +257,7 @@ function social_login_widget_show_providers(&$form, &$form_state, $target) {
         // Do not show if disabled by admin.
         if ($settings['registration_page_icons'] <> 'disable') {
           $widget_enabled = TRUE;
-          $title = $settings['registration_page_caption'];
+          $title = t($settings['registration_page_caption']);
           $position = ($settings['registration_page_icons'] == 'below' ? 100 : (-100));
         }
       }
@@ -245,7 +280,7 @@ function social_login_widget_show_providers(&$form, &$form_state, $target) {
         // Do not show if disabled by admin.
         if ($settings['login_page_icons'] <> 'disable') {
           $widget_enabled = TRUE;
-          $title = $settings['login_page_caption'];
+          $title = t($settings['login_page_caption']);
           $position = ($settings['login_page_icons'] == 'above' ? -100 : 100);
         }
       }
@@ -254,6 +289,7 @@ function social_login_widget_show_providers(&$form, &$form_state, $target) {
     // Edit Profile Page.
     case 'edit_profile_page':
       if ($settings['profile_page_icons'] <> 'disable') {
+
         // Needed to retrieve his token.
         global $user;
 
@@ -270,7 +306,7 @@ function social_login_widget_show_providers(&$form, &$form_state, $target) {
         $widget_in_fieldset = TRUE;
 
         // Title.
-        $title = $settings['profile_page_caption'];
+        $title = t($settings['profile_page_caption']);
 
         // Display on top.
         $position = ($settings['profile_page_icons'] == 'above' ? -100 : 100);
@@ -294,11 +330,11 @@ function social_login_widget_show_providers(&$form, &$form_state, $target) {
 
   // Enabled.
   if ($widget_enabled === TRUE) {
-  	
+
     // Container to add the buttons to.
     $containerid = 'social_login_providers_' . rand(99999, 9999999);
 
-    // Icon Block
+    // Icon block.
     $social_login_block =  theme('html_tag', array('element' => array(
     	'#tag' => 'script',
     	'#value_prefix' => "\n<!--//--><![CDATA[//><!--\n",
@@ -307,24 +343,24 @@ function social_login_widget_show_providers(&$form, &$form_state, $target) {
     	'#attributes' => array(
     		'type' => 'text/javascript',
     	)
-     )));    
-    
+     )));
+
     // Show in fieldset.
     if ($widget_in_fieldset) {
-    	
+
       $form['social_login_' . $containerid] = array(
         '#type' => 'fieldset',
         '#title' => $title,
         '#weight' => $position,
       );
-      
+
       $form['social_login_' . $containerid]['inner_block'] = array(
         '#prefix' => theme('social_login_widget_provider_container', array('containerid' => $containerid, 'label' => '')),
       	'#suffix' => $social_login_block,
       );
     }
     else {
-    	
+
       $form['social_login_' . $containerid] = array(
         '#prefix' => theme('social_login_widget_provider_container', array('containerid' => $containerid, 'label' => $title)),
       	'#suffix' => $social_login_block,
@@ -332,9 +368,12 @@ function social_login_widget_show_providers(&$form, &$form_state, $target) {
       );
     }
 
-    //Get Javscript Library
-    $js_library = social_login_widget_get_js_library($settings['api_subdomain'], $is_https);
-    
+    // Use https?
+    $use_https = social_login_widget_is_https_on ();
+
+    // Build Javscript library url.
+    $js_library = social_login_widget_get_js_library($settings['api_subdomain'], $use_https);
+
     // Add javascript to the form
     $form['content']['#attached']['js'] = array(
         $js_library => array('type' => 'external')
