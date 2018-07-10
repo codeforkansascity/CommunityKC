@@ -22,6 +22,16 @@ function _custom_event_menu() {
     'file' => 'event/event.module',
     'page arguments' => array(1),
   );
+  $items['event/add'] = array(
+    'type' => MENU_NORMAL_ITEM,
+    'title' => 'Add an Event',
+    'description' => 'Add a new community event',
+    'menu_name' => 'main-menu',
+    'weight' => -47,
+    'page callback' => '_custom_event_add_page',
+    'access callback' => TRUE,
+    'file' => 'event/event.module'
+  );
   return $items;
 }
 
@@ -43,4 +53,50 @@ function _custom_event_address_lookup($project_id) {
     // send 404 if invalid project id
     drupal_not_found();
   }
+}
+
+
+/**
+ * Custom version of the event add page - allows us to show a login to anonymous users
+ * todo: move to event module
+ */
+function _custom_event_add_page() {
+  global $user;
+  $page = array();
+  drupal_set_title('Submit an Event');
+  // terms & conditions disclaimer
+  $page['terms'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Terms &amp; Conditions'),
+    'term_content' => array(
+      '#prefix' => '<p>',
+      '#markup' => t('Please read the following privacy statement and check the box below if you agree to its terms and conditions. *
+      All event information submitted through this form will be entered into our database by CommunityKC facilitators.
+      The data will be displayed on the public web site www.communitykc.org except for the name, email, and phone number of the person
+       providing the information in this questionnaire. All other information will become public as of January 31, 2015 and may be linked
+       to third-party websites for reference. In the next few weeks you will receive an email to verify the accuracy of the information
+       submitted through this form. If you wish to update, edit, or delete any information for your event, please email communitykc@gmail.com
+        with the name of the project and your request.'),
+      '#suffix' => '</p>',
+    )
+  );
+
+  if (!$user || $user->uid === 0) {
+    $page['msg'] = array(
+      '#prefix' => '<p>',
+      '#markup' => t('You will need to login or register for an account to submit an event.'),
+      '#suffic' => '</p>',
+    );
+    $login_form = drupal_get_form('user_login_block');
+    $page['login'] = $login_form;
+  }
+  else {
+    module_load_include('inc', 'node', 'node.pages');
+    $node_form = new stdClass;
+    $node_form->type = 'event';
+    $node_form->language = LANGUAGE_NONE;
+    $form = drupal_get_form('event_node_form', $node_form);
+    $page['add_form'] = $form;
+  }
+  return $page;
 }

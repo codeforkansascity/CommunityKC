@@ -33,16 +33,7 @@ function custom_menu() {
     'access callback' => TRUE,
     'file' => 'custom.pages.inc'
   );
-  $items['event/add'] = array(
-    'type' => MENU_NORMAL_ITEM,
-    'title' => 'Add an Event',
-    'description' => 'Add a new community event',
-    'menu_name' => 'main-menu',
-    'weight' => -47,
-    'page callback' => '_custom_event_add_page',
-    'access callback' => TRUE,
-    'file' => 'custom.pages.inc'
-  );
+
   // Misc
   // one-time data run
   /*
