@@ -4,7 +4,7 @@ require_once('custom.user.inc');
 require_once('custom.helpers.inc');
 require_once('custom.services.inc');
 require_once('custom.resources.inc');
-
+require_once('event/event.module');
 require_once('class/GeoJsonService.php');
 
 /**
@@ -33,7 +33,16 @@ function custom_menu() {
     'access callback' => TRUE,
     'file' => 'custom.pages.inc'
   );
-
+  $items['event/add'] = array(
+    'type' => MENU_NORMAL_ITEM,
+    'title' => 'Add an Event',
+    'description' => 'Add a new community event',
+    'menu_name' => 'main-menu',
+    'weight' => -47,
+    'page callback' => '_custom_event_add_page',
+    'access callback' => TRUE,
+    'file' => 'custom.pages.inc'
+  );
   // Misc
   // one-time data run
   /*
@@ -46,6 +55,8 @@ function custom_menu() {
     'file' => 'custom.user.inc',
     'menu_name' => 'devel',
   ); */
+  // sub module menu functions
+  $items = array_merge($items, _custom_event_menu());
   return $items;
 }
 /* webform intercept - mail to person on project contact
@@ -471,4 +482,11 @@ function custom_ctools_plugin_api($owner, $api)
 		);
 	}
 	return array();
+}
+function custom_form_alter(&$form, &$form_state, $form_id) {
+  switch ($form_id) {
+    case 'event_node_form':
+      _custom_event_add_form_alter($form, $form_state, $form_id);
+      break;
+  }
 }

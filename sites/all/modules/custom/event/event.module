@@ -1,0 +1,46 @@
+<?php
+
+/**
+ * Subhook of hook_form_alter to add javascript to the event node add form
+ */
+function _custom_event_add_form_alter(&$form, &$form_state, $form_id) {
+  $path = drupal_get_path('module','custom');
+  // custom terms are on the custom event page in custom.pages inc
+  drupal_add_js("{$path}/event/js/event_add_form.js");
+}
+
+/**
+ * Subhook implementation of hook_menu
+ * called from custom_menu in custom.module
+ */
+function _custom_event_menu() {
+  $items = array();
+  $items['project/%/address-lookup'] = array(
+    'type' => MENU_CALLBACK,
+    'access callback' => TRUE,
+    'page callback' => '_custom_event_address_lookup',
+    'file' => 'event/event.module',
+    'page arguments' => array(1),
+  );
+  return $items;
+}
+
+/**
+ * Respond to project address lookup callbacks
+ * Allows autopopulating the project address when selecting a project on add event ndoe form
+ */
+function _custom_event_address_lookup($project_id) {
+  $node = node_load($project_id);
+  // only show published nodes the user can access
+  if (node_access('view', $node) || $node->status === 1) {
+    // safely get the address field from the wrapper
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $field_address = $wrapper->field_address->value();
+    // output field data as json for autopopulate
+    drupal_json_output($field_address);
+  }
+  else {
+    // send 404 if invalid project id
+    drupal_not_found();
+  }
+}
