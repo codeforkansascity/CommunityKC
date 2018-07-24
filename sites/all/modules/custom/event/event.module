@@ -100,3 +100,26 @@ function _custom_event_add_page() {
   }
   return $page;
 }
+
+function custom_upcoming_event_block_view() {
+  $data = custom_get_upcoming_event_list();
+  // set header
+  $markup = '<h2>' . t('Upcoming Events') . '</h2>';
+  foreach($data as $key=>$row) {
+    $markup .= '<div class="views-field views-field-title"><span>' . l($row['title'], drupal_get_path_alias('node/' . $row['nid'])) . '</span></div>';
+    if (!empty($row['project_nid'])) {
+      $markup .= '<div calss="views-field views-field-title"><span> - ' . l($row['project_title'], drupal_get_path_alias('node/' .$row['project_nid'])) . '</span></div>';
+    }
+    if ($row['end_time'] != $row['start_time']) {
+      // start and end date
+      $markup .= '<br/><span class="field-content"><em class="placeholder">' . date("M j g:ia",$row['start_time']) . ' - ' . date("g:ia", $row['end_time']) . '</em></span></div>';
+    }
+    else {
+      $markup .= '<div class="views-field views-field-created"><span class="field-content"><em class="placeholder">' . date("M j @ g:ia",$row['start_time']) . '</em></span></div>';
+    }
+  }
+  $block = array(
+    '#markup' => $markup,
+  );
+  return $block;
+}
