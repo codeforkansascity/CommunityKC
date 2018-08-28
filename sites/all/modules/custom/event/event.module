@@ -7,6 +7,21 @@ function _custom_event_add_form_alter(&$form, &$form_state, $form_id) {
   $path = drupal_get_path('module','custom');
   // custom terms are on the custom event page in custom.pages inc
   drupal_add_js("{$path}/event/js/event_add_form.js");
+  $form['event_info'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Event Info'),
+  );
+  $form['event_info']['title'] =  $form['title'];
+  $form['event_info']['body'] = $form['body'];
+  $form['event_info']['field_project'] = $form['field_project'];
+  $form['event_info']['field_event_type'] = $form['field_event_type'];
+  $form['event_info']['field_event_neighborhood'] = $form['field_event_neighborhood'];
+  unset($form['title']);
+  unset($form['body']);
+  unset($form['field_project']);
+  unset($form['field_event_type']);
+  unset($form['field_event_neighborhood']);
+  //die('<pre>' . var_export($form, true) . '</pre>');
 }
 
 /**
@@ -31,6 +46,16 @@ function _custom_event_menu() {
     'page callback' => '_custom_event_add_page',
     'access callback' => TRUE,
     'file' => 'event/event.module'
+  );
+  $items['events'] = array(
+    'type' => MENU_NORMAL_ITEM,
+    'title' => t('Events'),
+    'description' => 'Community events',
+    'menu_name' => 'main-menu',
+    'weight' => -48,
+    'page callback' => '_custom_events_page',
+    'access callback' => TRUE,
+    'file' => 'event/event.module',
   );
   return $items;
 }
@@ -102,9 +127,12 @@ function _custom_event_add_page() {
 }
 
 function custom_upcoming_event_block_view() {
-  $data = custom_get_upcoming_event_list();
+  $data = custom_events_get_list();
   // set header
   $markup = '<h2>' . t('Upcoming Events') . '</h2>';
+  if (count($data) < 1) {
+    $markup .= "<p>" . t('No upcoming events found.') . "</p>";
+  }
   foreach($data as $key=>$row) {
     $markup .= '<div class="views-field views-field-title"><span>' . l($row['title'], drupal_get_path_alias('node/' . $row['nid'])) . '</span></div>';
     if (!empty($row['project_nid'])) {
@@ -123,3 +151,78 @@ function custom_upcoming_event_block_view() {
   );
   return $block;
 }
+
+function _custom_events_page() {
+  $page = array();
+  $events = custom_events_get_list(TRUE,15,1);
+  if (count($events) < 1) {
+    $page['empty'] = array(
+      '#markup' => t('No events found.'),
+      '#prefix' => '<h2>',
+      '#suffix' => '</h2>',
+    );
+  }
+  foreach ($events as $unique_key=>$n) {
+    $node = node_load($n['nid']);
+    $page[$node->nid] = node_view($node,'teaser');
+  }
+
+  return $page;
+}
+
+/**
+ * Pull data for upcoming or previous events
+ * @param boolean $upcoming get upcoming events if true, past if false
+ * @param int $max_results number of results to return. Use 0 to get unlimited results.
+ * @param int $page Get subsequent pages based on max_results length.
+ */
+function custom_events_get_list($upcoming= TRUE, $max_results = 10, $page = 0) {
+  $now = REQUEST_TIME;
+  $q = "SELECT
+  concat(n.nid,d.delta) as unique_key, n.nid, n.title, d.delta,
+    unix_timestamp(d.field_event_date_value) as start_time, unix_timestamp(d.field_event_date_value2) as end_time,
+    proj.nid as project_nid, proj.title as project_title
+  FROM
+  {node} n
+  INNER JOIN {field_data_field_event_date} d
+    ON d.entity_id = n.nid and d.revision_id = n.vid
+  LEFT JOIN {field_data_field_project} p on p.entity_id = n.nid and p.revision_id = n.vid
+  LEFT JOIN {node} proj on proj.nid = p.field_project_target_id
+  WHERE
+  n.type = 'event'
+  AND n.status = 1";
+  if ($upcoming)  {
+    $q .=" AND d.field_event_date_value > from_unixtime(:request_time)";
+  }
+  else {
+    $q .= " AND d.field_event_data_value < from_unixtime(:request_time)";
+  }
+  $q .= " ORDER BY start_time, title";
+  custom_events_query_paging_helper($q, $max_results, $page);
+  $result = db_query($q,array(':request_time' => REQUEST_TIME));
+  return $result->fetchAllAssoc('unique_key',PDO::FETCH_ASSOC);
+}
+
+/**
+ * Add limit calcs to the end of the query to get a certain page.
+ */
+function custom_events_query_paging_helper(&$query, $max_results, $page){
+  # implement paging
+  if ($max_results) {
+    if ($page) {
+      $upper = ($page * $max_results) - 1;
+      $lower = $upper - ($max_results-1);
+      $query .= " limit {$lower},{$upper}";
+    }
+    else {
+      $query .= " limit {$max_results}";
+    }
+  }
+}
+
+# todo:
+# do we want author info showing?
+# filtering on event page
+# events need to go in search results
+# adding events streamline?
+# test add as regular user - approval process
