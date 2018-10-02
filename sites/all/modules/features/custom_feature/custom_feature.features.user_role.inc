@@ -1,13 +1,13 @@
 <?php
 /**
  * @file
- * custom_user_feature.features.user_role.inc
+ * custom_feature.features.user_role.inc
  */
 
 /**
  * Implements hook_user_default_roles().
  */
-function custom_user_feature_user_default_roles() {
+function custom_feature_user_default_roles() {
   $roles = array();
 
   // Exported role: admin.

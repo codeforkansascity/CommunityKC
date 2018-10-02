@@ -50,10 +50,31 @@ function _custom_event_menu() {
   $items['events'] = array(
     'type' => MENU_NORMAL_ITEM,
     'title' => t('Events'),
-    'description' => 'Community events',
+    'description' => t('Upcoming Community events'),
     'menu_name' => 'main-menu',
     'weight' => -48,
     'page callback' => '_custom_events_page',
+    'page arguments' => array(FALSE),
+    'access callback' => TRUE,
+    'file' => 'event/event.module',
+  );
+  $items['events/upcoming'] = array(
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'title' => t('Upcoming Events'),
+    'weight' => 5,
+    'description' => t('Upcoming Community events'),
+    'page callback' => '_custom_events_page',
+    'page arguments' => array(FALSE),
+    'access callback' => TRUE,
+    'file' => 'event/event.module',
+  );
+  $items['events/past'] = array (
+    'type' => MENU_LOCAL_TASK,
+    'title' => t('Past Events'),
+    'weight' => 10,
+    'description' => t('Past Community events'),
+    'page callback' => '_custom_events_page',
+    'page arguments' => array(TRUE),
     'access callback' => TRUE,
     'file' => 'event/event.module',
   );
@@ -152,9 +173,9 @@ function custom_upcoming_event_block_view() {
   return $block;
 }
 
-function _custom_events_page() {
+function _custom_events_page($pastEvents = FALSE) {
   $page = array();
-  $events = custom_events_get_list(TRUE,15,1);
+  $events = custom_events_get_list(!$pastEvents,15,1);
   if (count($events) < 1) {
     $page['empty'] = array(
       '#markup' => t('No events found.'),
@@ -195,7 +216,7 @@ function custom_events_get_list($upcoming= TRUE, $max_results = 10, $page = 0) {
     $q .=" AND d.field_event_date_value > from_unixtime(:request_time)";
   }
   else {
-    $q .= " AND d.field_event_data_value < from_unixtime(:request_time)";
+    $q .= " AND d.field_event_date_value < from_unixtime(:request_time)";
   }
   $q .= " ORDER BY start_time, title";
   custom_events_query_paging_helper($q, $max_results, $page);
