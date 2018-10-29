@@ -4,7 +4,7 @@ require_once('custom.user.inc');
 require_once('custom.helpers.inc');
 require_once('custom.services.inc');
 require_once('custom.resources.inc');
-
+require_once('event/event.module');
 require_once('class/GeoJsonService.php');
 
 /**
@@ -25,7 +25,7 @@ function custom_menu() {
   );
   $items['map'] = array(
     'type' => MENU_NORMAL_ITEM,
-    'title' => '',
+    'title' => t('Map'),
     'description' => 'New map display with only js dependencies',
     'position' => 'left',
     'weight' => -20,
@@ -46,6 +46,8 @@ function custom_menu() {
     'file' => 'custom.user.inc',
     'menu_name' => 'devel',
   ); */
+  // sub module menu functions
+  $items = array_merge($items, _custom_event_menu());
   return $items;
 }
 /* webform intercept - mail to person on project contact
@@ -471,4 +473,29 @@ function custom_ctools_plugin_api($owner, $api)
 		);
 	}
 	return array();
+}
+function custom_form_alter(&$form, &$form_state, $form_id) {
+  switch ($form_id) {
+    case 'event_node_form':
+      _custom_event_add_form_alter($form, $form_state, $form_id);
+      break;
+  }
+}
+
+function custom_block_info() {
+  $blocks = array();
+  $blocks['custom_upcoming_events'] = array(
+    'info' => t('Custom block to show upcoming events.'),
+  );
+  return $blocks;
+}
+
+function custom_block_view($delta = '' ) {
+  $block = array();
+  switch($delta) {
+    case 'custom_upcoming_events':
+    $block['content'] = custom_upcoming_event_block_view();
+    break;
+  }
+  return $block;
 }

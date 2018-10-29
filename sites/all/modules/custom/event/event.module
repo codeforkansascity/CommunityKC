@@ -1,0 +1,249 @@
+<?php
+
+/**
+ * Subhook of hook_form_alter to add javascript to the event node add form
+ */
+function _custom_event_add_form_alter(&$form, &$form_state, $form_id) {
+  $path = drupal_get_path('module','custom');
+  // custom terms are on the custom event page in custom.pages inc
+  drupal_add_js("{$path}/event/js/event_add_form.js");
+  $form['event_info'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Event Info'),
+  );
+  $form['event_info']['title'] =  $form['title'];
+  $form['event_info']['body'] = $form['body'];
+  $form['event_info']['field_project'] = $form['field_project'];
+  $form['event_info']['field_event_type'] = $form['field_event_type'];
+  $form['event_info']['field_event_neighborhood'] = $form['field_event_neighborhood'];
+  unset($form['title']);
+  unset($form['body']);
+  unset($form['field_project']);
+  unset($form['field_event_type']);
+  unset($form['field_event_neighborhood']);
+  //die('<pre>' . var_export($form, true) . '</pre>');
+}
+
+/**
+ * Subhook implementation of hook_menu
+ * called from custom_menu in custom.module
+ */
+function _custom_event_menu() {
+  $items = array();
+  $items['project/%/address-lookup'] = array(
+    'type' => MENU_CALLBACK,
+    'access callback' => TRUE,
+    'page callback' => '_custom_event_address_lookup',
+    'file' => 'event/event.module',
+    'page arguments' => array(1),
+  );
+  $items['event/add'] = array(
+    'type' => MENU_NORMAL_ITEM,
+    'title' => 'Add an Event',
+    'description' => 'Add a new community event',
+    'menu_name' => 'main-menu',
+    'weight' => -47,
+    'page callback' => '_custom_event_add_page',
+    'access callback' => TRUE,
+    'file' => 'event/event.module'
+  );
+  $items['events'] = array(
+    'type' => MENU_NORMAL_ITEM,
+    'title' => t('Events'),
+    'description' => t('Upcoming Community events'),
+    'menu_name' => 'main-menu',
+    'weight' => -48,
+    'page callback' => '_custom_events_page',
+    'page arguments' => array(FALSE),
+    'access callback' => TRUE,
+    'file' => 'event/event.module',
+  );
+  $items['events/upcoming'] = array(
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'title' => t('Upcoming Events'),
+    'weight' => 5,
+    'description' => t('Upcoming Community events'),
+    'page callback' => '_custom_events_page',
+    'page arguments' => array(FALSE),
+    'access callback' => TRUE,
+    'file' => 'event/event.module',
+  );
+  $items['events/past'] = array (
+    'type' => MENU_LOCAL_TASK,
+    'title' => t('Past Events'),
+    'weight' => 10,
+    'description' => t('Past Community events'),
+    'page callback' => '_custom_events_page',
+    'page arguments' => array(TRUE),
+    'access callback' => TRUE,
+    'file' => 'event/event.module',
+  );
+  return $items;
+}
+
+/**
+ * Respond to project address lookup callbacks
+ * Allows autopopulating the project address when selecting a project on add event ndoe form
+ */
+function _custom_event_address_lookup($project_id) {
+  $node = node_load($project_id);
+  // only show published nodes the user can access
+  if (node_access('view', $node) || $node->status === 1) {
+    // safely get the address field from the wrapper
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $field_address = $wrapper->field_address->value();
+    // output field data as json for autopopulate
+    drupal_json_output($field_address);
+  }
+  else {
+    // send 404 if invalid project id
+    drupal_not_found();
+  }
+}
+
+
+/**
+ * Custom version of the event add page - allows us to show a login to anonymous users
+ * todo: move to event module
+ */
+function _custom_event_add_page() {
+  global $user;
+  $page = array();
+  drupal_set_title('Submit an Event');
+  // terms & conditions disclaimer
+  $page['terms'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Terms &amp; Conditions'),
+    'term_content' => array(
+      '#prefix' => '<p>',
+      '#markup' => t('Please read the following privacy statement and check the box below if you agree to its terms and conditions. *
+      All event information submitted through this form will be entered into our database by CommunityKC facilitators.
+      The data will be displayed on the public web site www.communitykc.org except for the name, email, and phone number of the person
+       providing the information in this questionnaire. All other information will become public as of January 31, 2015 and may be linked
+       to third-party websites for reference. In the next few weeks you will receive an email to verify the accuracy of the information
+       submitted through this form. If you wish to update, edit, or delete any information for your event, please email communitykc@gmail.com
+        with the name of the project and your request.'),
+      '#suffix' => '</p>',
+    )
+  );
+
+  if (!$user || $user->uid === 0) {
+    $page['msg'] = array(
+      '#prefix' => '<p>',
+      '#markup' => t('You will need to login or register for an account to submit an event.'),
+      '#suffic' => '</p>',
+    );
+    $login_form = drupal_get_form('user_login_block');
+    $page['login'] = $login_form;
+  }
+  else {
+    module_load_include('inc', 'node', 'node.pages');
+    $node_form = new stdClass;
+    $node_form->type = 'event';
+    $node_form->language = LANGUAGE_NONE;
+    $form = drupal_get_form('event_node_form', $node_form);
+    $page['add_form'] = $form;
+  }
+  return $page;
+}
+
+function custom_upcoming_event_block_view() {
+  $data = custom_events_get_list();
+  // set header
+  $markup = '<h2>' . t('Upcoming Events') . '</h2>';
+  if (count($data) < 1) {
+    $markup .= "<p>" . t('No upcoming events found.') . "</p>";
+  }
+  foreach($data as $key=>$row) {
+    $markup .= '<div class="views-field views-field-title"><span>' . l($row['title'], drupal_get_path_alias('node/' . $row['nid'])) . '</span></div>';
+    if (!empty($row['project_nid'])) {
+      $markup .= '<div calss="views-field views-field-title"><span> - ' . l($row['project_title'], drupal_get_path_alias('node/' .$row['project_nid'])) . '</span></div>';
+    }
+    if ($row['end_time'] != $row['start_time']) {
+      // start and end date
+      $markup .= '<br/><span class="field-content"><em class="placeholder">' . date("M j g:ia",$row['start_time']) . ' - ' . date("g:ia", $row['end_time']) . '</em></span></div>';
+    }
+    else {
+      $markup .= '<div class="views-field views-field-created"><span class="field-content"><em class="placeholder">' . date("M j @ g:ia",$row['start_time']) . '</em></span></div>';
+    }
+  }
+  $block = array(
+    '#markup' => $markup,
+  );
+  return $block;
+}
+
+function _custom_events_page($pastEvents = FALSE) {
+  $page = array();
+  $events = custom_events_get_list(!$pastEvents,15,1);
+  if (count($events) < 1) {
+    $page['empty'] = array(
+      '#markup' => t('No events found.'),
+      '#prefix' => '<h2>',
+      '#suffix' => '</h2>',
+    );
+  }
+  foreach ($events as $unique_key=>$n) {
+    $node = node_load($n['nid']);
+    $page[$node->nid] = node_view($node,'teaser');
+  }
+
+  return $page;
+}
+
+/**
+ * Pull data for upcoming or previous events
+ * @param boolean $upcoming get upcoming events if true, past if false
+ * @param int $max_results number of results to return. Use 0 to get unlimited results.
+ * @param int $page Get subsequent pages based on max_results length.
+ */
+function custom_events_get_list($upcoming= TRUE, $max_results = 10, $page = 0) {
+  $now = REQUEST_TIME;
+  $q = "SELECT
+  concat(n.nid,d.delta) as unique_key, n.nid, n.title, d.delta,
+    unix_timestamp(d.field_event_date_value) as start_time, unix_timestamp(d.field_event_date_value2) as end_time,
+    proj.nid as project_nid, proj.title as project_title
+  FROM
+  {node} n
+  INNER JOIN {field_data_field_event_date} d
+    ON d.entity_id = n.nid and d.revision_id = n.vid
+  LEFT JOIN {field_data_field_project} p on p.entity_id = n.nid and p.revision_id = n.vid
+  LEFT JOIN {node} proj on proj.nid = p.field_project_target_id
+  WHERE
+  n.type = 'event'
+  AND n.status = 1";
+  if ($upcoming)  {
+    $q .=" AND d.field_event_date_value > from_unixtime(:request_time)";
+  }
+  else {
+    $q .= " AND d.field_event_date_value < from_unixtime(:request_time)";
+  }
+  $q .= " ORDER BY start_time, title";
+  custom_events_query_paging_helper($q, $max_results, $page);
+  $result = db_query($q,array(':request_time' => REQUEST_TIME));
+  return $result->fetchAllAssoc('unique_key',PDO::FETCH_ASSOC);
+}
+
+/**
+ * Add limit calcs to the end of the query to get a certain page.
+ */
+function custom_events_query_paging_helper(&$query, $max_results, $page){
+  # implement paging
+  if ($max_results) {
+    if ($page) {
+      $upper = ($page * $max_results) - 1;
+      $lower = $upper - ($max_results-1);
+      $query .= " limit {$lower},{$upper}";
+    }
+    else {
+      $query .= " limit {$max_results}";
+    }
+  }
+}
+
+# todo:
+# do we want author info showing?
+# filtering on event page
+# events need to go in search results
+# adding events streamline?
+# test add as regular user - approval process
