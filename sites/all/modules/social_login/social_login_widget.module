@@ -70,7 +70,6 @@ function social_login_widget_get_js_plugin($plugin_type, $subdomain, $providers,
     $js[] = "_oneall.push(['". $plugin_type ."', 'set_providers', ['". implode("','", $providers) . "']]);";
     $js[] = "_oneall.push(['". $plugin_type ."', 'set_callback_uri', '". $callback_uri ."']);";
 
-    // Additional data for Social Link.
     if ($plugin_type == 'social_link') {
       $js[] = "_oneall.push(['". $plugin_type ."', 'set_force_re_authentication', true]);";
 
@@ -149,30 +148,33 @@ function social_login_widget_block_view($delta = '') {
   global $user;
 
   $block = array();
+
+  // is this our widget?
   if ($delta == 'social_login_widget') {
 
-    // Read settings.
+    // Read Settings.
     $settings = social_login_widget_get_settings();
 
     // Hide the block for logged in users.
     if (empty($user->uid) OR $settings['block_icons_loggedin'] <> 'hide') {
+
       // Container to add the buttons to.
       $containerid = 'social_login_providers_' . rand(99999, 9999999);
 
       // Use https?
       $use_https = social_login_widget_is_https_on ();
 
-      // Get Javscript Library.
+      //Get Javscript Library
       $js_library = social_login_widget_get_js_library($settings['api_subdomain'], $use_https);
 
-      // Get inline Javascript.
+      //Get inline Javascript.
       $js_inline = social_login_widget_get_js_plugin('social_login', $settings['api_subdomain'], $settings['enabled_providers'], $containerid);
 
-      // Setup block.
+      // Setup Block.
       $block['subject'] = t('Login with your Social Network account.');
       $block['content']['#markup'] = theme('social_login_widget_provider_container_block', array('containerid' => $containerid));
 
-      // Attached cacheable Javascript.
+      // Attached cacheable Javascript
       $block['content']['#attached']['js'] = array(
         $js_library => array('type' => 'external'),
         $js_inline => array('type' => 'inline', 'scope' => 'footer'),
@@ -243,7 +245,7 @@ function social_login_widget_show_providers(&$form, &$form_state, $target) {
       // Do not show if disabled by admin.
       if ($settings['side_panel_icons'] <> 'disable') {
         $widget_enabled = TRUE;
-        $title = t($settings['side_panel_caption']);
+        $title = $settings['side_panel_caption'];
         $position = ($settings['side_panel_icons'] == 'below' ? 100 : (-100));
       }
       break;
@@ -257,7 +259,7 @@ function social_login_widget_show_providers(&$form, &$form_state, $target) {
         // Do not show if disabled by admin.
         if ($settings['registration_page_icons'] <> 'disable') {
           $widget_enabled = TRUE;
-          $title = t($settings['registration_page_caption']);
+          $title = $settings['registration_page_caption'];
           $position = ($settings['registration_page_icons'] == 'below' ? 100 : (-100));
         }
       }
@@ -280,7 +282,7 @@ function social_login_widget_show_providers(&$form, &$form_state, $target) {
         // Do not show if disabled by admin.
         if ($settings['login_page_icons'] <> 'disable') {
           $widget_enabled = TRUE;
-          $title = t($settings['login_page_caption']);
+          $title = $settings['login_page_caption'];
           $position = ($settings['login_page_icons'] == 'above' ? -100 : 100);
         }
       }
@@ -289,7 +291,6 @@ function social_login_widget_show_providers(&$form, &$form_state, $target) {
     // Edit Profile Page.
     case 'edit_profile_page':
       if ($settings['profile_page_icons'] <> 'disable') {
-
         // Needed to retrieve his token.
         global $user;
 
@@ -306,7 +307,7 @@ function social_login_widget_show_providers(&$form, &$form_state, $target) {
         $widget_in_fieldset = TRUE;
 
         // Title.
-        $title = t($settings['profile_page_caption']);
+        $title = $settings['profile_page_caption'];
 
         // Display on top.
         $position = ($settings['profile_page_icons'] == 'above' ? -100 : 100);
@@ -334,7 +335,7 @@ function social_login_widget_show_providers(&$form, &$form_state, $target) {
     // Container to add the buttons to.
     $containerid = 'social_login_providers_' . rand(99999, 9999999);
 
-    // Icon block.
+    // Icon Block
     $social_login_block =  theme('html_tag', array('element' => array(
     	'#tag' => 'script',
     	'#value_prefix' => "\n<!--//--><![CDATA[//><!--\n",
@@ -371,7 +372,7 @@ function social_login_widget_show_providers(&$form, &$form_state, $target) {
     // Use https?
     $use_https = social_login_widget_is_https_on ();
 
-    // Build Javscript library url.
+    //Get Javscript Library
     $js_library = social_login_widget_get_js_library($settings['api_subdomain'], $use_https);
 
     // Add javascript to the form
@@ -432,6 +433,7 @@ function social_login_widget_get_settings() {
   $settings['registration_retrieve_avatars'] = 'enable';
   $settings['registration_approval'] = 'inherit';
   $settings['registration_method'] = 'manual';
+  $settings['registration_auto_link'] = 'enable';
 
   $settings['login_page_icons'] = 'above';
   $settings['login_page_caption'] = '';

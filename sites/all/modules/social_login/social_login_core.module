@@ -45,7 +45,7 @@ function social_login_get_user_agent() {
 
   // If there is no version, then the module if not from drupal.org.
   if (empty($oa_core_info['version'])) {
-    $oa_core_info_version = '2.1';
+    $oa_core_info_version = '2.11';
   }
   else {
     $oa_core_info_version = str_replace(array('-', '_', ':'), '.', $oa_core_info['version']);
@@ -266,19 +266,14 @@ function social_login_core_callback_handler() {
 
     // Automatic or manual registration?
     $registration_method = (!empty($settings['registration_method']) ? $settings['registration_method'] : '');
-    $registration_method = (in_array($registration_method, array(
-      'manual',
-      'auto_random_email',
-      'auto_manual_email'
-    )) ? $registration_method : 'manual');
+    $registration_method = (in_array($registration_method, array('manual','auto_random_email', 'auto_manual_email')) ? $registration_method : 'manual');
 
     // Require approval?
     $registration_approval = (!empty($settings['registration_approval']) ? $settings['registration_approval'] : '');
-    $registration_approval = (in_array($registration_approval, array(
-      'inherit',
-      'disable',
-      'enable'
-    )) ? $registration_approval : 'inherit');
+    $registration_approval = (in_array($registration_approval, array('inherit', 'disable', 'enable')) ? $registration_approval : 'inherit');
+
+    // Account link?.
+    $registration_auto_link = (( ! empty($settings['registration_auto_link']) && $settings['registration_auto_link'] == 'disable') ? false : true);
 
     // Retrieved connection_token.
     $token = trim($_POST['connection_token']);
@@ -324,7 +319,38 @@ function social_login_core_callback_handler() {
           $provider_name = (!empty($identity['source']['name']) ? $identity['source']['name'] : t('Unkown'));
 
           // Try restoring the user for the token.
-          $user_for_token = social_login_core_get_user_for_user_token($user_token);
+          if (($user_for_token = social_login_core_get_user_for_user_token($user_token)) === FALSE)
+          {
+              // No token found, try to match against existing accounts.
+              if ($registration_auto_link)
+              {
+                  // Do we have any emails in the profile data?
+                  if (isset($identity['emails']) && is_array($identity['emails']))
+                  {
+                      // Loop through email address.
+                      foreach ($identity['emails'] AS $email)
+                      {
+                          // Only use verified emails.
+                          if ( ! empty ($email['is_verified']))
+                          {
+                              // Get the account id for this email address.
+                              if (($user_link_uid = social_login_core_get_uid_for_email($email['value'])) !== FALSE)
+                              {
+                                  // Load user.
+                                  if (($user_for_token = user_load($user_link_uid)) !== FALSE)
+                                  {
+                                      // Found one, map the tokens.
+                                      social_login_core_map_identity_token_to_user_token($user_for_token, $identity_token, $user_token, $provider_name);
+
+                                      // Done.
+                                      break;
+                                  }
+                              }
+                          }
+                      }
+                  }
+              }
+          }
 
           // Existing user (Has already a OneAll user_token).
           if (is_object($user_for_token) && !empty($user_for_token->uid)) {
@@ -460,11 +486,22 @@ function social_login_core_callback_handler() {
                 $user_email_is_verified = NULL;
                 $user_email_is_random = NULL;
 
-                if (isset($identity['emails']) && is_array($identity['emails'])) {
-                  while ( !$user_email_is_verified && (list (, $email) = each($identity['emails'])) ) {
-                    $user_email = $email['value'];
-                    $user_email_is_verified = (!empty($email['is_verified']));
-                  }
+                 // Do we have any emails in the profile data?
+                if (isset($identity['emails']) && is_array($identity['emails']))
+                {
+                    // Extract email address.
+                    foreach ($identity['emails'] AS $email)
+                    {
+                       $user_email = $email['value'];
+                       $user_email_is_verified = (!empty($email['is_verified']));
+                       $user_email_is_random = false;
+
+                       // Stop once we have found a verified email address.
+                       if ($user_email_is_verified)
+                       {
+                           break;
+                       }
+                    }
                 }
 
                 // The admin has opted for the automatic registration.
@@ -897,8 +934,34 @@ function social_login_core_link_social_network_avatar($social_data, $account) {
 /**
  * Unlinks an identity_token from an existing user account.
  */
-function social_login_core_unmap_identity_token($identity_token) {
-  db_delete('oneall_social_login_identities')->condition('identity_token', $identity_token)->execute();
+function social_login_core_unmap_identity_token($identity_token, $clean_authmap = true) {
+
+    // Authmap identifier.
+    $aid = null;
+
+    // Fetch identities.
+    $result = db_select('oneall_social_login_identities', 'i')->fields('i', array('aid', 'oasliid'))->condition('i.identity_token', $identity_token, '=')->execute();
+    foreach ($result as $record)
+    {
+        // Kepp the aid.
+        $aid = $record->aid;
+
+        // Remove the identity token.
+        db_delete('oneall_social_login_identities')->condition('oasliid', $record->oasliid)->execute();
+    }
+
+    // Cleanup the authmap.
+    if ( $clean_authmap && ! empty ($aid))
+    {
+        // Count remaining identities.
+        $num_rows = db_select('oneall_social_login_identities', 'i')->condition('i.aid', $aid, '=')->countQuery()->execute()->fetchField();
+
+        // If no entries are left, remove the authmap entry too.
+        if ($num_rows == 0)
+        {
+            db_delete('authmap')->condition('module', 'oneall_social_login', '=')->condition('aid', $aid)->execute();
+        }
+    }
 }
 
 /**
@@ -916,9 +979,7 @@ function social_login_core_map_identity_token_to_user_token($account, $identity_
     ));
 
     // Get the new authmap identifier.
-    $aid = db_select('authmap', 'a')->fields('a', array(
-      'aid'
-    ))->condition('module', 'oneall_social_login', '=')->condition('authname', $user_token, '=')->execute()->fetchField();
+    $aid = db_select('authmap', 'a')->fields('a', array('aid'))->condition('module', 'oneall_social_login', '=')->condition('authname', $user_token, '=')->execute()->fetchField();
 
     if (is_numeric($aid)) {
 
@@ -1003,11 +1064,22 @@ function social_login_core_form_user_register_form_alter(&$form, &$form_state) {
       // Email.
       $user_email = '';
       $user_email_is_verified = FALSE;
-      if (isset($identity['emails']) && is_array($identity['emails'])) {
-        while ( !$user_email_is_verified && (list (, $email) = each($identity['emails'])) ) {
-          $user_email = $email['value'];
-          $user_email_is_verified = (!empty($email['is_verified']));
-        }
+
+      // Do we have any emails in the profile data?
+      if (isset($identity['emails']) && is_array($identity['emails']))
+      {
+          // Extract email address.
+          foreach ($identity['emails'] AS $email)
+          {
+             $user_email = $email['value'];
+             $user_email_is_verified = (!empty($email['is_verified']));
+
+             // Stop once we have found a verified email address.
+             if ($user_email_is_verified)
+             {
+                 break;
+             }
+          }
       }
 
       // Login.
@@ -1215,9 +1287,6 @@ function social_login_core_get_available_providers() {
     'instagram' => array(
       'name' => 'Instagram'
     ),
-    'line' => array(
-      'name' => 'Line'
-    ),
     'linkedin' => array(
       'name' => 'LinkedIn'
     ),
@@ -1229,6 +1298,9 @@ function social_login_core_get_available_providers() {
     ),
     'meetup' => array(
       'name' => 'Meetup'
+    ),
+    'mixer' => array(
+      'name' => 'Mixer'
     ),
     'odnoklassniki' => array(
       'name' => 'Odnoklassniki'
@@ -1251,17 +1323,11 @@ function social_login_core_get_available_providers() {
     'skyrock' => array(
       'name' => 'Skyrock.com'
     ),
-    'soundcloud' => array(
-      'name' => 'SoundCloud'
-    ),
     'stackexchange' => array(
       'name' => 'StackExchange'
     ),
     'steam' => array(
       'name' => 'Steam'
-    ),
-    'storage' => array(
-      'name' => 'Storage',
     ),
     'tumblr' => array(
       'name' => 'Tumblr'
@@ -1287,6 +1353,9 @@ function social_login_core_get_available_providers() {
     'wordpress' => array(
       'name' => 'WordPress.com'
     ),
+    'xing' => array(
+      'name' => 'Xing'
+    ),
     'yahoo' => array(
       'name' => 'Yahoo'
     ),
@@ -1294,11 +1363,6 @@ function social_login_core_get_available_providers() {
       'name' => 'YouTube'
     )
   );
-
-  // Sort.
-  ksort ($providers);
-
-  // Done.
   return $providers;
 }
 

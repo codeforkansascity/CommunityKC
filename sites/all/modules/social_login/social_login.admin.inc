@@ -152,7 +152,7 @@ function social_login_admin_settings($form, &$form_state) {
       'below' => t('Show the Social Login icons below the existing login form (Default, recommended)'),
       'disable' => t('Do not show the Social Login icons in the side panel'),
     ),
-    '#default_value' => (empty($settings['side_panel_icons']) ? 'above' : $settings['side_panel_icons']),
+    '#default_value' => (empty($settings['side_panel_icons']) ? 'below' : $settings['side_panel_icons']),
   );
 
   $form['social_login_settings_side_panel']['side_panel_caption'] = array(
@@ -289,6 +289,17 @@ function social_login_admin_settings($form, &$form_state) {
       'disable' => t('No, do not retrieve the user picture from the social network'),
     ),
     '#default_value' => (empty($settings['registration_retrieve_avatars']) ? 'enable' : $settings['registration_retrieve_avatars']),
+  );
+
+  $form['social_login_settings_account_creation']['registration_auto_link'] = array(
+      '#type' => 'select',
+      '#title' => t('Automatically link social network accounts to existing accounts having the same email address?'),
+      '#description' => t('If the email address of the social network profile matches an email address of an existing user, both are linked together. Only works for verified email addresses.'),
+      '#options' => array(
+          'enable' => t('Yes, try to automatically link social network profiles to existing accounts (Default)'),
+          'disable' => t('No, do not automatically link social network profiles to existing accounts')
+      ),
+      '#default_value' => (empty($settings['registration_auto_link']) ? 'enable' : $settings['registration_auto_link']),
   );
 
   $form['social_login_settings_account_creation']['registration_method'] = array(
