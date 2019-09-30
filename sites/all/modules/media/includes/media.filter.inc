@@ -278,18 +278,18 @@ function _media_url_parse_full_links($match) {
  * @deprecated
  */
 function _media_url_curry($func, $arity) {
-  return create_function('', "
-    \$args = func_get_args();
-    if(count(\$args) >= $arity)
-        return call_user_func_array('$func', \$args);
-    \$args = var_export(\$args, 1);
-    return create_function('','
-        \$a = func_get_args();
-        \$z = ' . \$args . ';
-        \$a = array_merge(\$z,\$a);
-        return call_user_func_array(\'$func\', \$a);
-    ');
-  ");
+  return function() use ($func, $arity) {
+    $args = func_get_args();
+    if(count($args) >= $arity) {
+      return call_user_func_array($func, $args);
+    }
+    $args = var_export($args, 1);
+    return function() use ($func, $args) {
+        $a = func_get_args();
+        $a = array_merge($args,$a);
+        return call_user_func_array($func, $a);
+    };
+  };
 }
 
 /**

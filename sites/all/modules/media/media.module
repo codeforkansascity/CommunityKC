@@ -24,6 +24,8 @@ require_once (dirname(__FILE__) . '/includes/media.fields.inc');
  // Functions for working with [[inline tags]] and wysiwyg editors.
 require_once (dirname(__FILE__) . '/includes/media.filter.inc');
 
+// php 7.3.x fix required to use media_display_types().
+require_once (dirname(__FILE__) . '/media.media.inc');
 /* ***************************************** */
 /* Hook Implementations                      */
 /* ***************************************** */
