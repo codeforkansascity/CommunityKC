@@ -1,6 +1,6 @@
 {
   "require-dev": {
-    "phpunit/phpunit": "3.7.*",
+    "phpunit/phpunit": "4.8.*",
     "mockery/mockery": "0.9.*",
     "lionsad/service_container": "dev-7.x-1.x"
   },
